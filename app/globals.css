@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
+/*
+ * "base" is kept out of @theme on purpose: a --color-base token would make the
+ * text-base size utility also set a near-black text colour. bg-base is defined below.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-base: #0e0d0b;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  --color-surface: #17150f;
+  --color-elevated: #211e17;
+  --color-parchment: #d9cfb8;
+  --color-parchment-muted: #9a917e;
+  --color-iron: #3a362e;
+  --color-blood: #7a1e1e;
+  --color-blood-hover: #8f2626;
+  --color-aged-gold: #a68a4b;
+  --color-moss: #4f5a3a;
+  /* Lighter blood tone for small error text, so it keeps AA contrast on the dark base. */
+  --color-blood-text: #cc6a5f;
+  /* Same value as base, for text on gold fills. */
+  --color-ink: #0e0d0b;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Content width shared by the navbar, every page and the footer. */
+  --container-page: 150rem;
+  /* Extra breakpoint for 2K screens (2000px), declared in rem so it sorts after 2xl. */
+  --breakpoint-3xl: 125rem;
+
+  --font-display: var(--font-cinzel), Georgia, serif;
+  --font-body: var(--font-crimson), Georgia, serif;
+  --font-fraktur: var(--font-unifraktur), serif;
+
+  --animate-slow-pulse: slow-pulse 2.4s ease-in-out infinite;
+
+  @keyframes slow-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  /* Seamless near-black codex/stone texture (scripts/generate-background.ts); the flat base shows while it loads. */
+  body {
+    background-color: var(--color-base);
+    background-image: url("/images/background.png");
+    background-repeat: repeat;
+    background-size: 1024px 1024px;
+    color: var(--color-parchment);
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    line-height: 1.625;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-aged-gold);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background-color: var(--color-blood);
+    color: var(--color-parchment);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility bg-base {
+  background-color: var(--color-base);
+}
+
+@utility font-display-ui {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
