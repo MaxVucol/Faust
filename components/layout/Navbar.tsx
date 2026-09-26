@@ -25,7 +25,7 @@ export function Navbar() {
           className="flex items-center gap-3 font-display text-base font-semibold tracking-[0.12em] whitespace-nowrap text-aged-gold uppercase sm:text-xl sm:tracking-[0.15em]"
         >
           {/* Pre-sized PNG, served as-is so the metal texture stays crisp. */}
-          <Image src="/images/logo-mark.png" alt="" width={124} height={192} priority unoptimized className="h-14 w-auto" />
+          <Image src="/images/logo-tv.png" alt="" width={262} height={320} priority unoptimized className="h-14 w-auto" />
           {SITE_NAME}
         </Link>
 

@@ -10,7 +10,7 @@ export function NewsCard({ game }: { game: GameCardData }) {
     <Card interactive className="h-full">
       <Link href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-[3/1] overflow-hidden border-b border-iron">
-          <GameImage src={game.screenshots[2] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
+          <GameImage src={game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
         </div>
         <div className="p-4">
           <h3 className="text-lg text-parchment transition-colors duration-300 group-hover:text-aged-gold">{game.title}</h3>

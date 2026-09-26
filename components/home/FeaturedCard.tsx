@@ -9,7 +9,7 @@ export function FeaturedCard({ game }: { game: GameCardData }) {
   return (
     <Card interactive className="h-full shadow-lg shadow-black/50">
       <Link href={`/produse/${game.slug}`} className="block h-full">
-        <div className="relative aspect-[16/7] overflow-hidden border-b border-iron">
+        <div className="relative aspect-video overflow-hidden border-b border-iron">
           <GameImage src={game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 33vw, 100vw" />
         </div>
         <div className="p-5">

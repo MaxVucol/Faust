@@ -36,7 +36,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-page gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-8">
         <div>
           <p className="flex items-center gap-4 font-display text-lg font-semibold tracking-[0.15em] text-aged-gold uppercase">
-            <Image src="/images/logo-mark.png" alt="" width={124} height={192} unoptimized className="h-20 w-auto" />
+            <Image src="/images/logo-tv.png" alt="" width={262} height={320} unoptimized className="h-20 w-auto" />
             {SITE_NAME}
           </p>
           <p className="mt-3 max-w-xs text-base text-parchment-muted">

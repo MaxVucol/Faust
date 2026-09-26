@@ -15,6 +15,8 @@ export type GameSeed = {
   publisher: string;
   stock: number;
   featured?: boolean;
+  /** Real artwork overriding the generated placeholders (paths under public/). */
+  art?: { cover?: string; keyArt?: string };
 };
 
 const ALL = ["PC", "PlayStation 5", "Xbox Series X|S"];
@@ -34,6 +36,7 @@ export const games: GameSeed[] = [
     publisher: "Blackwater Interactive",
     stock: 140,
     featured: true,
+    art: { cover: "/images/games/elden-ring/cover-hd.png", keyArt: "/images/games/elden-ring/key-art-hd.png" },
   },
   {
     title: "Sekiro: Shadows Die Twice",
@@ -50,6 +53,7 @@ export const games: GameSeed[] = [
     publisher: "Kettle & Crow",
     stock: 85,
     featured: true,
+    art: { cover: "/images/games/sekiro-shadows-die-twice/cover-hd.png", keyArt: "/images/games/sekiro-shadows-die-twice/key-art-hd.png" },
   },
   {
     title: "The Witcher 3: Wild Hunt",
@@ -65,6 +69,7 @@ export const games: GameSeed[] = [
     publisher: "Blackwater Interactive",
     stock: 60,
     featured: true,
+    art: { cover: "/images/games/the-witcher-3-wild-hunt/cover-hd.png", keyArt: "/images/games/the-witcher-3-wild-hunt/key-art-hd.png" },
   },
   {
     title: "Resident Evil 4",
@@ -281,6 +286,7 @@ export const games: GameSeed[] = [
     developer: "Grimhallow Studio",
     publisher: "Blackwater Interactive",
     stock: 175,
+    art: { cover: "/images/games/hogwarts-legacy/cover-hd.png", keyArt: "/images/games/hogwarts-legacy/key-art-hd.png" },
   },
   {
     title: "Baldur's Gate 3",
@@ -341,10 +347,12 @@ export const games: GameSeed[] = [
   },
 ];
 
-export function coverPath(slug: string): string {
-  return `/images/games/${slug}/cover.jpg`;
+export function coverPath(slug: string, art?: GameSeed["art"]): string {
+  return art?.cover ?? `/images/games/${slug}/cover.jpg`;
 }
 
-export function screenshotPaths(slug: string): string[] {
-  return [1, 2, 3, 4].map((n) => `/images/games/${slug}/shot-${n}.jpg`);
+/** The first screenshot doubles as the landscape card image and detail banner, so key art goes first. */
+export function screenshotPaths(slug: string, art?: GameSeed["art"]): string[] {
+  const shots = [1, 2, 3, 4].map((n) => `/images/games/${slug}/shot-${n}.jpg`);
+  return art?.keyArt ? [art.keyArt, ...shots.slice(0, 3)] : shots;
 }
