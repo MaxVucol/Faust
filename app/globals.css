@@ -18,19 +18,29 @@
   --color-blood-hover: #8f2626;
   --color-aged-gold: #a68a4b;
   --color-moss: #4f5a3a;
+  /* Availability: muted, readable green and red on the dark panels. */
+  --color-stock-in: #7fae6a;
+  --color-stock-out: #d0584c;
   /* Lighter blood tone for small error text, so it keeps AA contrast on the dark base. */
   --color-blood-text: #cc6a5f;
   /* Same value as base, for text on gold fills. */
   --color-ink: #0e0d0b;
+
+  /* Forged-metal accents: frame lines, ornaments and sale tags. */
+  --color-bronze: #51402a;
+  --color-gold-dark: #8c682f;
+  --color-gold-light: #c09a55;
+  --color-crimson: #751f1c;
 
   /* Content width shared by the navbar, every page and the footer. */
   --container-page: 150rem;
   /* Extra breakpoint for 2K screens (2000px), declared in rem so it sorts after 2xl. */
   --breakpoint-3xl: 125rem;
 
-  --font-display: var(--font-cinzel), Georgia, serif;
-  --font-body: var(--font-crimson), Georgia, serif;
+  --font-display: var(--font-cinzel), var(--font-forum), Georgia, serif;
+  --font-body: var(--font-crimson), var(--font-garamond), Georgia, serif;
   --font-fraktur: var(--font-unifraktur), serif;
+  --font-editorial: var(--font-cormorant), Georgia, serif;
 
   --animate-slow-pulse: slow-pulse 2.4s ease-in-out infinite;
 
@@ -50,17 +60,40 @@
     color-scheme: dark;
   }
 
-  /* Seamless near-black codex/stone texture (scripts/generate-background.ts); the flat base shows while it loads. */
   body {
-    background-color: var(--color-base);
-    background-image: url("/images/background.png");
-    background-repeat: repeat;
-    background-size: 1024px 1024px;
+    background-color: #080706;
     color: var(--color-parchment);
     font-family: var(--font-body);
     font-size: 1.125rem;
     line-height: 1.625;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /*
+   * Vault-hall artwork (public/Background.png, upscaled 2x): props frame the sides,
+   * the centre stays dark for content. A fixed layer rather than
+   * background-attachment: fixed, which iOS ignores; the flat black shows while it loads.
+   */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: url("/images/background-main.jpg") center / cover no-repeat;
+  }
+
+  /*
+   * Cyrillic falls back to Forum / EB Garamond, whose letters run larger than Cinzel /
+   * Crimson Pro. Scaling fallbacks to the primary font's metrics keeps Russian text
+   * the same visual size as Romanian and English.
+   */
+  body {
+    font-size-adjust: ex-height from-font;
+  }
+
+  [class*="font-display"] {
+    font-size-adjust: cap-height from-font;
   }
 
   :focus-visible {
@@ -92,4 +125,27 @@
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.15em;
+}
+
+/* Antique-gold lettering: champagne highlight fading into dark bronze, like cast metal. */
+@utility text-gold {
+  background-image: linear-gradient(180deg, #e0c487 0%, #c09a55 45%, #8c682f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Warm, restrained halo for gold-framed panels, like distant torchlight on metal. */
+@utility glow-gold {
+  box-shadow:
+    0 0 0 1px rgb(12 10 8 / 0.9),
+    0 0 16px rgb(192 154 85 / 0.2),
+    0 12px 28px rgb(0 0 0 / 0.55);
+}
+
+@utility glow-gold-strong {
+  box-shadow:
+    0 0 0 1px rgb(12 10 8 / 0.9),
+    0 0 22px rgb(192 154 85 / 0.28),
+    0 14px 32px rgb(0 0 0 / 0.6);
 }

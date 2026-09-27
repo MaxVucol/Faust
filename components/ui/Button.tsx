@@ -2,16 +2,22 @@ import Link from "next/link";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "secondary" | "ghost";
+type Variant = "primary" | "glass" | "ghost";
 type Size = "md" | "sm";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-none font-display-ui transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-none font-display-ui disabled:cursor-not-allowed disabled:opacity-60";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-blood text-parchment hover:bg-blood-hover",
-  secondary: "border border-aged-gold text-aged-gold hover:bg-aged-gold hover:text-ink",
-  ghost: "border border-iron text-parchment hover:border-aged-gold hover:text-aged-gold",
+  primary: "bg-blood text-parchment transition-colors duration-300 hover:bg-blood-hover",
+  // Hero actions: a clear pane in a gold frame that fills with soft metallic light on hover.
+  // The fill is a pseudo-element so its gradient can fade in (gradients can't transition directly).
+  glass:
+    "relative isolate border border-gold-light/80 bg-black/15 text-gold-light transition-[color,border-color,box-shadow] duration-500 " +
+    "before:absolute before:inset-0 before:-z-10 before:bg-[linear-gradient(180deg,rgb(224_196_135/0.38)_0%,rgb(164_123_56/0.22)_100%)] before:opacity-0 before:transition-opacity before:duration-500 " +
+    "hover:border-[#E0C487] hover:text-[#F0DDA8] hover:shadow-[inset_0_0_14px_rgb(224_196_135/0.3),0_0_18px_rgb(192_154_85/0.3)] hover:before:opacity-100 " +
+    "focus-visible:before:opacity-100",
+  ghost: "border border-iron text-parchment transition-colors duration-300 hover:border-aged-gold hover:text-aged-gold",
 };
 
 const sizes: Record<Size, string> = {

@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { Label } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { SORT_OPTIONS, type SortValue } from "@/lib/catalog";
 
 export function SortSelect({ value }: { value: SortValue }) {
+  const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -13,7 +15,7 @@ export function SortSelect({ value }: { value: SortValue }) {
   return (
     <div className="flex items-center gap-3">
       <Label htmlFor="sort" className="mb-0 whitespace-nowrap">
-        Sortează
+        {t.catalog.sortBy}
       </Label>
       <Select
         id="sort"
@@ -27,8 +29,8 @@ export function SortSelect({ value }: { value: SortValue }) {
         }}
       >
         {SORT_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
+          <option key={o} value={o}>
+            {t.sort[o]}
           </option>
         ))}
       </Select>

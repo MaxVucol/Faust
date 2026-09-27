@@ -3,20 +3,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus } from "lucide-react";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/lib/use-cart";
 
 export function CartView() {
+  const { t } = useI18n();
+  const c = t.cart;
   const { items, total, setQuantity, clear } = useCart();
 
   if (items.length === 0) {
     return (
       <div className="border border-iron bg-surface px-6 py-16 text-center">
-        <p className="text-parchment-muted">Coșul este gol.</p>
+        <p className="text-parchment-muted">{c.empty}</p>
         <ButtonLink href="/produse" className="mt-6">
-          Vezi jocurile
+          {c.browse}
         </ButtonLink>
       </div>
     );
@@ -40,18 +43,18 @@ export function CartView() {
               <div className="flex items-center">
                 <button
                   type="button"
-                  aria-label={`Scade cantitatea pentru ${item.title}`}
+                  aria-label={c.decrease(item.title)}
                   onClick={() => setQuantity(item.slug, item.quantity - 1)}
                   className="border border-iron p-2 hover:border-aged-gold"
                 >
                   <Minus className="size-4" />
                 </button>
-                <span className="w-10 text-center" aria-label="Cantitate">
+                <span className="w-10 text-center" aria-label={c.quantity}>
                   {item.quantity}
                 </span>
                 <button
                   type="button"
-                  aria-label={`Crește cantitatea pentru ${item.title}`}
+                  aria-label={c.increase(item.title)}
                   onClick={() => setQuantity(item.slug, item.quantity + 1)}
                   className="border border-iron p-2 hover:border-aged-gold"
                 >
@@ -63,15 +66,15 @@ export function CartView() {
         ))}
       </ul>
       <aside className="h-fit border border-iron bg-surface p-6">
-        <p className="font-display-ui text-[0.7rem] text-parchment-muted">Total</p>
+        <p className="font-display-ui text-[0.7rem] text-parchment-muted">{c.total}</p>
         <p className="mt-1 font-display text-2xl text-aged-gold">{formatPrice(total)}</p>
         <Divider className="my-6" />
-        <Button className="w-full" disabled title="Plata online nu este încă disponibilă">
-          Finalizează comanda
+        <Button className="w-full" disabled title={c.checkoutUnavailable}>
+          {c.checkout}
         </Button>
-        <p className="mt-3 text-sm text-parchment-muted">Plata online va fi disponibilă în curând.</p>
+        <p className="mt-3 text-sm text-parchment-muted">{c.checkoutSoon}</p>
         <button type="button" onClick={clear} className="mt-6 font-display-ui text-[0.65rem] text-parchment-muted hover:text-parchment">
-          Golește coșul
+          {c.clear}
         </button>
       </aside>
     </div>

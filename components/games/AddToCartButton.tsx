@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/lib/use-cart";
 import type { CartItem } from "@/types";
@@ -13,14 +14,15 @@ type AddToCartButtonProps = {
   className?: string;
 };
 
-export function AddToCartButton({ item, inStock, label = "Adaugă în coș", size = "sm", className }: AddToCartButtonProps) {
+export function AddToCartButton({ item, inStock, label, size = "sm", className }: AddToCartButtonProps) {
+  const { t } = useI18n();
   const { add } = useCart();
   const [added, setAdded] = useState(false);
 
   if (!inStock) {
     return (
       <Button size={size} variant="ghost" disabled className={className}>
-        Stoc epuizat
+        {t.game.outOfStock}
       </Button>
     );
   }
@@ -33,7 +35,7 @@ export function AddToCartButton({ item, inStock, label = "Adaugă în coș", siz
         setAdded(true);
       }}
     >
-      <span aria-live="polite">{added ? "Adăugat în coș" : label}</span>
+      <span aria-live="polite">{added ? t.game.addedToCart : (label ?? t.game.addToCart)}</span>
     </Button>
   );
 }

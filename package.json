@@ -10,7 +10,8 @@
     "seed": "tsx --env-file=.env prisma/seed.ts",
     "images": "tsx scripts/generate-images.ts",
     "postinstall": "prisma generate",
-    "background": "tsx scripts/generate-background.ts"
+    "migrate:descriptions": "tsx --env-file=.env prisma/migrations/localize-game-descriptions.ts",
+    "update:descriptions": "tsx --env-file=.env prisma/update-descriptions.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

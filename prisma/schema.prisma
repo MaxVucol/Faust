@@ -7,15 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Text stored once per language. Any language may be missing; readers fall back (lib/localized-text.ts).
+type LocalizedText {
+  ro String?
+  ru String?
+  en String?
+}
+
 model Game {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   title          String
   slug           String    @unique
-  description    String
+  description    LocalizedText
   price          Float
   discountPrice  Float?
   discountEndsAt DateTime?
   coverImage     String
+  /// Optional landscape image for home-page cards only; falls back to the first screenshot.
+  cardImage      String?
+  /// Optional portrait cover for the game page only; falls back to coverImage.
+  pageCoverImage String?
   screenshots    String[]
   genres         String[]
   platforms      String[]

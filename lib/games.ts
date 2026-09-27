@@ -12,6 +12,7 @@ export const cardSelect = {
   discountPrice: true,
   discountEndsAt: true,
   coverImage: true,
+  cardImage: true,
   screenshots: true,
   genres: true,
   platforms: true,
@@ -55,7 +56,7 @@ export function parseFilters(sp: SearchParams): GameFilters {
     maxPrice: num(sp.maxPrice),
     minRating: num(sp.minRating),
     sale: first(sp.sale) === "1",
-    sort: SORT_OPTIONS.some((o) => o.value === sort) ? (sort as SortValue) : "popular",
+    sort: SORT_OPTIONS.includes(sort as SortValue) ? (sort as SortValue) : "popular",
     page: Math.max(1, Math.floor(num(sp.page) ?? 1)),
   };
 }

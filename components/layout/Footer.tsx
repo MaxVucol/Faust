@@ -1,25 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Divider } from "@/components/ui/Divider";
+import { Diamond } from "@/components/ui/Ornaments";
 import { SOCIAL_LINKS } from "@/components/ui/SocialIcons";
 import { PLATFORMS, SITE_NAME } from "@/lib/catalog";
+import { getDictionary } from "@/lib/i18n/server";
 import { NAV_LINKS } from "./nav-links";
-
-const INFO_LINKS = [
-  { href: "/contact#faq", label: "Livrare și plată" },
-  { href: "/contact#faq", label: "Politica de confidențialitate" },
-  { href: "/contact#faq", label: "Termeni și condiții" },
-  { href: "/contact#faq", label: "Întrebări frecvente" },
-];
 
 function FooterColumn({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
     <div>
-      <h2 className="mb-4 font-display-ui text-[0.7rem] text-parchment-muted">{title}</h2>
-      <ul className="space-y-2">
+      <h2 className="mb-6 font-display-ui text-[0.7rem] text-aged-gold">{title}</h2>
+      <ul className="space-y-3">
         {links.map((l) => (
           <li key={l.label}>
-            <Link href={l.href} className="text-base text-parchment transition-colors duration-300 hover:text-aged-gold">
+            <Link
+              href={l.href}
+              className="text-base text-parchment/80 transition-colors duration-300 hover:text-gold-light"
+            >
               {l.label}
             </Link>
           </li>
@@ -29,20 +26,27 @@ function FooterColumn({ title, links }: { title: string; links: { href: string; 
   );
 }
 
-export function Footer() {
+/** Mirrors the header: same near-black panel, same single gold hairline, same logo lockup. */
+export async function Footer() {
+  const t = await getDictionary();
   return (
-    <footer className="relative mt-20 bg-surface">
-      <Divider double />
-      <div className="mx-auto grid max-w-page gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-8">
+    <footer className="relative z-10 mt-24 border-t border-gold-dark bg-[#0a0907]">
+      {/* Small gold diamond set into the boundary line, centred. */}
+      <Diamond className="absolute -top-[5px] left-1/2 size-2.5 -translate-x-1/2 border border-gold-light bg-[#0a0907]" />
+
+      <div className="mx-auto grid max-w-page gap-12 px-4 pt-16 pb-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.6fr_1fr_1fr_1fr] lg:gap-16 lg:px-8">
         <div>
-          <p className="flex items-center gap-4 font-display text-lg font-semibold tracking-[0.15em] text-aged-gold uppercase">
-            <Image src="/images/logo-tv.png" alt="" width={262} height={320} unoptimized className="h-20 w-auto" />
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 font-display text-xl font-semibold tracking-[0.15em] whitespace-nowrap text-aged-gold uppercase"
+          >
+            <Image src="/images/logo-tv.png" alt="" width={262} height={320} unoptimized className="h-14 w-auto" />
             {SITE_NAME}
+          </Link>
+          <p className="mt-6 max-w-xs text-base leading-relaxed text-parchment-muted">
+            {t.footer.tagline}
           </p>
-          <p className="mt-3 max-w-xs text-base text-parchment-muted">
-            Magazin online de jocuri video. Pentru cei care nu se mulțumesc cu puțin.
-          </p>
-          <ul className="mt-6 flex gap-5">
+          <ul className="mt-8 flex gap-6">
             {SOCIAL_LINKS.map(({ label, href, Icon }) => (
               <li key={label}>
                 <a
@@ -50,26 +54,27 @@ export function Footer() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={label}
-                  className="block text-parchment-muted transition-colors duration-300 hover:text-aged-gold"
+                  className="block text-parchment-muted transition-colors duration-300 hover:text-gold-light"
                 >
-                  <Icon className="size-5" />
+                  <Icon className="size-[18px]" />
                 </a>
               </li>
             ))}
           </ul>
         </div>
-        <FooterColumn title="Linkuri rapide" links={NAV_LINKS.map((l) => ({ href: l.href, label: l.label }))} />
+        <FooterColumn title={t.footer.quickLinks} links={NAV_LINKS.map((l) => ({ href: l.href, label: t.nav[l.key] }))} />
         <FooterColumn
-          title="Platforme"
+          title={t.footer.platforms}
           links={PLATFORMS.map((p) => ({ href: `/produse?platform=${encodeURIComponent(p.name)}`, label: p.name }))}
         />
-        <FooterColumn title="Informații" links={INFO_LINKS} />
+        <FooterColumn title={t.footer.info} links={t.footer.infoLinks.map((label) => ({ href: "/contact#faq", label }))} />
       </div>
+
       <div className="mx-auto max-w-page px-4 sm:px-6 lg:px-8">
-        <Divider />
-        <div className="flex flex-col gap-2 py-6 text-sm text-parchment-muted sm:flex-row sm:justify-between">
-          <p>© {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.</p>
-          <p>Jocuri. Pasiune. Fără compromisuri.</p>
+        <hr className="border-0 border-t border-gold-dark/40" />
+        <div className="flex flex-col gap-2 py-7 text-sm text-parchment-muted sm:flex-row sm:justify-between">
+          <p>{t.footer.rights(new Date().getFullYear(), SITE_NAME)}</p>
+          <p className="font-display-ui text-[0.65rem] text-aged-gold/80">{t.footer.motto}</p>
         </div>
       </div>
     </footer>

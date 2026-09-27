@@ -5,7 +5,8 @@ type BadgeProps = { children: ReactNode; variant?: "outline" | "blood" | "moss";
 
 const variants = {
   outline: "border-iron text-parchment-muted",
-  blood: "border-blood bg-blood text-parchment",
+  // Sale pennant: crimson flag with a swallow-tail notch on the right.
+  blood: "border-transparent bg-crimson pr-3.5 pl-2 text-parchment [clip-path:polygon(0_0,100%_0,calc(100%-6px)_50%,100%_100%,0_100%)]",
   moss: "border-moss text-parchment",
 };
 

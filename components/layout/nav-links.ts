@@ -1,8 +1,9 @@
+/** Labels are dictionary keys under t.nav. */
 export const NAV_LINKS = [
-  { href: "/", label: "Acasă" },
-  { href: "/produse", label: "Produse" },
-  { href: "/despre-noi", label: "Despre noi" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", key: "home" },
+  { href: "/produse", key: "products" },
+  { href: "/despre-noi", key: "about" },
+  { href: "/contact", key: "contact" },
 ] as const;
 
 export function isActive(pathname: string, href: string): boolean {

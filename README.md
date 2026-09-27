@@ -40,6 +40,16 @@ Pentru imaginile reale, înlocuiește fișierele păstrând căile:
 
 Dacă rulezi din nou `npm run images`, placeholderele suprascriu imaginile reale (în afară de hero).
 
+## Limbi (RO / RU / EN)
+
+Selectorul de limbă din header salvează alegerea în cookie-ul `lang` (un an), iar serverul randează fiecare pagină direct în limba aleasă. Adresele paginilor sunt aceleași pentru toate limbile.
+
+- Toate textele interfeței sunt în `lib/i18n/dictionaries/`: `ro.ts` (limba implicită, definește structura), `ru.ts`, `en.ts`. TypeScript semnalează orice cheie lipsă într-o traducere.
+- Componentele de server folosesc `getDictionary()` / `getI18n()` din `lib/i18n/server.ts`; componentele client folosesc `useI18n()`.
+- O limbă nouă: adaugă codul în `lib/i18n/config.ts` și un dicționar nou în `lib/i18n/dictionaries/`.
+- Descrierile jocurilor sunt stocate pe limbi (`description.ro` / `.ru` / `.en`, tipul `LocalizedText` din `prisma/schema.prisma`). Dacă o traducere lipsește, se afișează în ordine engleza, româna, apoi rusa (`lib/localized-text.ts`). Textele complete, în toate cele trei limbi, sunt în `prisma/game-descriptions.ts`; `npm run update:descriptions` le aplică în baza de date.
+- O bază de date creată înainte de această schimbare, cu `description` ca text simplu, se convertește cu `npm run migrate:descriptions`. Migrarea e non-distructivă și poate fi rulată de mai multe ori.
+
 ## Structură
 
 - `app/`: rutele (`/`, `/produse`, `/produse/[slug]`, `/despre-noi`, `/contact`, `/cos`) și Server Actions (`app/actions.ts`)

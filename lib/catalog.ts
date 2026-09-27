@@ -1,10 +1,11 @@
+/** Genre names are stable keys stored in the database; labels live in the dictionaries (t.genres). */
 export const GENRES = [
-  { name: "Action", slug: "action", label: "Acțiune" },
-  { name: "RPG", slug: "rpg", label: "RPG" },
-  { name: "Strategy", slug: "strategy", label: "Strategie" },
-  { name: "Horror", slug: "horror", label: "Horror" },
-  { name: "Souls-like", slug: "souls-like", label: "Souls-like" },
-  { name: "Adventure", slug: "adventure", label: "Aventură" },
+  { name: "Action", slug: "action" },
+  { name: "RPG", slug: "rpg" },
+  { name: "Strategy", slug: "strategy" },
+  { name: "Horror", slug: "horror" },
+  { name: "Souls-like", slug: "souls-like" },
+  { name: "Adventure", slug: "adventure" },
 ] as const;
 
 export type GenreName = (typeof GENRES)[number]["name"];
@@ -16,23 +17,20 @@ export const PLATFORMS = [
   { name: "Nintendo Switch", short: "SWITCH" },
 ] as const;
 
-export function genreLabel(name: string): string {
-  return GENRES.find((g) => g.name === name)?.label ?? name;
-}
-
 export function platformShort(name: string): string {
   return PLATFORMS.find((p) => p.name === name)?.short ?? name;
 }
 
-export const SORT_OPTIONS = [
-  { value: "popular", label: "Popularitate" },
-  { value: "price-asc", label: "Preț crescător" },
-  { value: "price-desc", label: "Preț descrescător" },
-  { value: "newest", label: "Cele mai noi" },
-] as const;
+/** Sort keys used in the URL; labels live in the dictionaries (t.sort). */
+export const SORT_OPTIONS = ["popular", "price-asc", "price-desc", "newest"] as const;
 
-export type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+export type SortValue = (typeof SORT_OPTIONS)[number];
 
 export const PAGE_SIZE = 12;
 
 export const SITE_NAME = "The Iron Vault";
+
+/** Localised genre name, falling back to the stored key. Pass t.genres. */
+export function genreLabel(labels: Record<string, string>, name: string): string {
+  return labels[name] ?? name;
+}

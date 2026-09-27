@@ -1,8 +1,12 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/I18nProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function Loading() {
+  const { t } = useI18n();
   return (
-    <div className="mx-auto max-w-page px-4 py-12 sm:px-6 lg:px-8" aria-busy="true" aria-label="Se încarcă jocurile">
+    <div className="mx-auto max-w-page px-4 py-12 sm:px-6 lg:px-8" aria-busy="true" aria-label={t.catalog.loading}>
       <Skeleton className="h-10 w-56" />
       <Skeleton className="mt-3 h-5 w-24" />
       <div className="mt-10 grid gap-10 lg:grid-cols-[240px_1fr]">

@@ -3,20 +3,22 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { genreLabel, platformShort } from "@/lib/catalog";
 import { discountPercent, effectivePrice, formatRating, isOnSale } from "@/lib/format";
+import { getDictionary } from "@/lib/i18n/server";
 import type { GameCardData } from "@/types";
 import { AddToCartButton } from "./AddToCartButton";
 import { GameImage } from "./GameImage";
 import { Price } from "./Price";
 
 /** Catalogue card: 3:4 cover, details and an add-to-cart action. */
-export function GameCard({ game, priority }: { game: GameCardData; priority?: boolean }) {
+export async function GameCard({ game, priority }: { game: GameCardData; priority?: boolean }) {
+  const t = await getDictionary();
   const onSale = isOnSale(game);
   return (
     <Card interactive className="flex h-full flex-col">
       <Link href={`/produse/${game.slug}`} className="relative block aspect-[3/4] overflow-hidden border-b border-iron">
         <GameImage
           src={game.coverImage}
-          alt={`Coperta jocului ${game.title}`}
+          alt={t.game.coverAlt(game.title)}
           sizes="(min-width: 1536px) 340px, (min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw"
           priority={priority}
         />
@@ -32,15 +34,19 @@ export function GameCard({ game, priority }: { game: GameCardData; priority?: bo
             {game.title}
           </Link>
         </h3>
-        <p className="mt-1 text-sm text-parchment-muted">{game.genres.map(genreLabel).join(" / ")}</p>
+        <p className="mt-1 text-sm text-parchment-muted">{game.genres.map((g) => genreLabel(t.genres, g)).join(" / ")}</p>
         <div className="mt-3 flex items-center justify-between gap-3 text-sm">
           <span className="text-parchment-muted">
-            <span className="sr-only">Rating: </span>
+            <span className="sr-only">{t.game.ratingPrefix}</span>
             {formatRating(game.rating)}
           </span>
-          {game.stock > 0 ? <span className="text-parchment-muted">În stoc</span> : <span className="text-blood-text">Stoc epuizat</span>}
+          {game.stock > 0 ? (
+            <span className="text-parchment-muted">{t.game.inStock}</span>
+          ) : (
+            <span className="text-blood-text">{t.game.outOfStock}</span>
+          )}
         </div>
-        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Platforme">
+        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label={t.game.platforms}>
           {game.platforms.map((p) => (
             <li key={p}>
               <Badge>{platformShort(p)}</Badge>

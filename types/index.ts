@@ -9,6 +9,7 @@ export type GameCardData = Pick<
   | "discountPrice"
   | "discountEndsAt"
   | "coverImage"
+  | "cardImage"
   | "screenshots"
   | "genres"
   | "platforms"

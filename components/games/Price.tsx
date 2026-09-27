@@ -1,4 +1,5 @@
 import { formatPrice, isOnSale } from "@/lib/format";
+import { getDictionary } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
 type PriceProps = {
@@ -6,13 +7,14 @@ type PriceProps = {
   className?: string;
 };
 
-export function Price({ game, className }: PriceProps) {
+export async function Price({ game, className }: PriceProps) {
+  const t = await getDictionary();
   if (isOnSale(game)) {
     return (
       <p className={cn("flex flex-wrap items-baseline gap-x-3", className)}>
-        <span className="sr-only">Preț vechi:</span>
+        <span className="sr-only">{t.game.oldPrice}</span>
         <s className="text-sm text-parchment-muted">{formatPrice(game.price)}</s>
-        <span className="sr-only">Preț redus:</span>
+        <span className="sr-only">{t.game.newPrice}</span>
         <span className="text-aged-gold">{formatPrice(game.discountPrice as number)}</span>
       </p>
     );

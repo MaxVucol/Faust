@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache, type ReactNode } from "react";
 import { AddToCartButton } from "@/components/games/AddToCartButton";
 import { Gallery } from "@/components/games/Gallery";
+import { Carousel } from "@/components/games/Carousel";
 import { GameCard } from "@/components/games/GameCard";
 import { Price } from "@/components/games/Price";
 import { Tabs } from "@/components/games/Tabs";
@@ -12,14 +13,18 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { genreLabel } from "@/lib/catalog";
 import { discountPercent, effectivePrice, formatDate, formatRating, isOnSale } from "@/lib/format";
 import { getGameBySlug, getSimilarGames } from "@/lib/games";
+import { LOCALE_NAMES } from "@/lib/i18n/config";
+import { getI18n } from "@/lib/i18n/server";
+import { pickLocalized } from "@/lib/localized-text";
 
 const loadGame = cache(getGameBySlug);
 
 export async function generateMetadata({ params }: PageProps<"/produse/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const game = await loadGame(slug);
-  if (!game) return { title: "Joc negăsit" };
-  const description = game.description.split("\n")[0].slice(0, 160);
+  const { locale, t } = await getI18n();
+  if (!game) return { title: t.meta.gameNotFound };
+  const description = pickLocalized(game.description, locale)?.text.split("\n")[0].slice(0, 160);
   return {
     title: game.title,
     description,
@@ -33,18 +38,19 @@ export async function generateMetadata({ params }: PageProps<"/produse/[slug]">)
   };
 }
 
+/** Minimum / recommended values; row names come from t.game.requirementRows in the same order. */
 const REQUIREMENTS = [
-  ["Sistem de operare", "Windows 10 / 11, 64-bit", "Windows 11, 64-bit"],
-  ["Procesor", "Intel Core i5-8400 / AMD Ryzen 5 2600", "Intel Core i7-10700 / AMD Ryzen 7 3700X"],
-  ["Memorie", "12 GB RAM", "16 GB RAM"],
-  ["Placă video", "GTX 1060 6 GB / RX 580 8 GB", "RTX 3060 / RX 6700 XT"],
-  ["Spațiu", "60 GB SSD", "60 GB SSD"],
+  ["Windows 10 / 11, 64-bit", "Windows 11, 64-bit"],
+  ["Intel Core i5-8400 / AMD Ryzen 5 2600", "Intel Core i7-10700 / AMD Ryzen 7 3700X"],
+  ["12 GB RAM", "16 GB RAM"],
+  ["GTX 1060 6 GB / RX 580 8 GB", "RTX 3060 / RX 6700 XT"],
+  ["60 GB SSD", "60 GB SSD"],
 ] as const;
 
 function Detail({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[140px_1fr] gap-4 border-b border-iron py-3 sm:grid-cols-[200px_1fr]">
-      <dt className="font-display-ui text-[0.7rem] text-parchment-muted">{label}</dt>
+    <div className="grid grid-cols-[150px_1fr] items-baseline gap-4 border-b border-iron py-4 text-[1.2rem] sm:grid-cols-[240px_1fr] sm:text-[1.3rem]">
+      <dt className="font-display-ui text-[0.8rem] text-parchment-muted">{label}</dt>
       <dd>{children}</dd>
     </div>
   );
@@ -54,7 +60,10 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
   const { slug } = await params;
   const game = await loadGame(slug);
   if (!game) notFound();
-  const similar = await getSimilarGames(game.slug, game.genres);
+  const { locale, t } = await getI18n();
+  const g = t.game;
+  const description = pickLocalized(game.description, locale);
+  const similar = await getSimilarGames(game.slug, game.genres, 12);
   const onSale = isOnSale(game);
   const inStock = game.stock > 0;
 
@@ -65,26 +74,27 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
         <div aria-hidden className="absolute inset-0 -z-10 bg-black/70" />
         <div className="mx-auto grid max-w-page gap-8 px-4 py-12 sm:px-6 md:grid-cols-[260px_1fr] md:items-end lg:px-8 lg:py-16">
           <div className="relative mx-auto aspect-[3/4] w-48 border border-iron shadow-lg shadow-black/50 md:w-full">
-            <Image src={game.coverImage} alt={`Coperta jocului ${game.title}`} fill sizes="260px" className="object-cover saturate-[0.85]" />
+            <Image src={game.pageCoverImage ?? game.coverImage} alt={g.coverAlt(game.title)} fill sizes="260px" className="object-cover saturate-[0.85]" />
           </div>
           <div>
-            <p className="font-display-ui text-xs text-aged-gold">{game.genres.map(genreLabel).join(" / ")}</p>
+            <p className="font-display-ui text-xs text-aged-gold">{game.genres.map((x) => genreLabel(t.genres, x)).join(" / ")}</p>
             <h1 className="mt-3 font-display text-3xl font-semibold tracking-[0.12em] uppercase sm:text-5xl">{game.title}</h1>
-            <ul className="mt-5 flex flex-wrap gap-2" aria-label="Platforme">
+            <ul className="mt-5 flex flex-wrap gap-2" aria-label={g.platforms}>
               {game.platforms.map((p) => (
                 <li key={p}>
-                  <Badge className="text-parchment">{p}</Badge>
+                  {/* ! overrides the outline variant's muted colours (cn does not merge conflicting classes). */}
+                  <Badge className="border-[#f2ead8]! bg-black/30 text-[#f7f1e4]!">{p}</Badge>
                 </li>
               ))}
             </ul>
             <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
               <div>
-                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">Rating</dt>
+                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.rating}</dt>
                 <dd className="text-xl">{formatRating(game.rating)}</dd>
               </div>
               <div>
-                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">Disponibilitate</dt>
-                <dd className={inStock ? "text-xl" : "text-xl text-blood-text"}>{inStock ? "În stoc" : "Stoc epuizat"}</dd>
+                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.availability}</dt>
+                <dd className={inStock ? "text-xl text-stock-in" : "text-xl text-stock-out"}>{inStock ? g.inStock : g.outOfStock}</dd>
               </div>
             </dl>
             <div className="mt-8 flex flex-wrap items-center gap-6">
@@ -92,14 +102,14 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
                 {onSale && (
                   <p className="mb-1 flex items-center gap-3 text-sm text-parchment-muted">
                     <Badge variant="blood">-{discountPercent(game)}%</Badge>
-                    {game.discountEndsAt && <>Expiră la {formatDate(game.discountEndsAt)}</>}
+                    {game.discountEndsAt && g.expires(formatDate(game.discountEndsAt, locale))}
                   </p>
                 )}
                 <Price game={game} className="text-2xl" />
               </div>
               <AddToCartButton
                 size="md"
-                label="Cumpără"
+                label={g.buy}
                 inStock={inStock}
                 item={{ slug: game.slug, title: game.title, price: effectivePrice(game), coverImage: game.coverImage }}
               />
@@ -110,59 +120,68 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
 
       <div className="mx-auto max-w-page space-y-14 px-4 py-12 sm:px-6 lg:px-8">
         <section aria-labelledby="galerie">
-          <SectionHeading id="galerie" title="Galerie" />
+          <SectionHeading id="galerie" title={g.gallery} />
           <Gallery images={game.screenshots} title={game.title} />
         </section>
 
-        <section aria-label="Informații" className="max-w-4xl">
+        <section aria-label={g.infoAria} className="max-w-4xl">
           <Tabs
+            label={g.tabsAria}
             tabs={[
               {
-                label: "Descriere",
+                label: g.description,
                 content: (
-                  <div className="space-y-5 text-lg">
-                    {game.description.split("\n").filter(Boolean).map((p) => (
-                      <p key={p.slice(0, 24)}>{p}</p>
-                    ))}
+                  <div className="space-y-6 text-[1.25rem] leading-[1.75] text-parchment sm:text-[1.35rem]">
+                    {description && description.locale !== locale && (
+                      <p className="text-sm text-parchment-muted italic">{g.descriptionFallback(LOCALE_NAMES[description.locale])}</p>
+                    )}
+                    {description ? (
+                      description.text
+                        .split("\n")
+                        .filter(Boolean)
+                        .map((p) => <p key={p.slice(0, 24)}>{p}</p>)
+                    ) : (
+                      <p className="text-parchment-muted">{g.descriptionEmpty}</p>
+                    )}
                   </div>
                 ),
               },
               {
-                label: "Cerințe sistem",
+                label: g.requirements,
                 content: game.platforms.includes("PC") ? (
                   <div className="overflow-x-auto">
-                    <table className="w-full min-w-[520px] text-left text-base">
+                    <table className="w-full min-w-[600px] text-left text-[1.15rem] sm:text-[1.25rem]">
                       <thead>
-                        <tr className="border-b border-iron font-display-ui text-[0.7rem] text-parchment-muted">
-                          <th scope="col" className="py-3 pr-4 font-normal">Componentă</th>
-                          <th scope="col" className="py-3 pr-4 font-normal">Minim</th>
-                          <th scope="col" className="py-3 font-normal">Recomandat</th>
+                        <tr className="border-b border-iron font-display-ui text-[0.8rem] text-parchment-muted">
+                          <th scope="col" className="py-4 pr-5 font-normal">{g.component}</th>
+                          <th scope="col" className="py-4 pr-5 font-normal">{g.minimum}</th>
+                          <th scope="col" className="py-4 font-normal">{g.recommended}</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {REQUIREMENTS.map(([name, min, rec]) => (
-                          <tr key={name} className="border-b border-iron">
-                            <th scope="row" className="py-3 pr-4 font-normal text-parchment-muted">{name}</th>
-                            <td className="py-3 pr-4">{min}</td>
-                            <td className="py-3">{rec}</td>
+                        {REQUIREMENTS.map(([min, rec], i) => (
+                          <tr key={g.requirementRows[i]} className="border-b border-iron">
+                            <th scope="row" className="py-4 pr-5 font-normal text-parchment-muted">{g.requirementRows[i]}</th>
+                            <td className="py-4 pr-5">{min}</td>
+                            <td className="py-4">{rec}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 ) : (
-                  <p className="text-parchment-muted">Jocul este disponibil doar pe console. Nu are cerințe de sistem pentru PC.</p>
+                  <p className="text-parchment-muted">{g.consoleOnly}</p>
                 ),
               },
               {
-                label: "Detalii",
+                label: g.details,
                 content: (
                   <dl className="border-t border-iron">
-                    <Detail label="Dezvoltator">{game.developer}</Detail>
-                    <Detail label="Editor">{game.publisher}</Detail>
-                    <Detail label="Data lansării">{formatDate(game.releaseDate)}</Detail>
-                    <Detail label="Genuri">{game.genres.map(genreLabel).join(", ")}</Detail>
-                    <Detail label="Platforme">{game.platforms.join(", ")}</Detail>
+                    <Detail label={g.developer}>{game.developer}</Detail>
+                    <Detail label={g.publisher}>{game.publisher}</Detail>
+                    <Detail label={g.releaseDate}>{formatDate(game.releaseDate, locale)}</Detail>
+                    <Detail label={g.genres}>{game.genres.map((x) => genreLabel(t.genres, x)).join(", ")}</Detail>
+                    <Detail label={g.platforms}>{game.platforms.join(", ")}</Detail>
                   </dl>
                 ),
               },
@@ -172,14 +191,13 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
 
         {similar.length > 0 && (
           <section aria-labelledby="asemanatoare">
-            <SectionHeading id="asemanatoare" title="Jocuri asemănătoare" href={`/produse?genre=${encodeURIComponent(game.genres[0])}`} />
-            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <SectionHeading id="asemanatoare" title={g.similar} linkLabel={t.common.seeAll} href={`/produse?genre=${encodeURIComponent(game.genres[0])}`} />
+            {/* Slightly narrower than the page; side arrows move through the list. */}
+            <Carousel>
               {similar.map((g) => (
-                <li key={g.id}>
-                  <GameCard game={g} />
-                </li>
+                <GameCard key={g.id} game={g} />
               ))}
-            </ul>
+            </Carousel>
           </section>
         )}
       </div>

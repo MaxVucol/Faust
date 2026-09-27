@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { SearchParams } from "@/lib/games";
+import { getDictionary } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
 function hrefFor(sp: SearchParams, page: number): string {
@@ -13,16 +14,17 @@ function hrefFor(sp: SearchParams, page: number): string {
   return qs ? `/produse?${qs}` : "/produse";
 }
 
-export function Pagination({ page, pages, searchParams }: { page: number; pages: number; searchParams: SearchParams }) {
+export async function Pagination({ page, pages, searchParams }: { page: number; pages: number; searchParams: SearchParams }) {
   if (pages <= 1) return null;
+  const t = await getDictionary();
   const cell = "flex size-10 items-center justify-center border font-display text-sm transition-colors duration-300";
   return (
-    <nav aria-label="Paginare" className="mt-12">
+    <nav aria-label={t.catalog.pagination} className="mt-12">
       <ul className="flex flex-wrap justify-center gap-2">
         {page > 1 && (
           <li>
             <Link href={hrefFor(searchParams, page - 1)} className={cn(cell, "w-auto px-4 border-iron hover:border-aged-gold")}>
-              Înapoi
+              {t.catalog.prev}
             </Link>
           </li>
         )}
@@ -31,7 +33,7 @@ export function Pagination({ page, pages, searchParams }: { page: number; pages:
             <Link
               href={hrefFor(searchParams, n)}
               aria-current={n === page ? "page" : undefined}
-              aria-label={`Pagina ${n}`}
+              aria-label={t.catalog.page(n)}
               className={cn(cell, n === page ? "border-aged-gold text-aged-gold" : "border-iron text-parchment-muted hover:text-parchment")}
             >
               {n}
@@ -41,7 +43,7 @@ export function Pagination({ page, pages, searchParams }: { page: number; pages:
         {page < pages && (
           <li>
             <Link href={hrefFor(searchParams, page + 1)} className={cn(cell, "w-auto px-4 border-iron hover:border-aged-gold")}>
-              Înainte
+              {t.catalog.next}
             </Link>
           </li>
         )}

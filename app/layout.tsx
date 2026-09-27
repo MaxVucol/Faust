@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Crimson_Pro, UnifrakturCook } from "next/font/google";
+import { Cinzel, Cormorant_Garamond, Crimson_Pro, EB_Garamond, Forum, UnifrakturCook } from "next/font/google";
+import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { SITE_NAME } from "@/lib/catalog";
+import { INTL_LOCALES, OG_LOCALES } from "@/lib/i18n/config";
+import { getI18n } from "@/lib/i18n/server";
 import "./globals.css";
 
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin", "latin-ext"], weight: ["400", "600", "700"] });
@@ -12,42 +15,55 @@ const crimson = Crimson_Pro({
   weight: ["400", "500", "600"],
   style: ["normal", "italic"],
 });
+// Cinzel and Crimson Pro have no Cyrillic; these close matches fill in for Russian glyphs only.
+const forum = Forum({ variable: "--font-forum", subsets: ["cyrillic"], weight: "400" });
+const garamond = EB_Garamond({ variable: "--font-garamond", subsets: ["cyrillic"], weight: ["400", "500", "600"] });
+// High-contrast editorial serif for brand statements (has Cyrillic).
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  weight: ["500", "600"],
+});
 const unifraktur = UnifrakturCook({ variable: "--font-unifraktur", subsets: ["latin"], weight: "700" });
 
-const description =
-  "Magazin online de jocuri video pentru PC și console. Chei originale, livrare imediată și oferte săptămânale.";
-
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: `${SITE_NAME} — Jocuri video`, template: `%s — ${SITE_NAME}` },
-  description,
-  openGraph: {
-    type: "website",
-    locale: "ro_RO",
-    siteName: SITE_NAME,
-    title: SITE_NAME,
-    description,
-    images: [{ url: "/images/hero-vault.png", width: 1983, height: 793, alt: "Cavaler privind spre o fortăreață gotică, într-un peisaj montan întunecat" }],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale, t } = await getI18n();
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    title: { default: `${SITE_NAME} — ${t.meta.siteSuffix}`, template: `%s — ${SITE_NAME}` },
+    description: t.meta.description,
+    openGraph: {
+      type: "website",
+      locale: OG_LOCALES[locale],
+      siteName: SITE_NAME,
+      title: SITE_NAME,
+      description: t.meta.description,
+      images: [{ url: "/images/hero-vault.png", width: 1983, height: 793, alt: t.meta.heroAlt }],
+    },
+  };
+}
 
 export const viewport: Viewport = { themeColor: "#0E0D0B", colorScheme: "dark" };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale, t } = await getI18n();
+  const fonts = [cinzel, crimson, forum, garamond, cormorant, unifraktur].map((f) => f.variable).join(" ");
   return (
-    <html lang="ro" className={`${cinzel.variable} ${crimson.variable} ${unifraktur.variable}`}>
+    <html lang={INTL_LOCALES[locale]} className={fonts}>
       <body className="flex min-h-screen flex-col">
-        <a
-          href="#continut"
-          className="sr-only z-50 bg-blood px-4 py-2 font-display-ui text-xs focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
-        >
-          Sari la conținut
-        </a>
-        <Navbar />
-        <main id="continut" className="relative z-10 flex-1">
-          {children}
-        </main>
-        <Footer />
+        <I18nProvider locale={locale}>
+          <a
+            href="#continut"
+            className="sr-only z-50 bg-blood px-4 py-2 font-display-ui text-xs focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+          >
+            {t.common.skipToContent}
+          </a>
+          <Navbar />
+          <main id="continut" className="relative z-10 flex-1">
+            {children}
+          </main>
+          <Footer />
+        </I18nProvider>
       </body>
     </html>
   );

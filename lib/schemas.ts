@@ -1,24 +1,22 @@
 import { z } from "zod";
+import type { Dictionary } from "./i18n/dictionaries";
 
-export const CONTACT_SUBJECTS = [
-  "Întrebare despre o comandă",
-  "Problemă cu o cheie de activare",
-  "Retur sau rambursare",
-  "Colaborare",
-  "Altceva",
-] as const;
+/** Stable keys stored with each message; labels live in the dictionaries (t.contact.subjects). */
+export const CONTACT_SUBJECTS = ["order", "key", "refund", "collab", "other"] as const;
 
-export const contactSchema = z.object({
-  name: z.string().trim().min(2, "Numele trebuie să aibă cel puțin 2 caractere.").max(80, "Numele este prea lung."),
-  email: z.string().trim().pipe(z.email("Introdu o adresă de email validă.")),
-  subject: z.enum(CONTACT_SUBJECTS, "Alege un subiect din listă."),
-  message: z
-    .string()
-    .trim()
-    .min(10, "Mesajul trebuie să aibă cel puțin 10 caractere.")
-    .max(2000, "Mesajul poate avea cel mult 2000 de caractere."),
-});
+/** Schemas are built per request so validation messages come out in the visitor's language. */
+export function contactSchema(t: Dictionary) {
+  const e = t.contact.errors;
+  return z.object({
+    name: z.string().trim().min(2, e.nameMin).max(80, e.nameMax),
+    email: z.string().trim().pipe(z.email(e.email)),
+    subject: z.enum(CONTACT_SUBJECTS, e.subject),
+    message: z.string().trim().min(10, e.messageMin).max(2000, e.messageMax),
+  });
+}
 
-export const newsletterSchema = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email("Introdu o adresă de email validă.")),
-});
+export function newsletterSchema(t: Dictionary) {
+  return z.object({
+    email: z.string().trim().toLowerCase().pipe(z.email(t.contact.errors.email)),
+  });
+}
