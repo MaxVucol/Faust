@@ -23,7 +23,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function Filters({ filters }: { filters: GameFilters }) {
-  const { t } = useI18n();
+  const { t, currency } = useI18n();
   const c = t.catalog;
   const [open, setOpen] = useState(false);
 
@@ -87,7 +87,7 @@ export function Filters({ filters }: { filters: GameFilters }) {
             ))}
           </Group>
 
-          <Group title={c.price}>
+          <Group title={c.price(currency)}>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="minPrice">{c.from}</Label>

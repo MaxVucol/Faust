@@ -36,6 +36,7 @@ export const ro = {
     searchButton: "Caută",
     cart: (count: number) => `Coș (${count})`,
     language: "Limba",
+    currency: "Valută",
   },
   hero: {
     title: ["Jocuri care", "te definesc"],
@@ -113,6 +114,13 @@ export const ro = {
     "Souls-like": "Souls-like",
     Adventure: "Aventură",
   } as Record<string, string>,
+  currencies: {
+    MDL: "Leu moldovenesc",
+    RON: "Leu românesc",
+    EUR: "Euro",
+    USD: "Dolar american",
+    RUB: "Rublă rusească",
+  },
   sort: {
     popular: "Popularitate",
     "price-asc": "Preț crescător",
@@ -130,7 +138,7 @@ export const ro = {
     closeFilters: "Închide filtrele",
     genre: "Gen",
     platform: "Platformă",
-    price: "Preț (MDL)",
+    price: (currency: string) => `Preț (${currency})`,
     from: "De la",
     to: "Până la",
     minRating: "Rating minim",

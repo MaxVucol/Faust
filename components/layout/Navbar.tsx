@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { Search, ShoppingCart, X } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/lib/use-cart";
-import { LanguageSelector } from "@/components/i18n/LanguageSelector";
+import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { SITE_NAME } from "@/lib/catalog";
 import { MobileMenu } from "./MobileMenu";
@@ -55,8 +55,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-4 justify-self-end sm:gap-5">
-          <LanguageSelector className="hidden sm:block" />
-          <span aria-hidden className="hidden h-5 w-px bg-iron sm:block" />
+          <PreferencesMenu className="hidden sm:flex" />
           <button
             type="button"
             onClick={() => setSearchOpen((v) => !v)}

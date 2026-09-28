@@ -41,6 +41,7 @@ export const ru: Dictionary = {
     searchButton: "Найти",
     cart: (count: number) => `Корзина (${count})`,
     language: "Язык",
+    currency: "Валюта",
   },
   hero: {
     title: ["Игры, которые", "определяют тебя"],
@@ -117,6 +118,13 @@ export const ru: Dictionary = {
     "Souls-like": "Souls-like",
     Adventure: "Приключения",
   },
+  currencies: {
+    MDL: "Молдавский лей",
+    RON: "Румынский лей",
+    EUR: "Евро",
+    USD: "Доллар США",
+    RUB: "Российский рубль",
+  },
   sort: {
     popular: "По популярности",
     "price-asc": "Сначала дешёвые",
@@ -134,7 +142,7 @@ export const ru: Dictionary = {
     closeFilters: "Закрыть фильтры",
     genre: "Жанр",
     platform: "Платформа",
-    price: "Цена (MDL)",
+    price: (currency: string) => `Цена (${currency})`,
     from: "От",
     to: "До",
     minRating: "Минимальный рейтинг",

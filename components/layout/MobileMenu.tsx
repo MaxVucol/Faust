@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LanguageSelector } from "@/components/i18n/LanguageSelector";
+import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS, isActive } from "./nav-links";
@@ -53,7 +53,7 @@ export function MobileMenu({ pathname }: { pathname: string }) {
           className="fixed inset-0 z-50 flex flex-col bg-base px-6 py-5"
         >
           <div className="flex items-center justify-between">
-            <LanguageSelector align="left" />
+            <PreferencesMenu placement="panel" />
             <button
               type="button"
               aria-label={t.nav.closeMenu}

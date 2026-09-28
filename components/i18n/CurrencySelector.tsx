@@ -3,31 +3,31 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { HeaderDropdown } from "@/components/ui/HeaderDropdown";
-import { setLocale } from "@/lib/i18n/actions";
-import { LOCALE_NAMES, LOCALES, type Locale } from "@/lib/i18n/config";
+import { CURRENCIES, type Currency } from "@/lib/currency";
+import { setCurrency } from "@/lib/i18n/actions";
 import { useI18n } from "./I18nProvider";
 
 type Props = { open: boolean; onOpenChange: (open: boolean) => void; align?: "left" | "right" };
 
-export function LanguageSelector({ open, onOpenChange, align }: Props) {
-  const { locale, t } = useI18n();
+export function CurrencySelector({ open, onOpenChange, align }: Props) {
+  const { currency, t } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  const choose = (next: Locale) =>
+  const choose = (next: Currency) =>
     startTransition(async () => {
-      await setLocale(next);
+      await setCurrency(next);
       router.refresh();
     });
 
   return (
     <HeaderDropdown
-      value={locale}
-      options={LOCALES.map((code) => ({ value: code, label: `${code.toUpperCase()} — ${LOCALE_NAMES[code]}`, lang: code }))}
+      value={currency}
+      options={CURRENCIES.map((code) => ({ value: code, label: `${code} — ${t.currencies[code]}` }))}
       onChange={choose}
-      buttonLabel={locale.toUpperCase()}
-      ariaLabel={`${t.nav.language}: ${LOCALE_NAMES[locale]}`}
-      listLabel={t.nav.language}
+      buttonLabel={currency}
+      ariaLabel={`${t.nav.currency}: ${t.currencies[currency]}`}
+      listLabel={t.nav.currency}
       open={open}
       onOpenChange={onOpenChange}
       pending={pending}

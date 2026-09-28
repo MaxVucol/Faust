@@ -101,6 +101,7 @@ export const games: GameSeed[] = [
     developer: "Warhorse Studios",
     publisher: "Deep Silver",
     stock: 120,
+    art: { cover: "/images/games/kingdom-come-deliverance-ii/cover-v2.jpg", keyArt: "/images/games/kingdom-come-deliverance-ii/key-art-v2.jpg", card: "/images/games/kingdom-come-deliverance-ii/card.jpg" },
   },
   {
     title: "Silent Hill f",
@@ -113,7 +114,7 @@ export const games: GameSeed[] = [
     developer: "NeoBards Entertainment",
     publisher: "Konami",
     stock: 70,
-    art: { cover: "/images/games/silent-hill-f/cover-v2.jpg", keyArt: "/images/games/silent-hill-f/key-art-v2.jpg", card: "/images/games/silent-hill-f/card.jpg" },
+    art: { cover: "/images/games/silent-hill-f/cover-v2.jpg", keyArt: "/images/games/silent-hill-f/key-art-v2.jpg", card: "/images/games/silent-hill-f/card.jpg", pageCover: "/images/games/silent-hill-f/page-cover.jpg" },
   },
   {
     title: "Anno 117: Pax Romana",
@@ -139,6 +140,7 @@ export const games: GameSeed[] = [
     developer: "Kojima Productions",
     publisher: "Sony Interactive Entertainment",
     stock: 150,
+    art: { cover: "/images/games/death-stranding-2-on-the-beach/cover-v2.jpg", keyArt: "/images/games/death-stranding-2-on-the-beach/key-art-v2.jpg", card: "/images/games/death-stranding-2-on-the-beach/card.jpg", pageCover: "/images/games/death-stranding-2-on-the-beach/page-cover.jpg" },
   },
   {
     title: "Lords of the Fallen",
@@ -165,6 +167,7 @@ export const games: GameSeed[] = [
     developer: "Firaxis Games",
     publisher: "2K",
     stock: 30,
+    art: { cover: "/images/games/civilization-vii/cover-v2.jpg", keyArt: "/images/games/civilization-vii/key-art-v2.jpg", card: "/images/games/civilization-vii/card.jpg" },
   },
   {
     title: "Clair Obscur: Expedition 33",
@@ -190,6 +193,7 @@ export const games: GameSeed[] = [
     developer: "id Software",
     publisher: "Bethesda Softworks",
     stock: 90,
+    art: { cover: "/images/games/doom-the-dark-ages/cover-v2.jpg", keyArt: "/images/games/doom-the-dark-ages/key-art-v2.jpg", card: "/images/games/doom-the-dark-ages/card.jpg" },
   },
   {
     title: "Dark Souls III",
@@ -243,6 +247,7 @@ export const games: GameSeed[] = [
     developer: "Capcom",
     publisher: "Capcom",
     stock: 40,
+    art: { cover: "/images/games/monster-hunter-wilds/cover-v2.jpg", keyArt: "/images/games/monster-hunter-wilds/key-art-v3.jpg", card: "/images/games/monster-hunter-wilds/card-v2.jpg" },
   },
   {
     title: "Hogwarts Legacy",
@@ -294,6 +299,7 @@ export const games: GameSeed[] = [
     developer: "Red Hook Studios",
     publisher: "Red Hook Studios",
     stock: 50,
+    art: { cover: "/images/games/darkest-dungeon-ii/cover-v3.jpg", keyArt: "/images/games/darkest-dungeon-ii/key-art-v2.jpg", card: "/images/games/darkest-dungeon-ii/card-v2.jpg" },
   },
   {
     title: "Hollow Knight: Silksong",
@@ -306,7 +312,7 @@ export const games: GameSeed[] = [
     developer: "Team Cherry",
     publisher: "Team Cherry",
     stock: 90,
-    art: { cover: "/images/games/hollow-knight-silksong/cover-v2.jpg", keyArt: "/images/games/hollow-knight-silksong/key-art-v2.jpg", card: "/images/games/hollow-knight-silksong/card.jpg" },
+    art: { cover: "/images/games/hollow-knight-silksong/cover-v2.jpg", keyArt: "/images/games/hollow-knight-silksong/key-art-v2.jpg", card: "/images/games/hollow-knight-silksong/card.jpg", pageCover: "/images/games/hollow-knight-silksong/page-cover.jpg" },
   },
 ];
 

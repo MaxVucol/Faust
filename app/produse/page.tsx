@@ -6,7 +6,8 @@ import { SortSelect } from "@/components/games/SortSelect";
 import { Divider } from "@/components/ui/Divider";
 import { SITE_NAME } from "@/lib/catalog";
 import { parseFilters, searchGames } from "@/lib/games";
-import { getDictionary } from "@/lib/i18n/server";
+import { toMdl } from "@/lib/currency";
+import { getCurrency, getDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getDictionary();
@@ -21,7 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ProductsPage({ searchParams }: PageProps<"/produse">) {
   const sp = await searchParams;
   const filters = parseFilters(sp);
-  const [{ games, total, pages }, t] = await Promise.all([searchGames(filters), getDictionary()]);
+  const currency = await getCurrency();
+  // Filter inputs are shown in the selected currency; prices are stored in MDL.
+  const inMdl = (v: number | undefined) => (v === undefined ? undefined : toMdl(v, currency));
+  const [{ games, total, pages }, t] = await Promise.all([
+    searchGames({ ...filters, minPrice: inMdl(filters.minPrice), maxPrice: inMdl(filters.maxPrice) }),
+    getDictionary(),
+  ]);
   const c = t.catalog;
 
   return (

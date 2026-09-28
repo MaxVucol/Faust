@@ -1,10 +1,11 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
+import type { Currency } from "@/lib/currency";
 import type { Locale } from "@/lib/i18n/config";
 import { dictionaries, type Dictionary } from "@/lib/i18n/dictionaries";
 
-type I18nValue = { locale: Locale; t: Dictionary };
+type I18nValue = { locale: Locale; t: Dictionary; currency: Currency };
 
 const I18nContext = createContext<I18nValue | null>(null);
 
@@ -12,8 +13,8 @@ const I18nContext = createContext<I18nValue | null>(null);
  * Gives client components the dictionary for the locale the server rendered with.
  * Only the locale crosses the server/client boundary: dictionaries contain functions.
  */
-export function I18nProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
-  return <I18nContext.Provider value={{ locale, t: dictionaries[locale] }}>{children}</I18nContext.Provider>;
+export function I18nProvider({ locale, currency, children }: { locale: Locale; currency: Currency; children: ReactNode }) {
+  return <I18nContext.Provider value={{ locale, t: dictionaries[locale], currency }}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n(): I18nValue {

@@ -6,11 +6,11 @@ import { Minus, Plus } from "lucide-react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
-import { formatPrice } from "@/lib/format";
+import { formatMoney } from "@/lib/currency";
 import { useCart } from "@/lib/use-cart";
 
 export function CartView() {
-  const { t } = useI18n();
+  const { t, currency } = useI18n();
   const c = t.cart;
   const { items, total, setQuantity, clear } = useCart();
 
@@ -38,7 +38,7 @@ export function CartView() {
                 <Link prefetch href={`/produse/${item.slug}`} className="font-display text-sm font-semibold tracking-[0.1em] uppercase hover:text-aged-gold">
                   {item.title}
                 </Link>
-                <p className="text-sm text-aged-gold">{formatPrice(item.price)}</p>
+                <p className="text-sm text-aged-gold">{formatMoney(item.price, currency)}</p>
               </div>
               <div className="flex items-center">
                 <button
@@ -67,7 +67,7 @@ export function CartView() {
       </ul>
       <aside className="h-fit border border-iron bg-surface p-6">
         <p className="font-display-ui text-[0.7rem] text-parchment-muted">{c.total}</p>
-        <p className="mt-1 font-display text-2xl text-aged-gold">{formatPrice(total)}</p>
+        <p className="mt-1 font-display text-2xl text-aged-gold">{formatMoney(total, currency)}</p>
         <Divider className="my-6" />
         <Button className="w-full" disabled title={c.checkoutUnavailable}>
           {c.checkout}

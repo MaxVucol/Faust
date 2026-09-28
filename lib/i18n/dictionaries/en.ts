@@ -32,6 +32,7 @@ export const en: Dictionary = {
     searchButton: "Search",
     cart: (count: number) => `Cart (${count})`,
     language: "Language",
+    currency: "Currency",
   },
   hero: {
     title: ["Games that", "define you"],
@@ -108,6 +109,13 @@ export const en: Dictionary = {
     "Souls-like": "Souls-like",
     Adventure: "Adventure",
   },
+  currencies: {
+    MDL: "Moldovan leu",
+    RON: "Romanian leu",
+    EUR: "Euro",
+    USD: "US dollar",
+    RUB: "Russian rouble",
+  },
   sort: {
     popular: "Popularity",
     "price-asc": "Price: low to high",
@@ -125,7 +133,7 @@ export const en: Dictionary = {
     closeFilters: "Close filters",
     genre: "Genre",
     platform: "Platform",
-    price: "Price (MDL)",
+    price: (currency: string) => `Price (${currency})`,
     from: "From",
     to: "To",
     minRating: "Minimum rating",

@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { SITE_NAME } from "@/lib/catalog";
 import { INTL_LOCALES, OG_LOCALES } from "@/lib/i18n/config";
-import { getI18n } from "@/lib/i18n/server";
+import { getCurrency, getI18n } from "@/lib/i18n/server";
 import "./globals.css";
 
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin", "latin-ext"], weight: ["400", "600", "700"] });
@@ -45,12 +45,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = { themeColor: "#0E0D0B", colorScheme: "dark" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const { locale, t } = await getI18n();
+  const [{ locale, t }, currency] = await Promise.all([getI18n(), getCurrency()]);
   const fonts = [cinzel, forum, garamond, cormorant].map((f) => f.variable).join(" ");
   return (
     <html lang={INTL_LOCALES[locale]} className={fonts}>
       <body className="flex min-h-screen flex-col">
-        <I18nProvider locale={locale}>
+        <I18nProvider locale={locale} currency={currency}>
           <a
             href="#continut"
             className="sr-only z-50 bg-blood px-4 py-2 font-display-ui text-xs focus:not-sr-only focus:fixed focus:top-2 focus:left-2"

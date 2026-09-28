@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { cache } from "react";
+import { CURRENCY_COOKIE, DEFAULT_CURRENCY, isCurrency, type Currency } from "../currency";
 import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, type Locale } from "./config";
 import { dictionaries, type Dictionary } from "./dictionaries";
 
@@ -8,6 +9,12 @@ import { dictionaries, type Dictionary } from "./dictionaries";
 export const getLocale = cache(async (): Promise<Locale> => {
   const value = (await cookies()).get(LOCALE_COOKIE)?.value;
   return isLocale(value) ? value : DEFAULT_LOCALE;
+});
+
+/** The visitor's chosen display currency, from the cookie set by the currency selector. */
+export const getCurrency = cache(async (): Promise<Currency> => {
+  const value = (await cookies()).get(CURRENCY_COOKIE)?.value;
+  return isCurrency(value) ? value : DEFAULT_CURRENCY;
 });
 
 export async function getDictionary(): Promise<Dictionary> {
