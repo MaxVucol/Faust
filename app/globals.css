@@ -37,12 +37,52 @@
   /* Extra breakpoint for 2K screens (2000px), declared in rem so it sorts after 2xl. */
   --breakpoint-3xl: 125rem;
 
-  --font-display: var(--font-cinzel), var(--font-forum), Georgia, serif;
-  --font-body: var(--font-crimson), var(--font-garamond), Georgia, serif;
-  --font-fraktur: var(--font-unifraktur), serif;
+  /* One family for every language: EB Garamond covers Latin and Cyrillic, so RO / EN / RU match. */
+  --font-display: var(--font-garamond), Georgia, serif;
+  --font-body: var(--font-garamond), Georgia, serif;
+  /* The brand wordmark keeps its inscription face; it is Latin in every language. */
+  --font-brand: var(--font-cinzel), Georgia, serif;
   --font-editorial: var(--font-cormorant), Georgia, serif;
 
   --animate-slow-pulse: slow-pulse 2.4s ease-in-out infinite;
+
+  /* Page entrances (app/template.tsx): a short glide with a soft fade (transform + opacity only, so images stay crisp). */
+  --animate-page-from-right: page-from-right 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-page-from-left: page-from-left 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-page-rise: page-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes page-from-right {
+    from {
+      opacity: 0;
+      transform: translateX(48px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes page-from-left {
+    from {
+      opacity: 0;
+      transform: translateX(-48px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes page-rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 
   @keyframes slow-pulse {
     0%,
@@ -58,6 +98,10 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* Keep the scrollbar's space reserved so switching between short and long pages doesn't resize the fixed background. */
+    scrollbar-gutter: stable;
+    /* Pages slide in sideways; never let that spill into a horizontal scrollbar. */
+    overflow-x: clip;
   }
 
   body {
@@ -81,19 +125,6 @@
     z-index: -1;
     pointer-events: none;
     background: url("/images/background-main.jpg") center / cover no-repeat;
-  }
-
-  /*
-   * Cyrillic falls back to Forum / EB Garamond, whose letters run larger than Cinzel /
-   * Crimson Pro. Scaling fallbacks to the primary font's metrics keeps Russian text
-   * the same visual size as Romanian and English.
-   */
-  body {
-    font-size-adjust: ex-height from-font;
-  }
-
-  [class*="font-display"] {
-    font-size-adjust: cap-height from-font;
   }
 
   :focus-visible {
@@ -123,6 +154,7 @@
 
 @utility font-display-ui {
   font-family: var(--font-display);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.15em;
 }
@@ -148,4 +180,17 @@
     0 0 0 1px rgb(12 10 8 / 0.9),
     0 0 22px rgb(192 154 85 / 0.28),
     0 14px 32px rgb(0 0 0 / 0.6);
+}
+
+/*
+ * Drop cap about three lines tall, floated so the paragraph wraps around it. (initial-letter
+ * would be ideal, but Chrome only applies it to ::first-letter, not to a separate element.)
+ */
+@utility drop-cap {
+  float: left;
+  font-size: 4.9em;
+  line-height: 0.78;
+  margin: 0.06em 0.12em -0.05em 0;
+  /* The body scales fonts by x-height; decorative initials must keep their own size. */
+  font-size-adjust: none !important;
 }

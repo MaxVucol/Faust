@@ -26,8 +26,11 @@ export default async function AboutPage() {
       <header className="max-w-3xl">
         <h1 className="font-display text-3xl font-semibold tracking-[0.15em] uppercase sm:text-4xl">{a.title}</h1>
         <p className="mt-8 text-xl leading-relaxed">
-          {/* Manuscript initial: the first letter set large in fraktur, the rest of the sentence runs on. */}
-          <span aria-hidden className="float-left mt-1 mr-3 font-fraktur text-7xl leading-[0.8] text-aged-gold">
+          {/*
+            Initial spanning three lines. Always set in Forum, which covers Latin and Cyrillic, so the
+            S (RO), W (EN) and М (RU) come out in the same face and at the same size.
+          */}
+          <span aria-hidden className="drop-cap font-[family-name:var(--font-forum)] text-[4.2em]! text-aged-gold">
             {a.intro[0]}
           </span>
           <span className="sr-only">{a.intro[0]}</span>

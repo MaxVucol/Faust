@@ -38,7 +38,7 @@ export async function Footer() {
         <div>
           <Link
             href="/"
-            className="inline-flex items-center gap-3 font-display text-xl font-semibold tracking-[0.15em] whitespace-nowrap text-aged-gold uppercase"
+            className="inline-flex items-center gap-3 font-brand text-xl font-semibold tracking-[0.15em] whitespace-nowrap text-aged-gold uppercase"
           >
             <Image src="/images/logo-tv.png" alt="" width={262} height={320} unoptimized className="h-14 w-auto" />
             {SITE_NAME}

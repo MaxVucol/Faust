@@ -11,7 +11,7 @@ export async function NewsCard({ game }: { game: GameCardData }) {
   const { locale, t } = await getI18n();
   return (
     <Card interactive className="h-full">
-      <Link href={`/produse/${game.slug}`} className="block h-full">
+      <Link prefetch href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-[3/1] overflow-hidden border-b border-bronze">
           <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
         </div>

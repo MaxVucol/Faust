@@ -15,7 +15,7 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
   const onSale = isOnSale(game);
   return (
     <Card interactive className="flex h-full flex-col">
-      <Link href={`/produse/${game.slug}`} className="relative block aspect-[3/4] overflow-hidden border-b border-iron">
+      <Link prefetch href={`/produse/${game.slug}`} className="relative block aspect-[3/4] overflow-hidden border-b border-iron">
         <GameImage
           src={game.coverImage}
           alt={t.game.coverAlt(game.title)}
@@ -30,7 +30,7 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="font-display text-base font-semibold tracking-[0.1em] uppercase">
-          <Link href={`/produse/${game.slug}`} className="transition-colors duration-300 hover:text-aged-gold">
+          <Link prefetch href={`/produse/${game.slug}`} className="transition-colors duration-300 hover:text-aged-gold">
             {game.title}
           </Link>
         </h3>

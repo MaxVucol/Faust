@@ -83,7 +83,7 @@ export function LanguageSelector({ className, align = "right" }: { className?: s
               <span
                 className={cn(
                   "py-1 font-display-ui text-[0.82rem] whitespace-nowrap",
-                  code === locale ? "text-gold-light" : "text-parchment-muted",
+                  code === locale ? "text-gold-light" : "text-white",
                   itemHighlight,
                 )}
               >

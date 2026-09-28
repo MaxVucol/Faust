@@ -35,7 +35,7 @@ export function CartView() {
             </div>
             <div className="flex flex-1 flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
-                <Link href={`/produse/${item.slug}`} className="font-display text-sm font-semibold tracking-[0.1em] uppercase hover:text-aged-gold">
+                <Link prefetch href={`/produse/${item.slug}`} className="font-display text-sm font-semibold tracking-[0.1em] uppercase hover:text-aged-gold">
                   {item.title}
                 </Link>
                 <p className="text-sm text-aged-gold">{formatPrice(item.price)}</p>

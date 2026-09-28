@@ -68,6 +68,7 @@ export function MobileMenu({ pathname }: { pathname: string }) {
               {NAV_LINKS.map((link) => (
                 <li key={link.href} className="border-b border-iron">
                   <Link
+                    prefetch
                     href={link.href}
                     onClick={() => setOpen(false)}
                     className={cn(

@@ -13,7 +13,7 @@ export async function FeaturedCard({ game }: { game: GameCardData }) {
   const t = await getDictionary();
   return (
     <Card interactive className="h-full">
-      <Link href={`/produse/${game.slug}`} className="block h-full">
+      <Link prefetch href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-video overflow-hidden border-b border-bronze">
           <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 33vw, 100vw" />
           {isOnSale(game) && (

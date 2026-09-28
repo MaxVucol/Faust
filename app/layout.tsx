@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Cormorant_Garamond, Crimson_Pro, EB_Garamond, Forum, UnifrakturCook } from "next/font/google";
+import { Cinzel, Cormorant_Garamond, EB_Garamond, Forum } from "next/font/google";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
@@ -9,22 +9,21 @@ import { getI18n } from "@/lib/i18n/server";
 import "./globals.css";
 
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin", "latin-ext"], weight: ["400", "600", "700"] });
-const crimson = Crimson_Pro({
-  variable: "--font-crimson",
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600"],
+// Forum: the drop-cap initial on the About page (Latin + Cyrillic).
+const forum = Forum({ variable: "--font-forum", subsets: ["latin", "latin-ext", "cyrillic"], weight: "400" });
+// EB Garamond: the whole interface, in every language.
+const garamond = EB_Garamond({
+  variable: "--font-garamond",
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
 });
-// Cinzel and Crimson Pro have no Cyrillic; these close matches fill in for Russian glyphs only.
-const forum = Forum({ variable: "--font-forum", subsets: ["cyrillic"], weight: "400" });
-const garamond = EB_Garamond({ variable: "--font-garamond", subsets: ["cyrillic"], weight: ["400", "500", "600"] });
 // High-contrast editorial serif for brand statements (has Cyrillic).
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin", "latin-ext", "cyrillic"],
   weight: ["500", "600"],
 });
-const unifraktur = UnifrakturCook({ variable: "--font-unifraktur", subsets: ["latin"], weight: "700" });
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, t } = await getI18n();
@@ -47,7 +46,7 @@ export const viewport: Viewport = { themeColor: "#0E0D0B", colorScheme: "dark" }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const { locale, t } = await getI18n();
-  const fonts = [cinzel, crimson, forum, garamond, cormorant, unifraktur].map((f) => f.variable).join(" ");
+  const fonts = [cinzel, forum, garamond, cormorant].map((f) => f.variable).join(" ");
   return (
     <html lang={INTL_LOCALES[locale]} className={fonts}>
       <body className="flex min-h-screen flex-col">

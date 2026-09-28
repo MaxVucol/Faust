@@ -113,6 +113,7 @@ export const games: GameSeed[] = [
     developer: "NeoBards Entertainment",
     publisher: "Konami",
     stock: 70,
+    art: { cover: "/images/games/silent-hill-f/cover-v2.jpg", keyArt: "/images/games/silent-hill-f/key-art-v2.jpg", card: "/images/games/silent-hill-f/card.jpg" },
   },
   {
     title: "Anno 117: Pax Romana",
@@ -305,6 +306,7 @@ export const games: GameSeed[] = [
     developer: "Team Cherry",
     publisher: "Team Cherry",
     stock: 90,
+    art: { cover: "/images/games/hollow-knight-silksong/cover-v2.jpg", keyArt: "/images/games/hollow-knight-silksong/key-art-v2.jpg", card: "/images/games/hollow-knight-silksong/card.jpg" },
   },
 ];
 

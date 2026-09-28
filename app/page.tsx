@@ -7,6 +7,7 @@ import { Manifesto } from "@/components/home/Manifesto";
 import { NewsCard } from "@/components/home/NewsCard";
 import { NewsletterPanel } from "@/components/home/NewsletterPanel";
 import { OfferCard } from "@/components/home/OfferCard";
+import { Carousel } from "@/components/games/Carousel";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { OrnateDivider } from "@/components/ui/Ornaments";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -21,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   await connection();
   const t = await getDictionary();
-  const [featured, offers, newest] = await Promise.all([getFeaturedGames(), getWeeklyOffers(), getNewestGames()]);
+  const [featured, offers, newest] = await Promise.all([getFeaturedGames(), getWeeklyOffers(12), getNewestGames(12)]);
 
   return (
     <>
@@ -46,13 +47,11 @@ export default async function HomePage() {
           <FadeIn>
             <section aria-labelledby="oferte">
               <SectionHeading id="oferte" title={t.home.offers} href="/produse?sale=1" linkLabel={t.home.allOffers} />
-              <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <Carousel className="max-w-[92%]" loop>
                 {offers.map((game) => (
-                  <li key={game.id}>
-                    <OfferCard game={game} />
-                  </li>
+                  <OfferCard key={game.id} game={game} />
                 ))}
-              </ul>
+              </Carousel>
             </section>
           </FadeIn>
         )}
@@ -67,13 +66,11 @@ export default async function HomePage() {
         <FadeIn>
           <section aria-labelledby="noutati">
             <SectionHeading id="noutati" title={t.home.news} href="/produse?sort=newest" linkLabel={t.common.seeAll} />
-            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <Carousel className="max-w-[92%]" loop>
               {newest.map((game) => (
-                <li key={game.id}>
-                  <NewsCard game={game} />
-                </li>
+                <NewsCard key={game.id} game={game} />
               ))}
-            </ul>
+            </Carousel>
           </section>
         </FadeIn>
 
