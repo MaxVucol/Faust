@@ -11,6 +11,7 @@ const GENRE_ART: Partial<Record<string, string>> = {
   strategy: "/images/genres/strategy-v2.jpg",
   horror: "/images/genres/horror-v2.jpg",
   "souls-like": "/images/genres/souls-like-v2.jpg",
+  adventure: "/images/genres/adventure-v2.jpg",
 };
 
 export async function GenreTiles() {
