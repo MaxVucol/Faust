@@ -18,8 +18,8 @@ export async function NewsCard({ game }: { game: GameCardData }) {
       <Link prefetch href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-[3/1] overflow-hidden border-b border-bronze">
           <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
-          <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-            <DiscountBadge game={game} className="static" />
+          <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
+            <DiscountBadge game={game} inline />
             {isNewRelease(game) && <Badge variant="gold">{t.game.newBadge}</Badge>}
           </div>
         </div>

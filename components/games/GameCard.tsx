@@ -14,7 +14,7 @@ import { GameImage } from "./GameImage";
 import { GamePrice } from "./Price";
 
 /**
- * Catalogue card: cover (favourite star top-left, discount top-right), title, genres, rating and
+ * Catalogue card: cover (discount top-left, favourite star top-right), title, genres, rating and
  * stock, platforms, price, then the action. A game sold on one platform goes straight to the cart;
  * with several, the button leads to the product page to pick one, so nothing ambiguous is bought.
  */
@@ -37,8 +37,8 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
           />
         </Link>
         <FavoriteButton slug={game.slug} title={game.title} />
-        <div className="pointer-events-none absolute top-3 right-3 flex flex-col items-end gap-1.5">
-          <DiscountBadge game={game} className="static" />
+        <div className="pointer-events-none absolute top-3 left-3 flex flex-col items-start gap-1.5">
+          <DiscountBadge game={game} inline />
           {isNewRelease(game) && <Badge variant="gold">{t.game.newBadge}</Badge>}
         </div>
       </div>
