@@ -9,16 +9,18 @@ import { getI18n } from "@/lib/i18n/server";
 import { formatDate } from "@/lib/format";
 import { biggestSale, gameOffers } from "@/lib/offers";
 import type { GameCardData } from "@/types";
-import { CardArrow, MetaList } from "./CardParts";
+import { CAROUSEL_CARD_SIZES, CardArrow, MetaList } from "./CardParts";
 
 export async function OfferCard({ game }: { game: GameCardData }) {
   const { locale, t } = await getI18n();
   const sale = biggestSale(gameOffers(game));
   return (
     <Card interactive className="h-full">
-      <Link prefetch href={`/produse/${game.slug}`} className="block h-full">
+      {/* No prefetch: a carousel brings a new card into view on every swipe, and prefetching each
+          game page then costs a request and main-thread parsing mid-swipe. A tap still navigates. */}
+      <Link prefetch={false} href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-[16/7] overflow-hidden border-b border-bronze">
-          <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
+          <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes={CAROUSEL_CARD_SIZES} />
           <DiscountBadge game={game} />
         </div>
         <div className="p-4">

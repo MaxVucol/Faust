@@ -19,6 +19,8 @@ type CarouselProps = {
   mobileArrows?: boolean;
   /** On phones make each card a little narrower than the track, so the next one shows at the edge. */
   peek?: boolean;
+  /** Load and decode the images of the cards in view and the next two ahead of the swipe (see below). */
+  preloadNext?: boolean;
 };
 
 /**
@@ -30,7 +32,7 @@ type CarouselProps = {
  * end is moved over to that edge (a keyed reorder, so React moves the existing DOM node) and the
  * scroll position shifts by one card width in the same frame, so nothing visibly jumps.
  */
-export function Carousel({ children, className = "max-w-[88%]", loop = false, mobileArrows = false, peek = false }: CarouselProps) {
+export function Carousel({ children, className = "max-w-[88%]", loop = false, mobileArrows = false, peek = false, preloadNext = false }: CarouselProps) {
   const { t } = useI18n();
   const trackRef = useRef<HTMLUListElement>(null);
   // Arrow animation state: the scroll position being animated towards, and the running frame.
@@ -90,10 +92,13 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
   }, [looping]);
 
   // Decide whether to loop; if so, put the last card in front so "previous" works from the start
-  // (the view stays on the first card).
+  // (the view stays on the first card). Only with a mouse or trackpad: on touch screens the list stays
+  // a plain native scroller with a real start and end, so nothing is reordered and the scroll
+  // position is never adjusted after a swipe, which would fight the browser's own inertia and snapping.
   useLayoutEffect(() => {
     const el = trackRef.current;
     if (!el || !loop || count < 2 || looping) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     if (el.scrollWidth <= el.clientWidth + 4) return;
     setLooping(true);
     rotate(-1);
@@ -124,6 +129,52 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
       el.removeEventListener("scroll", onScroll);
     };
   }, [looping, rotate, stride]);
+
+  // Images: the cards are lazy-loaded, which in a sideways list starts a download only as a card
+  // slides in. Once the carousel nears the screen, the cards in view and the next two are loaded and
+  // decoded ahead of time, and that window follows the scroll position; cards further on stay lazy.
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el || !preloadNext) return;
+    let frame = 0;
+    const warm = () => {
+      frame = 0;
+      const w = stride();
+      if (!w) return;
+      const first = Math.max(0, Math.floor(el.scrollLeft / w));
+      const last = first + Math.ceil(el.clientWidth / w) + 1;
+      [...el.children].slice(first, last + 1).forEach((card) =>
+        card.querySelectorAll("img").forEach((img) => {
+          if (img.dataset.warm) return;
+          img.dataset.warm = "1";
+          img.loading = "eager";
+          const decode = () => img.decode().catch(() => {});
+          if (img.complete) decode();
+          else img.addEventListener("load", decode, { once: true });
+        }),
+      );
+      // Every card warmed: stop measuring on scroll.
+      if ([...el.querySelectorAll("img")].every((img) => img.dataset.warm)) el.removeEventListener("scroll", onScroll);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(warm);
+    };
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        el.addEventListener("scroll", onScroll, { passive: true });
+        warm();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      el.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [stride, preloadNext]);
 
   useEffect(() => {
     const el = trackRef.current;

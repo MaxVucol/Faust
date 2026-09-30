@@ -1,6 +1,14 @@
 import { ArrowRight } from "lucide-react";
 import { Diamond } from "@/components/ui/Ornaments";
 
+/**
+ * `sizes` for card images in the home carousels, matched to the measured card width: about 69vw on
+ * phones (one card plus the edge of the next), 36–38vw on tablets (two cards) and 19–21vw from 1024px
+ * (four cards), each rounded up slightly. With 100vw a DPR-3 phone downloaded ~1920px images for a
+ * ~300px card.
+ */
+export const CAROUSEL_CARD_SIZES = "(min-width: 1024px) 22vw, (min-width: 640px) 40vw, 70vw";
+
 /** Short labels separated by small bronze diamonds: "RPG ◆ Souls-like". */
 export function MetaList({ items }: { items: string[] }) {
   return (

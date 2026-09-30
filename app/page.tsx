@@ -51,7 +51,7 @@ export default async function HomePage() {
           <FadeIn>
             <section aria-labelledby="oferte">
               <SectionHeading id="oferte" title={t.home.offers} href="/produse?sale=1" linkLabel={t.home.allOffers} />
-              <Carousel className="max-w-[92%] sm:max-w-[calc(100%-6rem)] lg:max-w-[92%]" loop peek>
+              <Carousel className="max-w-[92%] sm:max-w-[calc(100%-6rem)] lg:max-w-[92%]" loop peek preloadNext>
                 {offers.map((game) => (
                   <OfferCard key={game.id} game={game} />
                 ))}
@@ -71,7 +71,7 @@ export default async function HomePage() {
           <FadeIn>
             <section aria-labelledby="noutati">
               <SectionHeading id="noutati" title={t.home.news} href="/produse?released=1&sort=newest" linkLabel={t.common.seeAll} />
-              <Carousel className="max-w-[92%] sm:max-w-[calc(100%-6rem)] lg:max-w-[92%]" loop peek>
+              <Carousel className="max-w-[92%] sm:max-w-[calc(100%-6rem)] lg:max-w-[92%]" loop peek preloadNext>
                 {newest.map((game) => (
                   <NewsCard key={game.id} game={game} />
                 ))}

@@ -9,15 +9,17 @@ import { formatDate, isNewRelease } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
 import { getI18n } from "@/lib/i18n/server";
 import type { GameCardData } from "@/types";
-import { CardArrow, MetaList } from "./CardParts";
+import { CAROUSEL_CARD_SIZES, CardArrow, MetaList } from "./CardParts";
 
 export async function NewsCard({ game }: { game: GameCardData }) {
   const { locale, t } = await getI18n();
   return (
     <Card interactive className="h-full">
-      <Link prefetch href={`/produse/${game.slug}`} className="block h-full">
+      {/* No prefetch: a carousel brings a new card into view on every swipe, and prefetching each
+          game page then costs a request and main-thread parsing mid-swipe. A tap still navigates. */}
+      <Link prefetch={false} href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-[3/1] overflow-hidden border-b border-bronze">
-          <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
+          <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes={CAROUSEL_CARD_SIZES} />
           <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
             <DiscountBadge game={game} inline />
             {isNewRelease(game) && <Badge variant="gold">{t.game.newBadge}</Badge>}
