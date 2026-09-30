@@ -274,6 +274,7 @@ export const games: GameSeed[] = [
     developer: "Larian Studios",
     publisher: "Larian Studios",
     stock: 100,
+    art: { cover: "/images/games/baldurs-gate-3/cover-v2.jpg" },
   },
   {
     title: "Black Myth: Wukong",
