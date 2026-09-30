@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { subscribeToNewsletter } from "@/app/actions";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
+import { Honeypot } from "@/components/ui/Honeypot";
 import { FieldError } from "@/components/ui/Input";
 import type { FormState } from "@/types";
 
@@ -24,6 +25,7 @@ export function NewsletterForm() {
   const emailErrors = state.fieldErrors?.email;
   return (
     <form action={action} noValidate className="w-full">
+      <Honeypot />
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-0">
         <label htmlFor="newsletter-email" className="sr-only">
           {t.newsletter.emailLabel}

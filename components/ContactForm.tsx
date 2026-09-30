@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { sendContactMessage } from "@/app/actions";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
+import { Honeypot } from "@/components/ui/Honeypot";
 import { FieldError, Input, Label, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { CONTACT_SUBJECTS } from "@/lib/schemas";
@@ -45,6 +46,7 @@ export function ContactForm() {
 
   return (
     <form action={action} noValidate className="space-y-6">
+      <Honeypot />
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
           <Label htmlFor="name">{c.name}</Label>

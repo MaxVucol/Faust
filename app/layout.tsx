@@ -8,6 +8,7 @@ import { SITE_NAME } from "@/lib/catalog";
 import { getFavorites } from "@/lib/favorites-server";
 import { INTL_LOCALES, OG_LOCALES } from "@/lib/i18n/config";
 import { getCurrency, getI18n } from "@/lib/i18n/server";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin", "latin-ext"], weight: ["400", "600", "700"] });
@@ -30,7 +31,7 @@ const cormorant = Cormorant_Garamond({
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, t } = await getI18n();
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    metadataBase: new URL(SITE_URL),
     title: { default: `${SITE_NAME} — ${t.meta.siteSuffix}`, template: `%s — ${SITE_NAME}` },
     description: t.meta.description,
     openGraph: {

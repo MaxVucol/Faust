@@ -72,6 +72,7 @@ export const ro = {
     submit: "Abonează-te",
     sending: "Se trimite...",
     failed: "Abonarea nu a reușit. Încearcă din nou.",
+    tooMany: "Prea multe încercări. Încearcă din nou peste câteva minute.",
     success: "Te-ai abonat. Primul mesaj sosește odată cu ofertele săptămânii.",
   },
   game: {
@@ -249,6 +250,7 @@ export const ro = {
       messageMax: "Mesajul poate avea cel mult 2000 de caractere.",
       checkFields: "Verifică câmpurile marcate.",
       sendFailed: "Mesajul nu a putut fi trimis. Încearcă din nou peste câteva minute.",
+      tooMany: "Ai trimis prea multe mesaje. Încearcă din nou peste câteva minute.",
     },
     success: "Mesajul a fost primit. Îți răspundem în cel mult o zi lucrătoare.",
     infoTitle: "Informații",

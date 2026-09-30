@@ -29,9 +29,22 @@ export function toMdl(amount: number, currency: Currency): number {
   return amount * RATES_PER_UNIT[currency];
 }
 
+/** An MDL amount in `currency`, rounded to the cent: the exact value the page shows. */
+export function convert(amountMdl: number, currency: Currency): number {
+  return Math.round(fromMdl(amountMdl, currency) * 100) / 100;
+}
+
 /** "299.99 MDL", "€15.38", "$17.14", "1428.52 ₽", "76.92 RON". */
 export function formatMoney(amountMdl: number, currency: Currency): string {
-  const v = fromMdl(amountMdl, currency).toFixed(2);
+  return formatAmount(convert(amountMdl, currency), currency);
+}
+
+/**
+ * Formats an amount that is already in `currency` (see convert). Use it for values derived from
+ * converted amounts, such as a difference, so the shown figures always add up.
+ */
+export function formatAmount(amount: number, currency: Currency): string {
+  const v = amount.toFixed(2);
   if (currency === "EUR") return `€${v}`;
   if (currency === "USD") return "$" + v;
   if (currency === "RUB") return `${v} ₽`;

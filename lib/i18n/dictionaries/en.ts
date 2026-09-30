@@ -68,6 +68,7 @@ export const en: Dictionary = {
     submit: "Subscribe",
     sending: "Sending...",
     failed: "Subscription failed. Please try again.",
+    tooMany: "Too many attempts. Please try again in a few minutes.",
     success: "You're subscribed. Your first letter arrives with this week's deals.",
   },
   game: {
@@ -244,6 +245,7 @@ export const en: Dictionary = {
       messageMax: "Your message can be at most 2000 characters long.",
       checkFields: "Please check the highlighted fields.",
       sendFailed: "Your message could not be sent. Please try again in a few minutes.",
+      tooMany: "You have sent too many messages. Please try again in a few minutes.",
     },
     success: "Your message has been received. We'll reply within one business day.",
     infoTitle: "Information",

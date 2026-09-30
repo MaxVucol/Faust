@@ -8,7 +8,7 @@ import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { lineKey } from "@/lib/cart-store";
-import { formatMoney } from "@/lib/currency";
+import { convert, formatAmount, formatMoney } from "@/lib/currency";
 import { useCart } from "@/lib/use-cart";
 
 const noop = () => () => {};
@@ -21,8 +21,13 @@ function useIsClient() {
 export function CartView() {
   const { t, currency } = useI18n();
   const c = t.cart;
-  const { items, count, subtotal, savings, total, setQuantity, clear } = useCart();
+  const { items, count, subtotal, total, setQuantity, clear } = useCart();
   const money = (v: number) => formatMoney(v, currency);
+  // Totals are converted and rounded first; the discount is their difference, so the summary
+  // always adds up in every currency.
+  const shownSubtotal = convert(subtotal, currency);
+  const shownTotal = convert(total, currency);
+  const shownSavings = Math.round((shownSubtotal - shownTotal) * 100) / 100;
   const isClient = useIsClient();
 
   // The cart lives in this browser, so the server can't render it: show its outline until it's read.
@@ -134,17 +139,17 @@ export function CartView() {
         <dl className="mt-4 space-y-2 text-base">
           <div className="flex justify-between gap-4">
             <dt className="text-parchment-muted">{c.subtotal}</dt>
-            <dd>{money(subtotal)}</dd>
+            <dd>{formatAmount(shownSubtotal, currency)}</dd>
           </div>
-          {savings > 0.004 && (
+          {shownSavings > 0 && (
             <div className="flex justify-between gap-4">
               <dt className="text-parchment-muted">{c.discount}</dt>
-              <dd className="text-blood-text">−{money(savings)}</dd>
+              <dd className="text-blood-text">−{formatAmount(shownSavings, currency)}</dd>
             </div>
           )}
           <div className="flex items-baseline justify-between gap-4 border-t border-iron pt-3">
             <dt className="font-display-ui text-[0.7rem] text-parchment-muted">{c.total}</dt>
-            <dd className="font-display text-2xl font-semibold text-gold-light">{money(total)}</dd>
+            <dd className="font-display text-2xl font-semibold text-gold-light">{formatAmount(shownTotal, currency)}</dd>
           </div>
         </dl>
         {currency !== "MDL" && <p className="mt-2 text-sm text-parchment-muted">{t.game.currencyNote}</p>}

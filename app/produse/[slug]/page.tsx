@@ -19,9 +19,9 @@ import { gameOffers } from "@/lib/offers";
 import { LOCALE_NAMES } from "@/lib/i18n/config";
 import { getI18n } from "@/lib/i18n/server";
 import { pickLocalized } from "@/lib/localized-text";
+import { absoluteUrl } from "@/lib/site";
 
 const loadGame = cache(getGameBySlug);
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export async function generateMetadata({ params }: PageProps<"/produse/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -84,13 +84,13 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
     "@context": "https://schema.org",
     "@type": "Product",
     name: game.title,
-    image: [game.coverImage, ...game.screenshots.slice(0, 3)].map((src) => new URL(src, SITE_URL).href),
+    image: [game.coverImage, ...game.screenshots.slice(0, 3)].map(absoluteUrl),
     description: description?.text.split("\n")[0],
     category: game.genres.join(", "),
     brand: { "@type": "Brand", name: game.publisher },
     offers: {
       "@type": "AggregateOffer",
-      url: new URL(`/produse/${game.slug}`, SITE_URL).href,
+      url: absoluteUrl(`/produse/${game.slug}`),
       priceCurrency: "MDL",
       lowPrice: Math.min(...prices).toFixed(2),
       highPrice: Math.max(...prices).toFixed(2),

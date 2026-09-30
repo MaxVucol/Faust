@@ -80,7 +80,10 @@ export function textSearchWhere(q: string): Prisma.GameWhereInput {
     return names.some((n) => n.toLowerCase().includes(needle));
   }).map((g) => g.name);
   const platforms = PLATFORMS.filter((p) => p.name.toLowerCase().includes(needle) || p.short.toLowerCase().includes(needle)).map((p) => p.name);
-  const or: Prisma.GameWhereInput[] = [{ title: { contains: q.trim(), mode: "insensitive" } }];
+  // On MongoDB, Prisma turns `contains` into a regular expression without escaping it, so "(" or
+  // ".*" would be read as regex syntax. Escape it: the query always matches literally.
+  const literal = q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const or: Prisma.GameWhereInput[] = [{ title: { contains: literal, mode: "insensitive" } }];
   if (genres.length) or.push({ genres: { hasSome: genres } });
   if (platforms.length) or.push({ platforms: { hasSome: platforms } });
   return { OR: or };
