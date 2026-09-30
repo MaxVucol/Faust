@@ -99,8 +99,11 @@ export async function suggestGames(q: string, take = 6): Promise<GameCardData[]>
     if (t.includes(needle)) return 3;
     return 4; // matched by genre or platform
   };
-  return found.sort((a, b) => rank(a.title) - rank(b.title) || b.rating - a.rating).slice(0, take);
+  return found.sort((a, b) => rank(a.title) - rank(b.title) || score(b.rating) - score(a.rating)).slice(0, take);
 }
+
+/** Sort key for the optional store rating: unrated games go after rated ones. */
+const score = (rating: number | null) => rating ?? -1;
 
 /** Filters that the database can apply directly (everything except price and sale). */
 function buildWhere(f: GameFilters, now: Date): Prisma.GameWhereInput {
@@ -146,12 +149,12 @@ export async function searchGames(f: GameFilters): Promise<{ games: GameCardData
   const byTitle = (a: (typeof rows)[number], b: (typeof rows)[number]) => a.game.title.localeCompare(b.game.title);
   const sorters: Record<SortValue, (a: (typeof rows)[number], b: (typeof rows)[number]) => number> = {
     // The store's featured picks first, then by rating.
-    popular: (a, b) => Number(featuredSlugs.has(b.game.slug)) - Number(featuredSlugs.has(a.game.slug)) || b.game.rating - a.game.rating || byTitle(a, b),
-    rating: (a, b) => b.game.rating - a.game.rating || byTitle(a, b),
+    popular: (a, b) => Number(featuredSlugs.has(b.game.slug)) - Number(featuredSlugs.has(a.game.slug)) || score(b.game.rating) - score(a.game.rating) || byTitle(a, b),
+    rating: (a, b) => score(b.game.rating) - score(a.game.rating) || byTitle(a, b),
     newest: (a, b) => b.game.releaseDate.getTime() - a.game.releaseDate.getTime(),
     "price-asc": (a, b) => a.price - b.price || byTitle(a, b),
     "price-desc": (a, b) => b.price - a.price || byTitle(a, b),
-    discount: (a, b) => maxDiscountPercent(b.offers, now) - maxDiscountPercent(a.offers, now) || b.game.rating - a.game.rating,
+    discount: (a, b) => maxDiscountPercent(b.offers, now) - maxDiscountPercent(a.offers, now) || score(b.game.rating) - score(a.game.rating),
   };
   filtered.sort(sorters[f.sort]);
 

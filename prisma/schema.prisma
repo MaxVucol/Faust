@@ -50,7 +50,9 @@ model Game {
   screenshots      String[]
   genres           String[]
   platforms        String[]
-  rating           Float
+  /// The store's own score (shown as "The Iron Vault rating"). Empty until the store has rated
+  /// the game; never filled with an invented number.
+  rating           Float?
   releaseDate      DateTime
   developer        String
   publisher        String

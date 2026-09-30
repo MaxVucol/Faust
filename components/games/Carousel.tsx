@@ -54,6 +54,9 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
   /** Move one card from one end to the other: 1 = first card to the back, -1 = last card to the front. */
   const rotate = useCallback(
     (dir: 1 | -1) => {
+      // Snapping would re-align the view to the same card after the reorder, on top of the shift
+      // applied below, so it is paused until the shift is done.
+      if (trackRef.current) trackRef.current.style.scrollSnapType = "none";
       pendingShift.current += -dir * stride();
       setOrder((o) => (dir === 1 ? [...o.slice(1), o[0]] : [o[o.length - 1], ...o.slice(0, -1)]));
     },
@@ -68,6 +71,8 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
     if (!el || pendingShift.current === 0) return;
     el.scrollLeft += pendingShift.current;
     pendingShift.current = 0;
+    // Resume snapping (unless an arrow glide is running; it restores snapping when it ends).
+    if (!animRef.current) el.style.scrollSnapType = "";
   }, [order]);
 
   const update = useCallback(() => {
@@ -215,7 +220,9 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
       {arrow(-1, canPrev)}
       <ul
         ref={trackRef}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        // No browser scroll anchoring: when a card is moved to the other end, the carousel shifts the
+        // view itself; anchoring would shift it a second time and start the list one card too far.
+        className="flex snap-x snap-mandatory gap-6 overflow-x-auto overscroll-x-contain [overflow-anchor:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {(order.length === count ? order : items.map((_, i) => i)).map((i) => (
           <li key={i} className="w-full shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-4.5rem)/4)]">

@@ -27,7 +27,7 @@ async function main() {
           discountPrice: Math.round(g.price * (1 - discount.percent / 100)) - 0.01,
           discountEndsAt: new Date(now + discount.days * DAY),
         }),
-        // Stagger createdAt so "Noutăți" has a stable order.
+        // Stagger createdAt so the catalogue has a stable order.
         createdAt: new Date(now - (games.length - i) * DAY),
       },
     });

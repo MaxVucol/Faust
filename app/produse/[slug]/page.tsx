@@ -129,10 +129,12 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
             <p className="font-display-ui text-xs text-aged-gold">{game.genres.map((x) => genreLabel(t.genres, x)).join(" / ")}</p>
             <h1 className="mt-3 font-display text-3xl font-semibold tracking-[0.12em] uppercase sm:text-5xl">{game.title}</h1>
             <dl className="mt-5 flex flex-wrap gap-x-10 gap-y-3">
-              <div>
-                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.ratingSource}</dt>
-                <dd className="text-xl">{formatRating(game.rating)}</dd>
-              </div>
+              {game.rating !== null && (
+                <div>
+                  <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.ratingSource}</dt>
+                  <dd className="text-xl">{formatRating(game.rating)}</dd>
+                </div>
+              )}
               <div>
                 <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.availability}</dt>
                 <dd className={inStock ? "text-xl text-stock-in" : "text-xl text-stock-out"}>{inStock ? g.inStock : g.outOfStock}</dd>

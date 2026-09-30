@@ -50,11 +50,13 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
         </h3>
         <p className="mt-1 text-sm text-parchment-muted">{game.genres.map((g) => genreLabel(t.genres, g)).join(" / ")}</p>
         <div className="mt-3 flex items-center justify-between gap-3 text-sm">
-          <span className="text-parchment-muted">
-            <span className="sr-only">{t.game.ratingPrefix}</span>
-            {formatRating(game.rating)}
-          </span>
-          {inStock ? <span className="text-stock-in">{t.game.inStock}</span> : <span className="text-blood-text">{t.game.outOfStock}</span>}
+          {game.rating !== null && (
+            <span className="text-parchment-muted">
+              <span className="sr-only">{t.game.ratingPrefix}</span>
+              {formatRating(game.rating)}
+            </span>
+          )}
+          {inStock ? <span className="ml-auto text-stock-in">{t.game.inStock}</span> : <span className="ml-auto text-blood-text">{t.game.outOfStock}</span>}
         </div>
         <ul className="mt-3 flex flex-wrap gap-1.5" aria-label={t.game.platforms}>
           {offers.map((o) => (

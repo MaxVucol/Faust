@@ -468,4 +468,228 @@ export const gameDescriptions: Record<string, DescriptionSet> = {
       "Hunts are especially good fun with friends, and every monster you defeat yields materials for ever more powerful gear. One of the year's most successful action adventures.",
     ),
   },
+  "ninja-gaiden-4": {
+    ro: j(
+      "Seria de acțiune ninja revine cu un nou erou: Yakumo, un tânăr shinobi care își croiește drum printr-un oraș cuprins de un blestem. Legendarul Ryu Hayabusa apare și el în poveste și poate fi controlat în anumite momente.",
+      "Jocul este creat împreună de Team Ninja și PlatinumGames și pune accentul pe lupte rapide și spectaculoase, în care ritmul, eschivele și combinațiile de lovituri contează la fiecare pas.",
+    ),
+    ru: j(
+      "Серия ниндзя-экшенов возвращается с новым героем — Якумо, молодым синоби, который прокладывает путь через проклятый город. Легендарный Рю Хаябуса тоже появляется в истории, и в отдельных эпизодах им можно управлять.",
+      "Игру совместно создали Team Ninja и PlatinumGames. В центре — быстрые и зрелищные бои, где на каждом шагу важны темп, уклонения и связки ударов.",
+    ),
+    en: j(
+      "The ninja action series returns with a new hero: Yakumo, a young shinobi cutting his way through a city under a curse. The legendary Ryu Hayabusa also features in the story and is playable at certain points.",
+      "Co-developed by Team Ninja and PlatinumGames, it is built around fast, spectacular combat where rhythm, evasion and combos matter at every step.",
+    ),
+  },
+  "the-outer-worlds-2": {
+    ro: j(
+      "Continuarea RPG-ului science-fiction la persoana întâi de la Obsidian Entertainment te duce într-o nouă colonie spațială, sfâșiată de facțiuni cu interese proprii.",
+      "Îți construiești personajul prin abilități, atuuri și defecte, îți alegi tovarășii de drum și iei decizii care schimbă felul în care se desfășoară povestea — totul cu umorul satiric al seriei.",
+    ),
+    ru: j(
+      "Продолжение научно-фантастической RPG от первого лица от Obsidian Entertainment отправляет вас в новую космическую колонию, раздираемую фракциями со своими интересами.",
+      "Вы развиваете героя через навыки, сильные стороны и недостатки, выбираете спутников и принимаете решения, которые меняют ход истории, — и всё это с фирменным сатирическим юмором серии.",
+    ),
+    en: j(
+      "The sequel to Obsidian Entertainment's first-person science-fiction RPG takes you to a new space colony torn between factions with agendas of their own.",
+      "Shape your character through skills, perks and flaws, pick your companions and make choices that change how the story plays out — all with the series' satirical humour.",
+    ),
+  },
+  "little-nightmares-iii": {
+    ro: j(
+      "Low și Alone, doi prieteni nedespărțiți, caută o cale de ieșire din Nowhere, un tărâm de coșmar în care fiecare încăpere ascunde o amenințare.",
+      "Aventura atmosferică se joacă în doi, în cooperare online, sau singur, alături de un partener controlat de calculator. Cei doi trebuie să rezolve împreună puzzle-uri și să supraviețuiască creaturilor care îi vânează.",
+    ),
+    ru: j(
+      "Лоу и Элоун, двое неразлучных друзей, ищут выход из Нигде — кошмарного мира, где за каждой дверью скрывается угроза.",
+      "В эту атмосферную приключенческую игру можно играть вдвоём в онлайн-кооперативе или в одиночку с напарником под управлением компьютера. Вместе героям предстоит решать головоломки и выживать среди охотящихся на них существ.",
+    ),
+    en: j(
+      "Low and Alone, two inseparable friends, search for a way out of the Nowhere, a nightmarish realm where every room hides a threat.",
+      "The atmospheric adventure can be played by two in online co-op, or solo alongside a computer-controlled partner. Together they must solve puzzles and survive the creatures hunting them.",
+    ),
+  },
+  "nioh-3": {
+    ro: j(
+      "Al treilea joc din seria de acțiune și RPG cu samurai de la Team Ninja te aruncă din nou în lupte crâncene cu yokai, demonii folclorului japonez.",
+      "Poți schimba oricând între stilul de luptă al samuraiului și cel al ninja, iar lumea se explorează acum pe zone deschise, pline de secrete și de adversari redutabili.",
+    ),
+    ru: j(
+      "Третья игра в серии самурайских экшен-RPG от Team Ninja снова бросает вас в жестокие схватки с ёкаями — демонами японского фольклора.",
+      "Между стилями боя самурая и ниндзя можно переключаться в любой момент, а мир теперь исследуется по открытым зонам, полным тайн и грозных противников.",
+    ),
+    en: j(
+      "The third game in Team Ninja's dark samurai action RPG series sends you back into brutal battles with yokai, the demons of Japanese folklore.",
+      "Switch at any moment between the Samurai and Ninja fighting styles, and explore a world now built from open fields full of secrets and formidable foes.",
+    ),
+  },
+  "code-vein-ii": {
+    ro: j(
+      "Continuarea RPG-ului de acțiune de la Bandai Namco te poartă printr-o lume post-apocaliptică, într-o poveste care se întinde peste mai multe epoci.",
+      "Explorezi alături de partenerii pe care ți-i alegi, înfrunți adversari puternici în lupte exigente și descoperi treptat misterul care leagă trecutul de prezent.",
+    ),
+    ru: j(
+      "Продолжение экшен-RPG от Bandai Namco ведёт вас через постапокалиптический мир в истории, охватывающей несколько эпох.",
+      "Вы исследуете мир вместе с выбранными напарниками, сражаетесь с сильными противниками в непростых боях и постепенно раскрываете тайну, связывающую прошлое и настоящее.",
+    ),
+    en: j(
+      "The sequel to Bandai Namco's action RPG takes you through a post-apocalyptic world, in a story that spans more than one era.",
+      "Explore alongside the partners you choose, face powerful enemies in demanding battles and gradually uncover the mystery that binds the past to the present.",
+    ),
+  },
+  "dragon-quest-vii-reimagined": {
+    ro: j(
+      "O reinterpretare a clasicului Dragon Quest VII, lansat inițial în 2000. Pornești dintr-un mic regat aflat pe singura insulă rămasă pe lume și vrei să afli de ce restul lumii a dispărut.",
+      "Îți aduni tovarășii și călătorești dincolo de țărmurile cunoscute, descoperind pas cu pas ținuturile pierdute ale trecutului, în stilul RPG-ului clasic pe ture al seriei.",
+    ),
+    ru: j(
+      "Переосмысление классической Dragon Quest VII, впервые вышедшей в 2000 году. Путешествие начинается в маленьком королевстве на единственном уцелевшем острове в мире — и герои хотят узнать, куда исчез остальной мир.",
+      "Вы собираете спутников и отправляетесь за пределы знакомых берегов, шаг за шагом открывая утраченные земли прошлого в духе классической пошаговой RPG серии.",
+    ),
+    en: j(
+      "A reimagining of the classic Dragon Quest VII, first released in 2000. You set out from a small kingdom on the only island left in the world, determined to find out why everything else has vanished.",
+      "Gather your companions and travel beyond familiar shores, uncovering the lost lands of the past one by one in the series' classic turn-based RPG style.",
+    ),
+  },
+  "crimson-desert": {
+    ro: j(
+      "O aventură de acțiune în lume deschisă, pe continentul Pywel. Îl urmezi pe Kliff în încercarea de a reconstrui facțiunea Greymane și de a salva ținutul de o amenințare tot mai apropiată.",
+      "De la sălbăticii întinse și orașe aglomerate la ruine și misteriosul Abyss, drumul se croiește prin lupte și descoperiri. Jocul este dezvoltat și publicat de Pearl Abyss.",
+    ),
+    ru: j(
+      "Приключенческий экшен в открытом мире на континенте Пайвел. Вы сопровождаете Клиффа, который пытается возродить фракцию Грейменов и спасти земли от надвигающейся угрозы.",
+      "От бескрайней дикой природы и шумных городов до руин и загадочной Бездны — путь прокладывается через сражения и открытия. Игру разработала и издала Pearl Abyss.",
+    ),
+    en: j(
+      "An open-world action adventure set on the continent of Pywel. Follow Kliff as he sets out to rebuild the Greymane faction and save the land from a looming threat.",
+      "From vast wilderness and busy cities to ruins and the mysterious Abyss, you forge your path through battles and discovery. Developed and published by Pearl Abyss.",
+    ),
+  },
+  "octopath-traveler-0": {
+    ro: j(
+      "Cel mai nou joc din seria Octopath Traveler spune o poveste despre refacere și răzbunare în jurul inelelor divine, pe tărâmul Orsterra.",
+      "Pentru prima dată în serie îți creezi propriul protagonist și îți reclădești orașul natal distrus, iar luptele pe ture și grafica HD-2D rămân semnătura seriei.",
+    ),
+    ru: j(
+      "Новейшая игра серии Octopath Traveler рассказывает историю восстановления и возмездия вокруг божественных колец в мире Орстерры.",
+      "Впервые в серии вы создаёте собственного главного героя и восстанавливаете разрушенный родной город, а пошаговые бои и графика HD-2D остаются визитной карточкой серии.",
+    ),
+    en: j(
+      "The newest Octopath Traveler game tells a story of restoration and retribution over the divine rings, across the realm of Orsterra.",
+      "For the first time in the series you create your own protagonist and rebuild your ruined home town, while turn-based battles and HD-2D visuals remain the series' signature.",
+    ),
+  },
+  "lies-of-p": {
+    ro: j(
+      "Un souls-like care întoarce pe dos povestea lui Pinocchio și o mută în decorul elegant și sumbru al epocii Belle Époque, într-un oraș cuprins de nebunie.",
+      "Ești o marionetă care trebuie să-și croiască drumul prin străzi pline de automate scăpate de sub control. Lupta este exigentă, iar armele se pot combina și personaliza.",
+    ),
+    ru: j(
+      "Соулслайк, который переворачивает историю Пиноккио и переносит её в мрачно-элегантные декорации эпохи Прекрасной эпохи, в охваченный безумием город.",
+      "Вы — марионетка, которой предстоит пробиться по улицам, полным вышедших из-под контроля автоматов. Бои требовательны, а оружие можно комбинировать и настраивать.",
+    ),
+    en: j(
+      "A soulslike that turns the story of Pinocchio on its head and sets it against the darkly elegant backdrop of the Belle Époque, in a city gripped by madness.",
+      "You are a puppet who must fight through streets full of automatons gone out of control. Combat is demanding, and weapons can be combined and customised.",
+    ),
+  },
+  "cyberpunk-2077": {
+    ro: j(
+      "Un RPG de acțiune în lume deschisă, plasat în viitorul întunecat din Night City, o megalopolă obsedată de putere, glamour și modificări corporale.",
+      "Joci în rolul lui V, un mercenar care își construiește drumul prin implanturi cibernetice, abilități și alegeri. Orașul se explorează liber, iar deciziile tale schimbă soarta celor din jur.",
+    ),
+    ru: j(
+      "Экшен-RPG с открытым миром в мрачном будущем Найт-Сити — мегаполиса, одержимого властью, гламуром и модификациями тела.",
+      "Вы играете за Ви, наёмника, чей путь определяют кибернетические импланты, навыки и выборы. Город можно свободно исследовать, а ваши решения меняют судьбы окружающих.",
+    ),
+    en: j(
+      "An open-world action RPG set in the dark future of Night City, a megalopolis obsessed with power, glamour and body modification.",
+      "You play as V, a mercenary whose path is shaped by cybernetic implants, skills and choices. The city is yours to explore, and your decisions change the fates of those around you.",
+    ),
+  },
+  "god-of-war-ragnarok": {
+    ro: j(
+      "Kratos și fiul său Atreus pornesc într-o călătorie mitică prin cele Nouă Tărâmuri, în căutarea unor răspunsuri, înainte ca Ragnarök să se abată asupra lumii.",
+      "Continuarea jocului God of War din 2018 îmbină lupte puternice cu toporul și cu lamele, explorarea unor tărâmuri nordice foarte diferite și o poveste despre tată și fiu.",
+    ),
+    ru: j(
+      "Кратос и его сын Атрей отправляются в мифическое путешествие по Девяти мирам в поисках ответов, пока на мир не обрушился Рагнарёк.",
+      "Продолжение God of War 2018 года сочетает мощные бои с топором и клинками, исследование совершенно непохожих друг на друга скандинавских миров и историю об отце и сыне.",
+    ),
+    en: j(
+      "Kratos and his son Atreus set out on a mythic journey across the Nine Realms in search of answers before Ragnarök descends on the world.",
+      "The sequel to 2018's God of War combines heavy-hitting axe and blade combat, exploration of very different Norse realms and a story of father and son.",
+    ),
+  },
+  "dead-space": {
+    ro: j(
+      "Clasicul survival horror science-fiction din 2008, reconstruit complet. Inginerul Isaac Clarke urcă la bordul navei miniere USG Ishimura și descoperă că echipajul a fost transformat în necromorfi.",
+      "Refacerea aduce grafică, sunet și gameplay îmbunătățite, dar păstrează viziunea originalului: resurse puține, coridoare întunecate și lupte în care fiecare membru tăiat contează.",
+    ),
+    ru: j(
+      "Классический научно-фантастический survival horror 2008 года, полностью воссозданный заново. Инженер Айзек Кларк поднимается на борт горнодобывающего корабля USG «Ишимура» и обнаруживает, что экипаж превратился в некроморфов.",
+      "Ремейк улучшает графику, звук и игровой процесс, но сохраняет замысел оригинала: мало ресурсов, тёмные коридоры и бои, где важна каждая отрубленная конечность.",
+    ),
+    en: j(
+      "The 2008 science-fiction survival-horror classic, completely rebuilt. Engineer Isaac Clarke boards the mining ship USG Ishimura and finds its crew transformed into necromorphs.",
+      "The remake improves visuals, audio and gameplay while staying faithful to the original's vision: scarce resources, dark corridors and fights where every severed limb counts.",
+    ),
+  },
+  "frostpunk-2": {
+    ro: j(
+      "Un joc de supraviețuire a societății, plasat la 30 de ani după viscolul apocaliptic care a devastat Pământul. Îți dezvolți și extinzi orașul într-o iarnă care nu se mai termină.",
+      "Pe lângă frig și lipsuri, trebuie să ții piept facțiunilor puternice care îți urmăresc fiecare pas în Sala Consiliului, unde legile se votează și se negociază.",
+    ),
+    ru: j(
+      "Игра о выживании общества, действие которой происходит через 30 лет после апокалиптической метели, опустошившей Землю. Вы развиваете и расширяете город посреди нескончаемой зимы.",
+      "Помимо холода и нехватки ресурсов, придётся противостоять влиятельным фракциям, которые следят за каждым вашим шагом в Зале совета, где законы голосуются и обсуждаются.",
+    ),
+    en: j(
+      "A society survival game set 30 years after an apocalyptic blizzard ravaged the Earth. Develop, expand and advance your city through a winter that never ends.",
+      "Beyond the cold and the shortages, you must face the powerful factions that watch your every step in the Council Hall, where laws are voted on and negotiated.",
+    ),
+  },
+  "total-war-warhammer-iii": {
+    ro: j(
+      "Încheierea trilogiei Total War: Warhammer. Îți aduni armatele și pătrunzi în Tărâmul Haosului, o dimensiune a ororilor în care se decide soarta lumii.",
+      "Campania pe ture, pe o hartă uriașă, se îmbină cu bătălii în timp real cu mii de soldați, iar facțiunile demonice pot fi înfrânte — sau conduse de tine.",
+    ),
+    ru: j(
+      "Завершение трилогии Total War: Warhammer. Соберите войска и шагните в Царство Хаоса — измерение кошмаров, где решится судьба мира.",
+      "Пошаговая кампания на огромной карте сочетается со сражениями в реальном времени с тысячами воинов, а демонические фракции можно победить — или возглавить.",
+    ),
+    en: j(
+      "The conclusion of the Total War: Warhammer trilogy. Rally your forces and step into the Realm of Chaos, a dimension of horrors where the fate of the world will be decided.",
+      "A turn-based campaign on a vast map meets real-time battles with thousands of soldiers, and the daemonic factions can be defeated — or led by you.",
+    ),
+  },
+  "crusader-kings-iii": {
+    ro: j(
+      "Un joc de mare strategie despre Evul Mediu, în care conduci o dinastie de-a lungul generațiilor: iubești, lupți, urzești intrigi și revendici măreția.",
+      "Moartea nu este sfârșitul, ci doar începutul: când un conducător moare, continui cu moștenitorul său, iar fiecare personaj are propria personalitate, ambiții și slăbiciuni.",
+    ),
+    ru: j(
+      "Глобальная стратегия о Средневековье, в которой вы ведёте династию через поколения: любите, сражаетесь, плетёте интриги и добиваетесь величия.",
+      "Смерть — лишь начало: когда правитель умирает, вы продолжаете за его наследника, а у каждого персонажа есть собственный характер, амбиции и слабости.",
+    ),
+    en: j(
+      "A grand strategy game about the Middle Ages in which you guide a dynasty through the generations: love, fight, scheme and claim greatness.",
+      "Death is only the beginning: when a ruler dies you carry on as their heir, and every character has their own personality, ambitions and weaknesses.",
+    ),
+  },
+  "blasphemous-2": {
+    ro: j(
+      "Penitentul se trezește din nou pentru a continua lupta fără sfârșit împotriva Miracolului, într-o lume nouă și periculoasă, plină de mistere și secrete.",
+      "O aventură de acțiune 2D în stil metroidvania, cu grafică pixel art lucrată manual și lupte brutale împotriva unor adversari monstruoși, până la ruperea ciclului.",
+    ),
+    ru: j(
+      "Кающийся вновь пробуждается, чтобы продолжить бесконечную борьбу с Чудом, в новом опасном мире, полном тайн и секретов.",
+      "Двухмерный приключенческий экшен в духе метроидвании с нарисованной вручную пиксельной графикой и жестокими боями с чудовищными противниками — вплоть до разрыва цикла.",
+    ),
+    en: j(
+      "The Penitent One awakens once again to continue the endless struggle against The Miracle, in a perilous new world full of mysteries and secrets.",
+      "A 2D metroidvania-style action adventure with hand-crafted pixel art and brutal combat against monstrous foes that stand between you and ending the cycle.",
+    ),
+  },
 };
