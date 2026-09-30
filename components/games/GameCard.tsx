@@ -12,19 +12,25 @@ import { AddToCartButton } from "./AddToCartButton";
 import { DiscountBadge } from "./DiscountBadge";
 import { GameImage } from "./GameImage";
 import { GamePrice } from "./Price";
+import { cn } from "@/lib/utils";
 
 /**
  * Catalogue card: cover (discount top-left, favourite star top-right), title, genres, rating and
  * stock, platforms, price, then the action. A game sold on one platform goes straight to the cart;
  * with several, the button leads to the product page to pick one, so nothing ambiguous is bought.
+ *
+ * `compact`: below the sm breakpoint (two cards per row) the card keeps only the cover, favourite,
+ * discount, title and price (plus "out of stock" when it applies); the whole card leads to the game.
  */
-export async function GameCard({ game, priority }: { game: GameCardData; priority?: boolean }) {
+export async function GameCard({ game, priority, compact = false }: { game: GameCardData; priority?: boolean; compact?: boolean }) {
   const t = await getDictionary();
   const offers = gameOffers(game);
   const inStock = offers.some((o) => o.stock > 0);
   // Straight to the cart only when there is exactly one version (or nothing to buy at all).
   const direct = offers.length === 1 || !inStock ? offers[0] : undefined;
   const href = `/produse/${game.slug}`;
+  // Details hidden on phones in the compact grid; unchanged from sm up.
+  const wide = compact ? { block: "hidden sm:block", flex: "hidden sm:flex" } : { block: "block", flex: "flex" };
   return (
     <Card interactive className="flex h-full flex-col">
       <div className="relative border-b border-iron">
@@ -42,14 +48,15 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
           {isNewRelease(game) && <Badge variant="gold">{t.game.newBadge}</Badge>}
         </div>
       </div>
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display text-base font-semibold tracking-[0.1em] uppercase">
+      <div className={cn("flex flex-1 flex-col", compact ? "p-3 sm:p-5" : "p-5")}>
+        <h3 className={cn("font-display font-semibold uppercase", compact ? "text-sm tracking-[0.06em] sm:text-base sm:tracking-[0.1em]" : "text-base tracking-[0.1em]")}>
           <Link prefetch href={href} className="transition-colors duration-300 hover:text-aged-gold">
             {game.title}
           </Link>
         </h3>
-        <p className="mt-1 text-sm text-parchment-muted">{game.genres.map((g) => genreLabel(t.genres, g)).join(" / ")}</p>
-        <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+        <p className={cn("mt-1 text-sm text-parchment-muted", wide.block)}>{game.genres.map((g) => genreLabel(t.genres, g)).join(" / ")}</p>
+        {compact && !inStock && <p className="mt-1 text-sm text-blood-text sm:hidden">{t.game.outOfStock}</p>}
+        <div className={cn("mt-3 items-center justify-between gap-3 text-sm", wide.flex)}>
           {game.rating !== null && (
             <span className="text-parchment-muted">
               <span className="sr-only">{t.game.ratingPrefix}</span>
@@ -58,34 +65,36 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
           )}
           {inStock ? <span className="ml-auto text-stock-in">{t.game.inStock}</span> : <span className="ml-auto text-blood-text">{t.game.outOfStock}</span>}
         </div>
-        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label={t.game.platforms}>
+        <ul className={cn("mt-3 flex-wrap gap-1.5", wide.flex)} aria-label={t.game.platforms}>
           {offers.map((o) => (
             <li key={o.platform + (o.edition ?? "")}>
               <Badge>{platformShort(o.platform)}</Badge>
             </li>
           ))}
         </ul>
-        <div className="mt-auto pt-5">
-          <GamePrice game={game} className="mb-4 text-xl" />
-          {direct ? (
-            <AddToCartButton
-              className="w-full"
-              inStock={direct.stock > 0}
-              item={{
-                slug: game.slug,
-                title: game.title,
-                platform: direct.platform,
-                edition: direct.edition,
-                price: effectivePrice(direct),
-                oldPrice: isOnSale(direct) ? direct.price : null,
-                coverImage: game.coverImage,
-              }}
-            />
-          ) : (
-            <Link href={`${href}#cumpara`} className={buttonClasses("primary", "sm", "w-full")}>
-              {t.game.choosePlatform}
-            </Link>
-          )}
+        <div className={cn("mt-auto", compact ? "pt-3 sm:pt-5" : "pt-5")}>
+          <GamePrice game={game} className={compact ? "text-base sm:mb-4 sm:text-xl" : "mb-4 text-xl"} />
+          <div className={wide.block}>
+            {direct ? (
+              <AddToCartButton
+                className="w-full"
+                inStock={direct.stock > 0}
+                item={{
+                  slug: game.slug,
+                  title: game.title,
+                  platform: direct.platform,
+                  edition: direct.edition,
+                  price: effectivePrice(direct),
+                  oldPrice: isOnSale(direct) ? direct.price : null,
+                  coverImage: game.coverImage,
+                }}
+              />
+            ) : (
+              <Link href={`${href}#cumpara`} className={buttonClasses("primary", "sm", "w-full")}>
+                {t.game.choosePlatform}
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </Card>

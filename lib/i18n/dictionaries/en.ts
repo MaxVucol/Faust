@@ -163,6 +163,8 @@ export const en: Dictionary = {
     clearAll: "Clear all",
     emptyTitle: "No games match these filters.",
     emptyText: "Try removing some filters or searching for something else.",
+    noOffersTitle: "There are no active discounts right now.",
+    noOffersText: "Every game in the catalogue is available at its regular price.",
     clearFilters: "Clear filters",
     searchChip: (q: string) => `“${q}”`,
     priceFromChip: (v: string) => `From ${v}`,

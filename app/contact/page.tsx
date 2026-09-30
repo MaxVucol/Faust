@@ -38,7 +38,8 @@ export default async function ContactPage() {
       <Divider double className="my-10" />
 
       <div className="grid gap-14 lg:grid-cols-[1fr_340px]">
-        <section aria-label={c.formAria}>
+        {/* A solid surface keeps the field labels legible over the lit edge of the background art. */}
+        <section aria-label={c.formAria} className="h-fit border border-iron bg-surface/90 p-6 sm:p-8">
           <ContactForm />
         </section>
 

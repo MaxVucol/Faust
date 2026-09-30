@@ -168,6 +168,8 @@ export const ro = {
     clearAll: "Șterge tot",
     emptyTitle: "Niciun joc nu corespunde acestor filtre.",
     emptyText: "Încearcă să elimini unele filtre sau să cauți altceva.",
+    noOffersTitle: "Nu sunt reduceri active acum.",
+    noOffersText: "Toate jocurile din catalog sunt disponibile la prețul obișnuit.",
     clearFilters: "Șterge filtrele",
     searchChip: (q: string) => `„${q}”`,
     priceFromChip: (v: string) => `De la ${v}`,

@@ -7,7 +7,7 @@ import { SortSelect } from "@/components/games/SortSelect";
 import { ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { SITE_NAME } from "@/lib/catalog";
-import { parseFilters, searchGames } from "@/lib/games";
+import { hasActiveOffers, parseFilters, searchGames } from "@/lib/games";
 import { toMdl } from "@/lib/currency";
 import { getCurrency, getDictionary } from "@/lib/i18n/server";
 
@@ -27,11 +27,14 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
   const currency = await getCurrency();
   // Filter inputs are shown in the selected currency; prices are stored in MDL.
   const inMdl = (v: number | undefined) => (v === undefined ? undefined : toMdl(v, currency));
-  const [{ games, total, pages }, t] = await Promise.all([
+  const [{ games, total, pages }, t, offers] = await Promise.all([
     searchGames({ ...filters, minPrice: inMdl(filters.minPrice), maxPrice: inMdl(filters.maxPrice) }),
     getDictionary(),
+    hasActiveOffers(),
   ]);
   const c = t.catalog;
+  // "Only discounted" with nothing on sale anywhere: say so, rather than blame the filters.
+  const noOffers = filters.sale && !offers;
 
   return (
     <div className="mx-auto max-w-page px-4 py-12 sm:px-6 lg:px-8">
@@ -56,8 +59,8 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
             <GameGrid games={games} />
           ) : (
             <div className="border border-iron bg-surface px-6 py-16 text-center">
-              <p className="font-display text-xl text-parchment">{c.emptyTitle}</p>
-              <p className="mt-2 text-parchment-muted">{c.emptyText}</p>
+              <p className="font-display text-xl text-parchment">{noOffers ? c.noOffersTitle : c.emptyTitle}</p>
+              <p className="mt-2 text-parchment-muted">{noOffers ? c.noOffersText : c.emptyText}</p>
               <ButtonLink href={clearFiltersHref(sp)} variant="ghost" className="mt-6">
                 {c.clearFilters}
               </ButtonLink>

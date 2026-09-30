@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { cache } from "react";
 import { GENRES, PAGE_SIZE, PLATFORMS, RELEASED_OPTIONS, SORT_OPTIONS, type SortValue } from "./catalog";
 import { effectivePrice } from "./format";
 import { anyOnSale, bestOffer, gameOffers, maxDiscountPercent } from "./offers";
@@ -184,6 +185,25 @@ export async function getWeeklyOffers(take = 12, exclude: string[] = []) {
     .sort((a, b) => endsAt(a) - endsAt(b))
     .slice(0, take);
 }
+
+/**
+ * Whether any game or version is on sale right now (the same test as the catalogue's "sale" filter).
+ * Links to /produse?sale=1 are shown only when it is true, so they never lead to an empty list.
+ * Cached per request: the hero and the footer both ask. The footer is on every page, so a database
+ * error only hides the links instead of failing the page.
+ */
+export const hasActiveOffers = cache(async (): Promise<boolean> => {
+  const now = new Date();
+  try {
+    const games = await prisma.game.findMany({
+      select: { price: true, discountPrice: true, discountStartsAt: true, discountEndsAt: true, variants: true, platforms: true, stock: true },
+    });
+    return games.some((g) => anyOnSale(gameOffers(g), now));
+  } catch (error) {
+    console.error("active offers check failed", error);
+    return false;
+  }
+});
 
 /** Games released in the last `months` months (never future dates), newest first. */
 export function getRecentReleases(months = 12, take = 12, exclude: string[] = []) {

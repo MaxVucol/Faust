@@ -59,6 +59,10 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
   const g = t.game;
   const description = pickLocalized(game.description, locale);
   const [similar, gallery] = await Promise.all([getSimilarGames(game.slug, game.genres, 12), galleryImages(game.slug, game.screenshots)]);
+  // The gallery is worth showing only with real screenshots: the key art alone is already the
+  // page background (and the cover is beside it).
+  const keyArt = game.screenshots[0] ?? game.coverImage;
+  const hasScreenshots = gallery.some((src) => src !== keyArt && src !== game.coverImage && src !== game.pageCoverImage);
   const now = new Date();
   const offers = gameOffers(game);
   const inStock = offers.some((o) => o.stock > 0);
@@ -107,12 +111,22 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
         // Escape "<" so a title can never close the script tag.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      <section className="relative isolate border-b border-iron">
-        <Image src={game.screenshots[0] ?? game.coverImage} alt="" fill priority sizes="100vw" className="-z-10 object-cover saturate-[0.85]" />
-        <div aria-hidden className="absolute inset-0 -z-10 bg-black/70" />
-        {/* Phones: title and rating, then the cover, then the purchase card. From md: cover on the left. */}
-        <div className="mx-auto grid max-w-page gap-8 px-4 py-10 sm:px-6 md:grid-cols-[260px_1fr] md:gap-x-10 lg:px-8 lg:py-14">
-          <header className="md:col-start-2">
+      <section className="relative isolate overflow-hidden border-b border-iron">
+        {/* The key art sets the mood without competing with the text: softened (its logo becomes a
+            shape, not letters) and darkened by a flat layer. */}
+        <Image
+          src={game.screenshots[0] ?? game.coverImage}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="-z-10 scale-110 object-cover blur-[8px] saturate-[0.85]"
+        />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-black/75" />
+        {/* Phones: title, then the cover beside rating and availability, then the purchase card, so the
+            price and button sit near the top. From md: cover on the left, everything else beside it. */}
+        <div className="mx-auto grid max-w-page grid-cols-[8rem_1fr] items-start gap-x-5 gap-y-6 px-4 py-8 sm:grid-cols-[10rem_1fr] sm:px-6 sm:py-10 md:grid-cols-[260px_1fr] md:gap-x-10 lg:px-8 lg:py-14">
+          <header className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-1">
             <Breadcrumbs
               label={t.common.breadcrumbs}
               className="mb-5"
@@ -120,38 +134,39 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
             />
             <p className="font-display-ui text-xs text-aged-gold">{game.genres.map((x) => genreLabel(t.genres, x)).join(" / ")}</p>
             <h1 className="mt-3 font-display text-3xl font-semibold tracking-[0.12em] uppercase sm:text-5xl">{game.title}</h1>
-            <dl className="mt-5 flex flex-wrap gap-x-10 gap-y-3">
-              {game.rating !== null && (
-                <div>
-                  <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.ratingSource}</dt>
-                  <dd className="text-xl">{formatRating(game.rating)}</dd>
-                </div>
-              )}
-              <div>
-                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.availability}</dt>
-                <dd className={inStock ? "text-xl text-stock-in" : "text-xl text-stock-out"}>{inStock ? g.inStock : g.outOfStock}</dd>
-              </div>
-            </dl>
           </header>
-          <div className="relative mx-auto aspect-[3/4] w-48 border border-iron shadow-lg shadow-black/50 md:col-start-1 md:row-span-2 md:row-start-1 md:w-full md:self-start">
-            <Image src={game.pageCoverImage ?? game.coverImage} alt={g.coverAlt(game.title)} fill sizes="(min-width: 768px) 260px, 192px" className="object-cover saturate-[0.85]" />
+          <div className="relative col-start-1 row-start-2 aspect-[3/4] w-full border border-iron shadow-lg shadow-black/50 md:row-span-3 md:row-start-1">
+            <Image src={game.pageCoverImage ?? game.coverImage} alt={g.coverAlt(game.title)} fill sizes="(min-width: 768px) 260px, (min-width: 640px) 160px, 128px" className="object-cover saturate-[0.85]" />
             <FavoriteButton slug={game.slug} title={game.title} />
           </div>
-          <div className="md:col-start-2 md:max-w-xl">
+          <dl className="col-start-2 row-start-2 flex flex-col gap-4 self-center md:row-start-2 md:-mt-2 md:flex-row md:flex-wrap md:gap-x-10 md:gap-y-3 md:self-start">
+            {game.rating !== null && (
+              <div>
+                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.ratingSource}</dt>
+                <dd className="text-xl">{formatRating(game.rating)}</dd>
+              </div>
+            )}
+            <div>
+              <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.availability}</dt>
+              <dd className={inStock ? "text-xl text-stock-in" : "text-xl text-stock-out"}>{inStock ? g.inStock : g.outOfStock}</dd>
+            </div>
+          </dl>
+          <div className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-3 md:max-w-xl">
             <PurchasePanel game={{ slug: game.slug, title: game.title, coverImage: game.coverImage }} offers={panelOffers} />
           </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-page space-y-14 px-4 py-12 sm:px-6 lg:px-8">
-        {gallery.length > 0 && (
+        {hasScreenshots && (
           <section aria-labelledby="galerie">
             <SectionHeading id="galerie" title={g.gallery} />
             <Gallery images={gallery} title={game.title} />
           </section>
         )}
 
-        <section aria-label={g.infoAria} className="max-w-4xl">
+        {/* A solid surface keeps the long text legible over the lit edges of the background art. */}
+        <section aria-label={g.infoAria} className="max-w-4xl border border-iron bg-surface/90 px-5 py-2 sm:px-8 sm:py-4">
           <Tabs
             label={g.tabsAria}
             tabs={[

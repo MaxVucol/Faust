@@ -172,6 +172,8 @@ export const ru: Dictionary = {
     clearAll: "Сбросить всё",
     emptyTitle: "Нет игр, подходящих под эти фильтры.",
     emptyText: "Попробуйте убрать часть фильтров или поискать что-то другое.",
+    noOffersTitle: "Сейчас нет действующих скидок.",
+    noOffersText: "Все игры каталога доступны по обычной цене.",
     clearFilters: "Сбросить фильтры",
     searchChip: (q: string) => `«${q}»`,
     priceFromChip: (v: string) => `От ${v}`,

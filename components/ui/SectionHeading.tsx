@@ -6,14 +6,15 @@ type SectionHeadingProps = { title: string; href?: string; linkLabel?: string; i
 
 export function SectionHeading({ title, href, linkLabel, id }: SectionHeadingProps) {
   return (
-    <div className="mb-7 flex items-center justify-between gap-6">
-      <h2 id={id} className="flex min-w-0 items-center gap-3">
+    // Narrow screens: the title keeps its line and the link wraps below it when both don't fit.
+    <div className="mb-7 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 sm:flex-nowrap">
+      <h2 id={id} className="flex max-w-full flex-none items-center gap-3 sm:min-w-0 sm:flex-initial">
         <span aria-hidden className="flex items-center gap-1">
           <span className="h-3 w-px bg-gold-dark" />
           <Diamond className="size-2 border border-gold-light" />
           <span className="h-3 w-px bg-gold-dark" />
         </span>
-        <span className="text-gold font-display text-xl font-semibold tracking-[0.14em] uppercase sm:text-2xl">{title}</span>
+        <span className="text-gold font-display text-xl font-semibold tracking-[0.1em] uppercase sm:text-2xl sm:tracking-[0.14em]">{title}</span>
       </h2>
       {/* Engraved rule held by a diamond at its centre. */}
       <span aria-hidden className="hidden flex-1 items-center gap-2 sm:flex">

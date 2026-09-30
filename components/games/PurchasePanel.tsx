@@ -50,7 +50,7 @@ export function PurchasePanel({ game, offers }: PurchasePanelProps) {
   ];
 
   return (
-    <div id="cumpara" className="scroll-mt-28 border border-gold-dark/60 bg-black/55 p-5 sm:p-6">
+    <div id="cumpara" className="scroll-mt-28 border border-gold-dark/60 bg-[#0a0907]/80 p-5 sm:p-6">
       <fieldset>
         <legend id={groupId} className="mb-3 font-display-ui text-[0.7rem] text-parchment-muted">
           {offers.length > 1 ? g.choosePlatform : g.platform}

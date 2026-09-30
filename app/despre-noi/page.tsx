@@ -33,7 +33,8 @@ export default async function AboutPage() {
   ];
   return (
     <div className="mx-auto max-w-page px-4 py-14 sm:px-6 lg:px-8">
-      <header className="max-w-3xl">
+      {/* Solid surfaces keep the reading columns legible over the lit edges of the background art. */}
+      <header className="max-w-3xl border border-iron bg-surface/90 p-6 sm:p-8">
         <h1 className="font-display text-3xl font-semibold tracking-[0.15em] uppercase sm:text-4xl">{a.title}</h1>
         <p className="mt-8 text-xl leading-relaxed">
           {/*
@@ -52,11 +53,11 @@ export default async function AboutPage() {
       <Divider double className="my-14" />
 
       <FadeIn>
-        <section aria-labelledby="poveste" className="max-w-3xl">
+        <section aria-labelledby="poveste" className="max-w-3xl border border-iron bg-surface/90 p-6 sm:p-8">
           <SectionHeading id="poveste" title={a.storyTitle} />
           <ol>
             {a.chapters.map((c, i) => (
-              <li key={c.year} className="border-b border-iron py-8 first:pt-2">
+              <li key={c.year} className="border-b border-iron py-8 first:pt-2 last:border-b-0 last:pb-0">
                 <p className="font-display-ui text-[0.7rem] text-parchment-muted">{c.year}</p>
                 <h3 className="mt-2 font-display text-xl font-semibold tracking-[0.12em] uppercase">
                   {a.chapter(NUMERALS[i], c.title)}

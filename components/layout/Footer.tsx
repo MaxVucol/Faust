@@ -4,6 +4,7 @@ import { Diamond } from "@/components/ui/Ornaments";
 import { SOCIAL_LINKS } from "@/components/ui/SocialIcons";
 import { SITE_NAME } from "@/lib/catalog";
 import { INFO_PAGE_ROUTES } from "@/lib/i18n/info-pages";
+import { hasActiveOffers } from "@/lib/games";
 import { getDictionary } from "@/lib/i18n/server";
 import { BUSINESS } from "@/lib/business";
 
@@ -29,7 +30,7 @@ function FooterColumn({ title, links }: { title: string; links: { href: string; 
 
 /** Mirrors the header: same near-black panel, same single gold hairline, same logo lockup. */
 export async function Footer() {
-  const t = await getDictionary();
+  const [t, offers] = await Promise.all([getDictionary(), hasActiveOffers()]);
   const l = t.footer.links;
   return (
     <footer className="relative z-10 mt-24 border-t border-gold-dark bg-[#0a0907]">
@@ -69,7 +70,8 @@ export async function Footer() {
           title={t.footer.shop}
           links={[
             { href: "/produse", label: l.games },
-            { href: "/produse?sale=1", label: l.deals },
+            // Shown only while something is on sale, so it never opens an empty list.
+            ...(offers ? [{ href: "/produse?sale=1", label: l.deals }] : []),
             { href: "/produse?released=1&sort=newest", label: l.newReleases },
             { href: "/#genuri", label: l.genres },
           ]}

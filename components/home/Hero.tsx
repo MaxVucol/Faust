@@ -2,10 +2,11 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Corners, Diamond } from "@/components/ui/Ornaments";
+import { hasActiveOffers } from "@/lib/games";
 import { getDictionary } from "@/lib/i18n/server";
 
 export async function Hero() {
-  const t = await getDictionary();
+  const [t, offers] = await Promise.all([getDictionary(), hasActiveOffers()]);
   return (
     <section aria-labelledby="hero-title" className="relative isolate border border-gold-dark glow-gold-strong">
       <Image
@@ -37,10 +38,13 @@ export async function Hero() {
               {t.hero.browse}
               <ArrowRight aria-hidden className="size-3.5" />
             </ButtonLink>
-            <ButtonLink href="/produse?sale=1" variant="glass">
-              {t.hero.offers}
-              <ArrowRight aria-hidden className="size-3.5" />
-            </ButtonLink>
+            {/* Only while something is on sale: the link would otherwise open an empty list. */}
+            {offers && (
+              <ButtonLink href="/produse?sale=1" variant="glass">
+                {t.hero.offers}
+                <ArrowRight aria-hidden className="size-3.5" />
+              </ButtonLink>
+            )}
           </div>
         </div>
       </div>

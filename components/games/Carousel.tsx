@@ -17,6 +17,8 @@ type CarouselProps = {
    * cover. Give the carousel side margins of about 2.5rem on phones so they have room.
    */
   mobileArrows?: boolean;
+  /** On phones make each card a little narrower than the track, so the next one shows at the edge. */
+  peek?: boolean;
 };
 
 /**
@@ -28,7 +30,7 @@ type CarouselProps = {
  * end is moved over to that edge (a keyed reorder, so React moves the existing DOM node) and the
  * scroll position shifts by one card width in the same frame, so nothing visibly jumps.
  */
-export function Carousel({ children, className = "max-w-[88%]", loop = false, mobileArrows = false }: CarouselProps) {
+export function Carousel({ children, className = "max-w-[88%]", loop = false, mobileArrows = false, peek = false }: CarouselProps) {
   const { t } = useI18n();
   const trackRef = useRef<HTMLUListElement>(null);
   // Arrow animation state: the scroll position being animated towards, and the running frame.
@@ -225,7 +227,10 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
         className="flex snap-x snap-mandatory gap-6 overflow-x-auto overscroll-x-contain [overflow-anchor:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {(order.length === count ? order : items.map((_, i) => i)).map((i) => (
-          <li key={i} className="w-full shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-4.5rem)/4)]">
+          <li
+            key={i}
+            className={cn("shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-4.5rem)/4)]", peek ? "w-[84%]" : "w-full")}
+          >
             {items[i]}
           </li>
         ))}
