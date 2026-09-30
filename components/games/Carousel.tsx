@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,8 @@ type CarouselProps = {
   className?: string;
   /** Endless list: after the last card the first one comes round again, in both directions. */
   loop?: boolean;
+  /** On phones (where the side arrows are hidden) show a pair of arrow buttons under the list. */
+  mobileArrows?: boolean;
 };
 
 /**
@@ -21,7 +23,7 @@ type CarouselProps = {
  * and the view is kept in the middle copy: whenever scrolling settles in an outer copy it jumps by
  * one copy width, which lands on identical cards, so the list appears to repeat forever.
  */
-export function Carousel({ children, className = "max-w-[88%]", loop = false }: CarouselProps) {
+export function Carousel({ children, className = "max-w-[88%]", loop = false, mobileArrows = false }: CarouselProps) {
   const { t } = useI18n();
   const trackRef = useRef<HTMLUListElement>(null);
   // Arrow animation state: the scroll position being animated towards, and the running frame.
@@ -197,6 +199,22 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false }: 
         )}
       </ul>
       {arrow(1, canNext)}
+      {mobileArrows && (
+        <div className="mt-4 flex justify-center gap-6 sm:hidden">
+          {([-1, 1] as const).map((dir) => (
+            <button
+              key={dir}
+              type="button"
+              onClick={() => step(dir)}
+              disabled={dir === -1 ? !canPrev : !canNext}
+              aria-label={dir === -1 ? t.game.similarPrev : t.game.similarNext}
+              className="flex size-11 items-center justify-center text-parchment-muted transition-[color,opacity] duration-300 hover:text-gold-light focus-visible:text-gold-light disabled:pointer-events-none disabled:opacity-30"
+            >
+              {dir === -1 ? <ArrowLeft className="size-5" /> : <ArrowRight className="size-5" />}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

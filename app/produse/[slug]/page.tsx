@@ -225,7 +225,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
           <section aria-labelledby="asemanatoare">
             <SectionHeading id="asemanatoare" title={g.similar} linkLabel={t.common.seeAll} href={`/produse?genre=${encodeURIComponent(game.genres[0])}`} />
             {/* Slightly narrower than the page; side arrows move through the list. */}
-            <Carousel>
+            <Carousel mobileArrows>
               {similar.map((g) => (
                 <GameCard key={g.id} game={g} />
               ))}
