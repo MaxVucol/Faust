@@ -3,13 +3,13 @@
 import Form from "next/form";
 import Link from "next/link";
 import { SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input, Label } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { GENRES, PLATFORMS, genreLabel } from "@/lib/catalog";
+import { GENRES, PLATFORMS, RELEASED_OPTIONS, genreLabel } from "@/lib/catalog";
 import type { GameFilters } from "@/lib/games";
 import { cn } from "@/lib/utils";
 
@@ -26,32 +26,61 @@ export function Filters({ filters }: { filters: GameFilters }) {
   const { t, currency } = useI18n();
   const c = t.catalog;
   const [open, setOpen] = useState(false);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const active =
+    filters.genres.length +
+    filters.platforms.length +
+    Number(filters.minPrice !== undefined) +
+    Number(filters.maxPrice !== undefined) +
+    Number(filters.minRating !== undefined) +
+    Number(filters.releasedYears !== undefined) +
+    Number(filters.sale);
 
+  const close = () => {
+    setOpen(false);
+    openerRef.current?.focus();
+  };
+
+  // Phones: the panel is a full-screen dialog. Focus moves into it, the page behind doesn't scroll,
+  // Escape closes it and focus returns to the "Filters" button.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        openerRef.current?.focus();
+      }
+    };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   return (
     <>
-      <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setOpen(true)} aria-controls="filtre" aria-expanded={open}>
+      <Button ref={openerRef} variant="ghost" size="sm" className="lg:hidden" onClick={() => setOpen(true)} aria-controls="filtre" aria-expanded={open}>
         <SlidersHorizontal aria-hidden className="size-4" />
-        {c.filters}
+        {active > 0 ? c.filtersCount(active) : c.filters}
       </Button>
 
       <aside
         id="filtre"
         aria-label={c.filters}
+        role={open ? "dialog" : undefined}
+        aria-modal={open ? true : undefined}
         className={cn(
           open ? "fixed inset-0 z-50 block overflow-y-auto bg-base px-6 py-6" : "hidden",
           "lg:static lg:z-auto lg:block lg:overflow-visible lg:bg-transparent lg:p-0",
         )}
       >
         <div className="mb-6 flex items-center justify-between lg:hidden">
-          <p className="font-display text-xl tracking-[0.15em] uppercase">{c.filters}</p>
-          <button type="button" aria-label={c.closeFilters} onClick={() => setOpen(false)} className="text-parchment-muted">
+          <p className="font-display text-xl tracking-[0.15em] uppercase">{active > 0 ? c.filtersCount(active) : c.filters}</p>
+          <button ref={closeRef} type="button" aria-label={c.closeFilters} onClick={close} className="flex size-11 items-center justify-center text-parchment-muted hover:text-parchment">
             <X className="size-6" />
           </button>
         </div>
@@ -114,6 +143,20 @@ export function Filters({ filters }: { filters: GameFilters }) {
             </Select>
           </Group>
 
+          <Group title={c.released}>
+            <Label htmlFor="released" className="sr-only">
+              {c.released}
+            </Label>
+            <Select id="released" name="released" defaultValue={filters.releasedYears?.toString() ?? ""}>
+              <option value="">{c.anyTime}</option>
+              {RELEASED_OPTIONS.map((n) => (
+                <option key={n} value={n}>
+                  {c.releasedWithin(n)}
+                </option>
+              ))}
+            </Select>
+          </Group>
+
           <Group title={c.offers}>
             <Checkbox id="sale" name="sale" value="1" defaultChecked={filters.sale} label={c.onlyDiscounted} />
           </Group>
@@ -125,7 +168,7 @@ export function Filters({ filters }: { filters: GameFilters }) {
               onClick={() => setOpen(false)}
               className="py-2 text-center font-display-ui text-[0.7rem] text-parchment-muted hover:text-parchment"
             >
-              {c.reset}
+              {c.clearAll}
             </Link>
           </div>
         </Form>

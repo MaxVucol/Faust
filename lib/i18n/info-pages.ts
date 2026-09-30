@@ -58,7 +58,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
         {
           title: "Cookie-uri și stocare locală",
           body: [
-            "Folosim două cookie-uri funcționale: limba (lang) și valuta (currency) alese de tine, valabile un an.",
+            "Folosim trei cookie-uri funcționale, valabile un an: limba (lang), valuta (currency) și lista jocurilor tale favorite (favorites).",
             "Coșul de cumpărături este salvat doar în browserul tău (localStorage) și nu este trimis către server.",
             "Nu folosim cookie-uri de publicitate sau de urmărire.",
           ],
@@ -140,7 +140,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
         {
           title: "Cookie и локальное хранилище",
           body: [
-            "Мы используем два функциональных cookie: выбранный язык (lang) и валюту (currency), они хранятся один год.",
+            "Мы используем три функциональных cookie, они хранятся один год: язык (lang), валюта (currency) и список избранных игр (favorites).",
             "Корзина сохраняется только в вашем браузере (localStorage) и не отправляется на сервер.",
             "Рекламных и отслеживающих cookie мы не используем.",
           ],
@@ -222,7 +222,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
         {
           title: "Cookies and local storage",
           body: [
-            "We use two functional cookies: your chosen language (lang) and currency (currency), kept for one year.",
+            "We use three functional cookies, kept for one year: your language (lang), currency (currency) and your list of favourite games (favorites).",
             "Your cart is saved only in your browser (localStorage) and is never sent to the server.",
             "We don't use advertising or tracking cookies.",
           ],

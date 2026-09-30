@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Children, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +12,10 @@ type CarouselProps = {
   className?: string;
   /** Endless list: after the last card the first one comes round again, in both directions. */
   loop?: boolean;
-  /** On phones (where the side arrows are hidden) show a pair of arrow buttons under the list. */
+  /**
+   * On phones (where the large side arrows are hidden) show small arrows either side of the card
+   * cover. Give the carousel side margins of about 2.5rem on phones so they have room.
+   */
   mobileArrows?: boolean;
 };
 
@@ -19,9 +23,10 @@ type CarouselProps = {
  * Horizontal list of cards (1 / 2 / 4 visible by breakpoint) moved by translucent side arrows.
  * Scrolls natively (swipe on touch, snaps to whole cards).
  *
- * Without `loop` the arrows fade out at either end. With `loop` the cards are rendered three times
- * and the view is kept in the middle copy: whenever scrolling settles in an outer copy it jumps by
- * one copy width, which lands on identical cards, so the list appears to repeat forever.
+ * Without `loop` the arrows fade out at either end. With `loop` the list has no ends, yet every
+ * card is rendered exactly once: when the view gets within one card of an edge, the card at the far
+ * end is moved over to that edge (a keyed reorder, so React moves the existing DOM node) and the
+ * scroll position shifts by one card width in the same frame, so nothing visibly jumps.
  */
 export function Carousel({ children, className = "max-w-[88%]", loop = false, mobileArrows = false }: CarouselProps) {
   const { t } = useI18n();
@@ -29,18 +34,41 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
   // Arrow animation state: the scroll position being animated towards, and the running frame.
   const animRef = useRef<{ frame: number; target: number } | null>(null);
   const items = Children.toArray(children);
+  const count = items.length;
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
-  // Looping only makes sense when one copy of the list is wider than the track.
-  const [looping, setLooping] = useState(loop && items.length > 1);
-  const copies = looping ? 3 : 1;
+  // Looping only makes sense when the list is wider than the track (decided after measuring).
+  const [looping, setLooping] = useState(false);
+  // Display order as indices into `items`; rotated to keep a spare card beyond each edge.
+  const [order, setOrder] = useState<number[]>(() => items.map((_, i) => i));
+  // Scroll correction to apply once a rotation has reached the DOM.
+  const pendingShift = useRef(0);
 
-  /** Width of one full copy of the list (cards plus gaps). */
-  const copyWidth = useCallback(() => {
+  const stride = useCallback(() => {
     const el = trackRef.current;
-    if (!el) return 0;
-    return el.scrollWidth / copies;
-  }, [copies]);
+    const card = el?.querySelector("li");
+    if (!el || !card) return 0;
+    return card.getBoundingClientRect().width + (parseFloat(getComputedStyle(el).columnGap) || 0);
+  }, []);
+
+  /** Move one card from one end to the other: 1 = first card to the back, -1 = last card to the front. */
+  const rotate = useCallback(
+    (dir: 1 | -1) => {
+      pendingShift.current += -dir * stride();
+      setOrder((o) => (dir === 1 ? [...o.slice(1), o[0]] : [o[o.length - 1], ...o.slice(0, -1)]));
+    },
+    [stride],
+  );
+
+  // Keep the order valid if the number of cards changes.
+  if (order.length !== count) setOrder(items.map((_, i) => i));
+
+  useLayoutEffect(() => {
+    const el = trackRef.current;
+    if (!el || pendingShift.current === 0) return;
+    el.scrollLeft += pendingShift.current;
+    pendingShift.current = 0;
+  }, [order]);
 
   const update = useCallback(() => {
     const el = trackRef.current;
@@ -54,42 +82,41 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
     setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }, [looping]);
 
-  // Decide whether the list is long enough to loop, and start in the middle copy.
-  useEffect(() => {
+  // Decide whether to loop; if so, put the last card in front so "previous" works from the start
+  // (the view stays on the first card).
+  useLayoutEffect(() => {
     const el = trackRef.current;
-    if (!el || !loop) return;
-    const oneCopy = el.scrollWidth / copies;
-    if (looping && oneCopy <= el.clientWidth + 4) {
-      setLooping(false);
-      return;
-    }
-    if (looping) el.scrollTo({ left: oneCopy, behavior: "instant" });
-  }, [loop, looping, copies]);
+    if (!el || !loop || count < 2 || looping) return;
+    if (el.scrollWidth <= el.clientWidth + 4) return;
+    setLooping(true);
+    rotate(-1);
+  }, [loop, count, looping, rotate]);
 
-  // After each scroll settles, move back into the middle copy without any visible change.
+  // After a swipe settles near an edge, bring a card round from the other end.
   useEffect(() => {
     const el = trackRef.current;
     if (!el || !looping) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const recentre = () => {
-      if (animRef.current) return; // never shift the list mid-animation
-      const w = copyWidth();
-      if (el.scrollLeft < w * 0.5) el.scrollTo({ left: el.scrollLeft + w, behavior: "instant" });
-      else if (el.scrollLeft >= w * 1.5) el.scrollTo({ left: el.scrollLeft - w, behavior: "instant" });
+    const rebalance = () => {
+      if (animRef.current) return; // never reorder mid-animation
+      const w = stride();
+      const max = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft < w * 0.5) flushSync(() => rotate(-1));
+      else if (el.scrollLeft > max - w * 0.5) flushSync(() => rotate(1));
     };
     // `scrollend` where supported, with a debounce fallback.
     const onScroll = () => {
       clearTimeout(timer);
-      timer = setTimeout(recentre, 150);
+      timer = setTimeout(rebalance, 150);
     };
-    el.addEventListener("scrollend", recentre);
+    el.addEventListener("scrollend", rebalance);
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       clearTimeout(timer);
-      el.removeEventListener("scrollend", recentre);
+      el.removeEventListener("scrollend", rebalance);
       el.removeEventListener("scroll", onScroll);
     };
-  }, [looping, copyWidth]);
+  }, [looping, rotate, stride]);
 
   useEffect(() => {
     const el = trackRef.current;
@@ -111,19 +138,32 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
    */
   const step = (dir: 1 | -1) => {
     const el = trackRef.current;
-    const card = el?.querySelector("li");
-    if (!el || !card) return;
-    const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-    const stride = card.getBoundingClientRect().width + gap;
+    if (!el) return;
+    const w = stride();
+    if (!w) return;
 
     const running = animRef.current;
     if (running) cancelAnimationFrame(running.frame);
-    let target = (running ? running.target : el.scrollLeft) + dir * stride;
-    if (!looping) target = Math.max(0, Math.min(target, el.scrollWidth - el.clientWidth));
+    animRef.current = null;
+    el.style.scrollSnapType = "none";
+    let target = (running ? running.target : el.scrollLeft) + dir * w;
+    const max = el.scrollWidth - el.clientWidth;
+    if (looping) {
+      // Past an edge: bring a card round first; the rotation shifts the view by one card, so does the target.
+      if (target > max + 1) {
+        flushSync(() => rotate(1));
+        target -= w;
+      } else if (target < -1) {
+        flushSync(() => rotate(-1));
+        target += w;
+      }
+    } else {
+      target = Math.max(0, Math.min(target, max));
+    }
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      animRef.current = null;
       el.scrollTo({ left: target, behavior: "instant" });
+      el.style.scrollSnapType = "";
       return;
     }
 
@@ -132,7 +172,6 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
     const duration = Math.min(900, 520 + Math.abs(distance) * 0.25);
     let t0 = -1; // taken from the first frame's timestamp
     const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-    el.style.scrollSnapType = "none";
 
     const tick = (now: number) => {
       if (t0 < 0) t0 = now;
@@ -144,11 +183,6 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
       }
       animRef.current = null;
       el.style.scrollSnapType = "";
-      if (looping) {
-        const w = copyWidth();
-        if (el.scrollLeft < w * 0.5) el.scrollLeft += w;
-        else if (el.scrollLeft >= w * 1.5) el.scrollLeft -= w;
-      }
     };
     animRef.current = { frame: requestAnimationFrame(tick), target };
   };
@@ -167,12 +201,12 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
       disabled={!enabled}
       aria-label={dir === -1 ? t.game.similarPrev : t.game.similarNext}
       className={cn(
-        "absolute top-1/2 z-10 hidden -translate-y-1/2 p-2 text-white/45 transition-[color,opacity,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_8px_rgb(192_154_85/0.6)] focus-visible:text-gold-light disabled:pointer-events-none disabled:opacity-0 sm:block",
+        "absolute top-1/2 z-10 hidden -translate-y-1/2 p-1 text-white/45 xl:p-2 transition-[color,opacity,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_8px_rgb(192_154_85/0.6)] focus-visible:text-gold-light disabled:pointer-events-none disabled:opacity-0 sm:block",
         // Sit in the side margin next to the track, clear of the cards.
-        dir === -1 ? "right-full mr-1 lg:mr-4" : "left-full ml-1 lg:ml-4",
+        dir === -1 ? "right-full mr-1 lg:mr-2 xl:mr-4" : "left-full ml-1 lg:ml-2 xl:ml-4",
       )}
     >
-      {dir === -1 ? <ChevronLeft className="size-14 stroke-[1.25]" /> : <ChevronRight className="size-14 stroke-[1.25]" />}
+      {dir === -1 ? <ChevronLeft className="size-10 stroke-[1.25] xl:size-14" /> : <ChevronRight className="size-10 stroke-[1.25] xl:size-14" />}
     </button>
   );
 
@@ -183,24 +217,17 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
         ref={trackRef}
         className="flex snap-x snap-mandatory gap-6 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {Array.from({ length: copies }, (_, copy) =>
-          items.map((child, i) => (
-            <li
-              key={`${copy}-${i}`}
-              // Only the middle copy is real; the others are visual repeats for the loop, so they are
-              // hidden from screen readers and made inert (no tab stops, no duplicate links).
-              aria-hidden={copies > 1 && copy !== 1 ? true : undefined}
-              inert={copies > 1 && copy !== 1}
-              className="w-full shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-4.5rem)/4)]"
-            >
-              {child}
-            </li>
-          )),
-        )}
+        {(order.length === count ? order : items.map((_, i) => i)).map((i) => (
+          <li key={i} className="w-full shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-4.5rem)/4)]">
+            {items[i]}
+          </li>
+        ))}
       </ul>
       {arrow(1, canNext)}
       {mobileArrows && (
-        <div className="mt-4 flex justify-center gap-6 sm:hidden">
+        // Phones: one card fills the track, so this box has the size of its 3:4 cover and the arrows
+        // sit either side of it, centred on the cover, in the margin left free for them.
+        <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[3/4] sm:hidden">
           {([-1, 1] as const).map((dir) => (
             <button
               key={dir}
@@ -208,7 +235,10 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false, mo
               onClick={() => step(dir)}
               disabled={dir === -1 ? !canPrev : !canNext}
               aria-label={dir === -1 ? t.game.similarPrev : t.game.similarNext}
-              className="flex size-11 items-center justify-center text-parchment-muted transition-[color,opacity] duration-300 hover:text-gold-light focus-visible:text-gold-light disabled:pointer-events-none disabled:opacity-30"
+              className={cn(
+                "pointer-events-auto absolute top-1/2 flex h-11 w-9 -translate-y-1/2 items-center justify-center text-parchment-muted transition-[color,opacity] duration-300 hover:text-gold-light focus-visible:text-gold-light disabled:pointer-events-none disabled:opacity-30",
+                dir === -1 ? "right-full mr-1" : "left-full ml-1",
+              )}
             >
               {dir === -1 ? <ArrowLeft className="size-5" /> : <ArrowRight className="size-5" />}
             </button>

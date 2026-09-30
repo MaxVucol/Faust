@@ -20,7 +20,7 @@ async function main() {
         featured: g.featured ?? false,
         releaseDate: new Date(g.releaseDate),
         coverImage: coverPath(g.slug, art),
-        screenshots: screenshotPaths(g.slug, art),
+        screenshots: screenshotPaths(art),
         cardImage: art?.card ?? null,
         pageCoverImage: art?.pageCover ?? null,
         ...(discount && {

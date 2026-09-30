@@ -170,6 +170,11 @@ export function SearchBox({ onClose }: { onClose: () => void }) {
             ))}
           </ul>
 
+          {status === "loading" && results.length === 0 && (
+            <p role="status" className="px-4 py-5 text-parchment-muted">
+              {t.nav.searchLoading}
+            </p>
+          )}
           {status === "done" && results.length === 0 && (
             <div className="px-4 py-5" role="status">
               <p className="text-parchment">{t.nav.searchNoResults(query)}</p>

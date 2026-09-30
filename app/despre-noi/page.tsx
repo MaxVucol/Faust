@@ -3,7 +3,10 @@ import Image from "next/image";
 import { Divider } from "@/components/ui/Divider";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { SITE_NAME } from "@/lib/catalog";
+import { BUSINESS } from "@/lib/business";
+import { GENRES, PLATFORMS, SITE_NAME } from "@/lib/catalog";
+import { LOCALES } from "@/lib/i18n/config";
+import { prisma } from "@/lib/prisma";
 import { getDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,8 +22,15 @@ export async function generateMetadata(): Promise<Metadata> {
 const NUMERALS = ["I", "II", "III", "IV", "V", "VI"];
 
 export default async function AboutPage() {
-  const t = await getDictionary();
+  const [t, gameCount] = await Promise.all([getDictionary(), prisma.game.count()]);
   const a = t.about;
+  // Figures taken from the live catalogue, so they are always true.
+  const stats = [
+    { value: String(gameCount), label: a.statLabels.games },
+    { value: String(GENRES.length), label: a.statLabels.genres },
+    { value: String(PLATFORMS.length), label: a.statLabels.platforms },
+    { value: String(LOCALES.length), label: a.statLabels.languages },
+  ];
   return (
     <div className="mx-auto max-w-page px-4 py-14 sm:px-6 lg:px-8">
       <header className="max-w-3xl">
@@ -36,6 +46,7 @@ export default async function AboutPage() {
           <span className="sr-only">{a.intro[0]}</span>
           {a.intro.slice(1)}
         </p>
+        {BUSINESS.isDemo && <p className="mt-6 border-l border-gold-dark pl-3 text-sm text-parchment-muted">{t.common.demoNotice}</p>}
       </header>
 
       <Divider double className="my-14" />
@@ -97,7 +108,7 @@ export default async function AboutPage() {
         <section aria-label={a.statsAria}>
           <Divider double />
           <dl className="grid gap-10 py-12 text-center sm:grid-cols-2 lg:grid-cols-4">
-            {a.stats.map((s) => (
+            {stats.map((s) => (
               <div key={s.label} className="flex flex-col-reverse">
                 <dt className="mt-2 text-parchment-muted">{s.label}</dt>
                 <dd className="font-display text-4xl font-semibold tracking-[0.08em] text-parchment">{s.value}</dd>

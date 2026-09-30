@@ -11,7 +11,7 @@ import { Carousel } from "@/components/games/Carousel";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { OrnateDivider } from "@/components/ui/Ornaments";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { getFeaturedGames, getNewestGames, getWeeklyOffers } from "@/lib/games";
+import { getFeaturedGames, getRecentReleases, getWeeklyOffers } from "@/lib/games";
 import { getDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,7 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   await connection();
   const t = await getDictionary();
-  const [featured, offers, newest] = await Promise.all([getFeaturedGames(), getWeeklyOffers(12), getNewestGames(12)]);
+  // Each section has its own purpose, and a game appears in only one of them: featured picks first,
+  // then running sales, then games released in the last twelve months.
+  const featured = await getFeaturedGames();
+  const offers = await getWeeklyOffers(12, featured.map((g) => g.slug));
+  const newest = await getRecentReleases(12, 12, [...featured, ...offers].map((g) => g.slug));
 
   return (
     <>
@@ -47,7 +51,7 @@ export default async function HomePage() {
           <FadeIn>
             <section aria-labelledby="oferte">
               <SectionHeading id="oferte" title={t.home.offers} href="/produse?sale=1" linkLabel={t.home.allOffers} />
-              <Carousel className="max-w-[92%]" loop>
+              <Carousel className="max-w-[92%] sm:max-w-[calc(100%-6rem)] lg:max-w-[92%]" loop>
                 {offers.map((game) => (
                   <OfferCard key={game.id} game={game} />
                 ))}
@@ -63,16 +67,18 @@ export default async function HomePage() {
           </section>
         </FadeIn>
 
-        <FadeIn>
-          <section aria-labelledby="noutati">
-            <SectionHeading id="noutati" title={t.home.news} href="/produse?sort=newest" linkLabel={t.common.seeAll} />
-            <Carousel className="max-w-[92%]" loop>
-              {newest.map((game) => (
-                <NewsCard key={game.id} game={game} />
-              ))}
-            </Carousel>
-          </section>
-        </FadeIn>
+        {newest.length > 0 && (
+          <FadeIn>
+            <section aria-labelledby="noutati">
+              <SectionHeading id="noutati" title={t.home.news} href="/produse?released=1&sort=newest" linkLabel={t.common.seeAll} />
+              <Carousel className="max-w-[92%] sm:max-w-[calc(100%-6rem)] lg:max-w-[92%]" loop>
+                {newest.map((game) => (
+                  <NewsCard key={game.id} game={game} />
+                ))}
+              </Carousel>
+            </section>
+          </FadeIn>
+        )}
 
         <FadeIn>
           <Manifesto />

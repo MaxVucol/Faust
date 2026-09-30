@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
-import { GENRES, PAGE_SIZE, PLATFORMS, SORT_OPTIONS, type SortValue } from "./catalog";
-import { discountPercent, effectivePrice, isOnSale } from "./format";
+import { GENRES, PAGE_SIZE, PLATFORMS, RELEASED_OPTIONS, SORT_OPTIONS, type SortValue } from "./catalog";
+import { effectivePrice } from "./format";
+import { anyOnSale, bestOffer, gameOffers, maxDiscountPercent } from "./offers";
 import { dictionaries } from "./i18n/dictionaries";
 import { prisma } from "./prisma";
 import type { GameCardData } from "@/types";
@@ -11,7 +12,9 @@ export const cardSelect = {
   slug: true,
   price: true,
   discountPrice: true,
+  discountStartsAt: true,
   discountEndsAt: true,
+  variants: true,
   coverImage: true,
   cardImage: true,
   screenshots: true,
@@ -31,6 +34,8 @@ export type GameFilters = {
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
+  /** Released within the last N years (1 or 3). */
+  releasedYears?: number;
   sale: boolean;
   sort: SortValue;
   page: number;
@@ -56,6 +61,7 @@ export function parseFilters(sp: SearchParams): GameFilters {
     minPrice: num(sp.minPrice),
     maxPrice: num(sp.maxPrice),
     minRating: num(sp.minRating),
+    releasedYears: RELEASED_OPTIONS.find((n) => n === num(sp.released)),
     sale: first(sp.sale) === "1",
     sort: SORT_OPTIONS.includes(sort as SortValue) ? (sort as SortValue) : "popular",
     page: Math.max(1, Math.floor(num(sp.page) ?? 1)),
@@ -96,78 +102,94 @@ export async function suggestGames(q: string, take = 6): Promise<GameCardData[]>
   return found.sort((a, b) => rank(a.title) - rank(b.title) || b.rating - a.rating).slice(0, take);
 }
 
-const activeSale = (now: Date): Prisma.GameWhereInput => ({ discountEndsAt: { gt: now } });
-const noActiveSale = (now: Date): Prisma.GameWhereInput => ({
-  OR: [{ discountEndsAt: { isSet: false } }, { discountEndsAt: null }, { discountEndsAt: { lte: now } }],
-});
-
+/** Filters that the database can apply directly (everything except price and sale). */
 function buildWhere(f: GameFilters, now: Date): Prisma.GameWhereInput {
   const and: Prisma.GameWhereInput[] = [];
   if (f.q) and.push(textSearchWhere(f.q));
   if (f.genres.length) and.push({ genres: { hasSome: f.genres } });
   if (f.platforms.length) and.push({ platforms: { hasSome: f.platforms } });
   if (f.minRating !== undefined) and.push({ rating: { gte: f.minRating } });
-  if (f.sale) and.push(activeSale(now));
-  if (f.minPrice !== undefined || f.maxPrice !== undefined) {
-    const range = { gte: f.minPrice, lte: f.maxPrice };
-    // Filter on the price the customer actually pays.
-    and.push({
-      OR: [
-        { AND: [activeSale(now), { discountPrice: range }] },
-        { AND: [noActiveSale(now), { price: range }] },
-      ],
-    });
+  if (f.releasedYears !== undefined) {
+    const since = new Date(now);
+    since.setFullYear(since.getFullYear() - f.releasedYears);
+    and.push({ releaseDate: { gte: since, lte: now } });
   }
   return and.length ? { AND: and } : {};
 }
 
+/**
+ * Catalogue search. Price, sale and discount depend on the current date and on each game's versions
+ * (see lib/offers.ts), so those filters and sorts run here on the matching set rather than in the
+ * query. That keeps the catalogue, cards and product page in agreement; for a catalogue of a few
+ * thousand titles it is still cheap.
+ */
 export async function searchGames(f: GameFilters): Promise<{ games: GameCardData[]; total: number; pages: number }> {
   const now = new Date();
-  const where = buildWhere(f, now);
-  const skip = (f.page - 1) * PAGE_SIZE;
-
-  if (f.sort === "price-asc" || f.sort === "price-desc" || f.sort === "discount") {
-    // Effective price and discount depend on whether a sale is active, so sort after fetching the filtered set.
-    const all = await prisma.game.findMany({ where, select: cardSelect });
-    if (f.sort === "discount") {
-      const off = (g: GameCardData) => (isOnSale(g, now) ? discountPercent(g) : 0);
-      all.sort((a, b) => off(b) - off(a) || b.rating - a.rating);
-    } else {
-      const dir = f.sort === "price-asc" ? 1 : -1;
-      all.sort((a, b) => dir * (effectivePrice(a, now) - effectivePrice(b, now)));
-    }
-    return { games: all.slice(skip, skip + PAGE_SIZE), total: all.length, pages: Math.ceil(all.length / PAGE_SIZE) };
-  }
-
-  // "popular" puts the store's featured picks first; "rating" is purely by rating.
-  const orderBy: Prisma.GameOrderByWithRelationInput[] =
-    f.sort === "newest"
-      ? [{ releaseDate: "desc" }]
-      : f.sort === "rating"
-        ? [{ rating: "desc" }, { title: "asc" }]
-        : [{ featured: "desc" }, { rating: "desc" }, { title: "asc" }];
-  const [games, total] = await Promise.all([
-    prisma.game.findMany({ where, select: cardSelect, orderBy, skip, take: PAGE_SIZE }),
-    prisma.game.count({ where }),
+  const [found, featured] = await Promise.all([
+    prisma.game.findMany({ where: buildWhere(f, now), select: cardSelect }),
+    prisma.game.findMany({ where: { featured: true }, select: { slug: true } }),
   ]);
-  return { games, total, pages: Math.ceil(total / PAGE_SIZE) };
+  const featuredSlugs = new Set(featured.map((g) => g.slug));
+
+  const rows = found.map((game) => {
+    const offers = gameOffers(game);
+    const best = bestOffer(offers, now);
+    return { game, offers, price: best ? effectivePrice(best, now) : game.price };
+  });
+  const filtered = rows.filter(
+    (r) =>
+      (!f.sale || anyOnSale(r.offers, now)) &&
+      (f.minPrice === undefined || r.price >= f.minPrice) &&
+      (f.maxPrice === undefined || r.price <= f.maxPrice),
+  );
+
+  const byTitle = (a: (typeof rows)[number], b: (typeof rows)[number]) => a.game.title.localeCompare(b.game.title);
+  const sorters: Record<SortValue, (a: (typeof rows)[number], b: (typeof rows)[number]) => number> = {
+    // The store's featured picks first, then by rating.
+    popular: (a, b) => Number(featuredSlugs.has(b.game.slug)) - Number(featuredSlugs.has(a.game.slug)) || b.game.rating - a.game.rating || byTitle(a, b),
+    rating: (a, b) => b.game.rating - a.game.rating || byTitle(a, b),
+    newest: (a, b) => b.game.releaseDate.getTime() - a.game.releaseDate.getTime(),
+    "price-asc": (a, b) => a.price - b.price || byTitle(a, b),
+    "price-desc": (a, b) => b.price - a.price || byTitle(a, b),
+    discount: (a, b) => maxDiscountPercent(b.offers, now) - maxDiscountPercent(a.offers, now) || b.game.rating - a.game.rating,
+  };
+  filtered.sort(sorters[f.sort]);
+
+  const skip = (f.page - 1) * PAGE_SIZE;
+  return {
+    games: filtered.slice(skip, skip + PAGE_SIZE).map((r) => r.game),
+    total: filtered.length,
+    pages: Math.ceil(filtered.length / PAGE_SIZE),
+  };
 }
 
 export function getFeaturedGames(take = 3) {
   return prisma.game.findMany({ where: { featured: true }, select: cardSelect, orderBy: { rating: "desc" }, take });
 }
 
-export function getWeeklyOffers(take = 4) {
-  return prisma.game.findMany({
-    where: activeSale(new Date()),
-    select: cardSelect,
-    orderBy: { discountEndsAt: "asc" },
-    take,
-  });
+/** Games with a sale running right now, soonest-ending first. `exclude`: slugs already shown elsewhere. */
+export async function getWeeklyOffers(take = 12, exclude: string[] = []) {
+  const now = new Date();
+  const games = await prisma.game.findMany({ where: { slug: { notIn: exclude } }, select: cardSelect });
+  const endsAt = (g: GameCardData) =>
+    Math.min(...gameOffers(g).filter((o) => anyOnSale([o], now)).map((o) => o.discountEndsAt?.getTime() ?? Infinity));
+  return games
+    .filter((g) => anyOnSale(gameOffers(g), now))
+    .sort((a, b) => endsAt(a) - endsAt(b))
+    .slice(0, take);
 }
 
-export function getNewestGames(take = 4) {
-  return prisma.game.findMany({ select: cardSelect, orderBy: { releaseDate: "desc" }, take });
+/** Games released in the last `months` months (never future dates), newest first. */
+export function getRecentReleases(months = 12, take = 12, exclude: string[] = []) {
+  const now = new Date();
+  const since = new Date(now);
+  since.setMonth(since.getMonth() - months);
+  return prisma.game.findMany({
+    where: { releaseDate: { gte: since, lte: now }, slug: { notIn: exclude } },
+    select: cardSelect,
+    orderBy: { releaseDate: "desc" },
+    take,
+  });
 }
 
 export function getGameBySlug(slug: string) {

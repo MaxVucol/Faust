@@ -7,6 +7,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SOCIAL_LINKS } from "@/components/ui/SocialIcons";
 import { SITE_NAME } from "@/lib/catalog";
 import { getDictionary } from "@/lib/i18n/server";
+import { BUSINESS } from "@/lib/business";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getDictionary();
@@ -22,8 +23,8 @@ export default async function ContactPage() {
   const t = await getDictionary();
   const c = t.contact;
   const info = [
-    { Icon: Mail, label: c.info.email, value: "contact@theironvault.md", href: "mailto:contact@theironvault.md" },
-    { Icon: Phone, label: c.info.phone, value: "+373 22 000 000", href: "tel:+37322000000" },
+    { Icon: Mail, label: c.info.email, value: BUSINESS.email, href: `mailto:${BUSINESS.email}` },
+    { Icon: Phone, label: c.info.phone, value: BUSINESS.phone.display, href: `tel:${BUSINESS.phone.tel}` },
     { Icon: Clock, label: c.info.hours, value: c.info.hoursValue },
     { Icon: MapPin, label: c.info.address, value: c.info.addressValue },
   ];
@@ -62,6 +63,7 @@ export default async function ContactPage() {
               </li>
             ))}
           </ul>
+          {BUSINESS.isDemo && <p className="mt-6 border-l border-gold-dark pl-3 text-sm text-parchment-muted">{t.common.demoNotice}</p>}
           <Divider className="my-8" />
           <p className="mb-4 font-display-ui text-[0.65rem] text-parchment-muted">{c.social}</p>
           <ul className="space-y-3">

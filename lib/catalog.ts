@@ -22,6 +22,9 @@ export function platformShort(name: string): string {
 }
 
 /** Sort keys used in the URL; labels live in the dictionaries (t.sort). */
+/** "Released" filter choices: within the last N years. */
+export const RELEASED_OPTIONS = [1, 3] as const;
+
 export const SORT_OPTIONS = ["popular", "rating", "newest", "price-asc", "price-desc", "discount"] as const;
 
 export type SortValue = (typeof SORT_OPTIONS)[number];

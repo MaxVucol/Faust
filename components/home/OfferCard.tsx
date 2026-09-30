@@ -1,24 +1,25 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/Badge";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Card } from "@/components/ui/Card";
+import { DiscountBadge } from "@/components/games/DiscountBadge";
 import { GameImage } from "@/components/games/GameImage";
-import { Price } from "@/components/games/Price";
+import { GamePrice } from "@/components/games/Price";
 import { genreLabel } from "@/lib/catalog";
 import { getI18n } from "@/lib/i18n/server";
-import { discountPercent, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { biggestSale, gameOffers } from "@/lib/offers";
 import type { GameCardData } from "@/types";
 import { CardArrow, MetaList } from "./CardParts";
 
 export async function OfferCard({ game }: { game: GameCardData }) {
   const { locale, t } = await getI18n();
+  const sale = biggestSale(gameOffers(game));
   return (
     <Card interactive className="h-full">
       <Link prefetch href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-[16/7] overflow-hidden border-b border-bronze">
           <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
-          <Badge variant="blood" className="absolute top-3 left-3 text-xs">
-            -{discountPercent(game)}%
-          </Badge>
+          <DiscountBadge game={game} />
         </div>
         <div className="p-4">
           <h3 className="font-display text-sm tracking-[0.12em] uppercase transition-colors duration-300 group-hover:text-gold-light">
@@ -26,14 +27,13 @@ export async function OfferCard({ game }: { game: GameCardData }) {
           </h3>
           <MetaList items={game.genres.map((g) => genreLabel(t.genres, g))} />
           <div className="mt-2 flex items-center justify-between gap-4">
-            <Price game={game} className="text-base" />
+            <GamePrice game={game} className="text-lg" />
             <CardArrow />
           </div>
-          {game.discountEndsAt && (
-            <p className="mt-1 text-sm text-parchment-muted">{t.game.expires(formatDate(game.discountEndsAt, locale))}</p>
-          )}
+          {sale?.discountEndsAt && <p className="mt-1 text-sm text-parchment-muted">{t.game.expires(formatDate(sale.discountEndsAt, locale))}</p>}
         </div>
       </Link>
+      <FavoriteButton slug={game.slug} title={game.title} />
     </Card>
   );
 }

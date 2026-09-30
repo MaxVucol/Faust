@@ -7,7 +7,9 @@ export type GameCardData = Pick<
   | "slug"
   | "price"
   | "discountPrice"
+  | "discountStartsAt"
   | "discountEndsAt"
+  | "variants"
   | "coverImage"
   | "cardImage"
   | "screenshots"
@@ -18,10 +20,17 @@ export type GameCardData = Pick<
   | "stock"
 >;
 
+/**
+ * One line in the cart: a game on one platform. Prices are the ones shown when it was added (MDL);
+ * `oldPrice` is set when it was added on sale. Lines saved before platforms existed have no platform.
+ */
 export type CartItem = {
   slug: string;
   title: string;
+  platform?: string;
+  edition?: string | null;
   price: number;
+  oldPrice?: number | null;
   coverImage: string;
   quantity: number;
 };

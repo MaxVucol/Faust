@@ -8,7 +8,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 type SearchParams = Record<string, string | string[] | undefined>;
 
 /** Query-string keys that are filters (sorting is kept when filters are removed). */
-const FILTER_KEYS = ["q", "genre", "platform", "minPrice", "maxPrice", "minRating", "sale"] as const;
+const FILTER_KEYS = ["q", "genre", "platform", "minPrice", "maxPrice", "minRating", "released", "sale"] as const;
 
 /** Catalogue URL for the current search params with one value of `key` (or all of them) removed. */
 function hrefWithout(sp: SearchParams, key: string, value?: string) {
@@ -46,6 +46,7 @@ export function ActiveFilters({ filters, sp, t, currency }: { filters: GameFilte
     ...(filters.minPrice !== undefined ? [{ label: c.priceFromChip(money(filters.minPrice)), href: hrefWithout(sp, "minPrice") }] : []),
     ...(filters.maxPrice !== undefined ? [{ label: c.priceToChip(money(filters.maxPrice)), href: hrefWithout(sp, "maxPrice") }] : []),
     ...(filters.minRating !== undefined ? [{ label: c.ratingChip(filters.minRating), href: hrefWithout(sp, "minRating") }] : []),
+    ...(filters.releasedYears !== undefined ? [{ label: c.releasedWithin(filters.releasedYears), href: hrefWithout(sp, "released") }] : []),
     ...(filters.sale ? [{ label: c.offers, href: hrefWithout(sp, "sale") }] : []),
   ];
   if (chips.length === 0) return null;

@@ -21,7 +21,7 @@ export default async function FaqPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">
       <Breadcrumbs label={t.common.breadcrumbs} className="mb-6" items={[{ label: t.nav.home, href: "/" }, { label: t.contact.faqTitle }]} />
-      <h1 className="font-display text-3xl font-semibold tracking-[0.12em] uppercase sm:text-4xl">{t.contact.faqTitle}</h1>
+      <h1 className="font-display text-[1.75rem] leading-tight font-semibold tracking-[0.08em] uppercase sm:text-4xl sm:tracking-[0.12em]">{t.contact.faqTitle}</h1>
       <Divider double className="my-10" />
       <Accordion items={t.contact.faq} />
       <p className="mt-10 text-base text-parchment-muted">

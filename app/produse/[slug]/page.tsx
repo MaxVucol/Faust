@@ -2,18 +2,19 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { cache, type ReactNode } from "react";
-import { AddToCartButton } from "@/components/games/AddToCartButton";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Gallery } from "@/components/games/Gallery";
 import { Carousel } from "@/components/games/Carousel";
 import { GameCard } from "@/components/games/GameCard";
-import { Price } from "@/components/games/Price";
+import { PurchasePanel, type PanelOffer } from "@/components/games/PurchasePanel";
 import { Tabs } from "@/components/games/Tabs";
-import { Badge } from "@/components/ui/Badge";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { genreLabel, SITE_NAME } from "@/lib/catalog";
 import { discountPercent, effectivePrice, formatDate, formatRating, isOnSale } from "@/lib/format";
 import { getGameBySlug, getSimilarGames } from "@/lib/games";
+import { galleryImages } from "@/lib/gallery";
+import { gameOffers } from "@/lib/offers";
 import { LOCALE_NAMES } from "@/lib/i18n/config";
 import { getI18n } from "@/lib/i18n/server";
 import { pickLocalized } from "@/lib/localized-text";
@@ -65,9 +66,25 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
   const { locale, t } = await getI18n();
   const g = t.game;
   const description = pickLocalized(game.description, locale);
-  const similar = await getSimilarGames(game.slug, game.genres, 12);
-  const onSale = isOnSale(game);
-  const inStock = game.stock > 0;
+  const [similar, gallery] = await Promise.all([getSimilarGames(game.slug, game.genres, 12), galleryImages(game.slug, game.screenshots)]);
+  const now = new Date();
+  const offers = gameOffers(game);
+  const inStock = offers.some((o) => o.stock > 0);
+  const panelOffers: PanelOffer[] = offers.map((o) => {
+    const sale = isOnSale(o, now);
+    return {
+      platform: o.platform,
+      edition: o.edition,
+      activation: o.activation,
+      region: o.region,
+      inStock: o.stock > 0,
+      price: effectivePrice(o, now),
+      oldPrice: sale ? o.price : null,
+      percent: sale ? discountPercent(o) : 0,
+      saleEnds: sale && o.discountEndsAt ? formatDate(o.discountEndsAt, locale) : null,
+    };
+  });
+  const prices = panelOffers.map((o) => o.price);
 
   // Product structured data. Prices are listed in MDL, the store's base currency. No aggregateRating:
   // the rating is the store's own score, not an average of customer reviews.
@@ -80,10 +97,12 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
     category: game.genres.join(", "),
     brand: { "@type": "Brand", name: game.publisher },
     offers: {
-      "@type": "Offer",
+      "@type": "AggregateOffer",
       url: new URL(`/produse/${game.slug}`, SITE_URL).href,
       priceCurrency: "MDL",
-      price: effectivePrice(game).toFixed(2),
+      lowPrice: Math.min(...prices).toFixed(2),
+      highPrice: Math.max(...prices).toFixed(2),
+      offerCount: panelOffers.length,
       availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       seller: { "@type": "Organization", name: SITE_NAME },
     },
@@ -99,11 +118,9 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
       <section className="relative isolate border-b border-iron">
         <Image src={game.screenshots[0] ?? game.coverImage} alt="" fill priority sizes="100vw" className="-z-10 object-cover saturate-[0.85]" />
         <div aria-hidden className="absolute inset-0 -z-10 bg-black/70" />
-        <div className="mx-auto grid max-w-page gap-8 px-4 py-12 sm:px-6 md:grid-cols-[260px_1fr] md:items-end lg:px-8 lg:py-16">
-          <div className="relative mx-auto aspect-[3/4] w-48 border border-iron shadow-lg shadow-black/50 md:w-full">
-            <Image src={game.pageCoverImage ?? game.coverImage} alt={g.coverAlt(game.title)} fill sizes="260px" className="object-cover saturate-[0.85]" />
-          </div>
-          <div>
+        {/* Phones: title and rating, then the cover, then the purchase card. From md: cover on the left. */}
+        <div className="mx-auto grid max-w-page gap-8 px-4 py-10 sm:px-6 md:grid-cols-[260px_1fr] md:gap-x-10 lg:px-8 lg:py-14">
+          <header className="md:col-start-2">
             <Breadcrumbs
               label={t.common.breadcrumbs}
               className="mb-5"
@@ -111,15 +128,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
             />
             <p className="font-display-ui text-xs text-aged-gold">{game.genres.map((x) => genreLabel(t.genres, x)).join(" / ")}</p>
             <h1 className="mt-3 font-display text-3xl font-semibold tracking-[0.12em] uppercase sm:text-5xl">{game.title}</h1>
-            <ul className="mt-5 flex flex-wrap gap-2" aria-label={g.platforms}>
-              {game.platforms.map((p) => (
-                <li key={p}>
-                  {/* ! overrides the outline variant's muted colours (cn does not merge conflicting classes). */}
-                  <Badge className="border-[#f2ead8]! bg-black/30 text-[#f7f1e4]!">{p}</Badge>
-                </li>
-              ))}
-            </ul>
-            <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
+            <dl className="mt-5 flex flex-wrap gap-x-10 gap-y-3">
               <div>
                 <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.ratingSource}</dt>
                 <dd className="text-xl">{formatRating(game.rating)}</dd>
@@ -129,32 +138,24 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
                 <dd className={inStock ? "text-xl text-stock-in" : "text-xl text-stock-out"}>{inStock ? g.inStock : g.outOfStock}</dd>
               </div>
             </dl>
-            <div className="mt-8 flex flex-wrap items-center gap-6">
-              <div>
-                {onSale && (
-                  <p className="mb-1 flex items-center gap-3 text-sm text-parchment-muted">
-                    <Badge variant="blood">-{discountPercent(game)}%</Badge>
-                    {game.discountEndsAt && g.expires(formatDate(game.discountEndsAt, locale))}
-                  </p>
-                )}
-                <Price game={game} className="text-2xl" />
-              </div>
-              <AddToCartButton
-                size="md"
-                label={g.buy}
-                inStock={inStock}
-                item={{ slug: game.slug, title: game.title, price: effectivePrice(game), coverImage: game.coverImage }}
-              />
-            </div>
+          </header>
+          <div className="relative mx-auto aspect-[3/4] w-48 border border-iron shadow-lg shadow-black/50 md:col-start-1 md:row-span-2 md:row-start-1 md:w-full md:self-start">
+            <Image src={game.pageCoverImage ?? game.coverImage} alt={g.coverAlt(game.title)} fill sizes="(min-width: 768px) 260px, 192px" className="object-cover saturate-[0.85]" />
+            <FavoriteButton slug={game.slug} title={game.title} />
+          </div>
+          <div className="md:col-start-2 md:max-w-xl">
+            <PurchasePanel game={{ slug: game.slug, title: game.title, coverImage: game.coverImage }} offers={panelOffers} />
           </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-page space-y-14 px-4 py-12 sm:px-6 lg:px-8">
-        <section aria-labelledby="galerie">
-          <SectionHeading id="galerie" title={g.gallery} />
-          <Gallery images={game.screenshots} title={game.title} />
-        </section>
+        {gallery.length > 0 && (
+          <section aria-labelledby="galerie">
+            <SectionHeading id="galerie" title={g.gallery} />
+            <Gallery images={gallery} title={game.title} />
+          </section>
+        )}
 
         <section aria-label={g.infoAria} className="max-w-4xl">
           <Tabs
@@ -213,7 +214,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
                     <Detail label={g.publisher}>{game.publisher}</Detail>
                     <Detail label={g.releaseDate}>{formatDate(game.releaseDate, locale)}</Detail>
                     <Detail label={g.genres}>{game.genres.map((x) => genreLabel(t.genres, x)).join(", ")}</Detail>
-                    <Detail label={g.platforms}>{game.platforms.join(", ")}</Detail>
+                    <Detail label={g.platforms}>{offers.map((o) => o.platform).join(", ")}</Detail>
                   </dl>
                 ),
               },
@@ -225,7 +226,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
           <section aria-labelledby="asemanatoare">
             <SectionHeading id="asemanatoare" title={g.similar} linkLabel={t.common.seeAll} href={`/produse?genre=${encodeURIComponent(game.genres[0])}`} />
             {/* Slightly narrower than the page; side arrows move through the list. */}
-            <Carousel mobileArrows>
+            <Carousel mobileArrows className="max-w-[calc(100%-5rem)] sm:max-w-[88%]">
               {similar.map((g) => (
                 <GameCard key={g.id} game={g} />
               ))}

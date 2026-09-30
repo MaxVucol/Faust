@@ -4,12 +4,14 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
+import { useFavorites } from "@/components/favorites/FavoritesProvider";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS, isActive } from "./nav-links";
 
 export function MobileMenu({ pathname }: { pathname: string }) {
   const { t } = useI18n();
+  const favorites = useFavorites();
   const [open, setOpen] = useState(false);
   const [openedAt, setOpenedAt] = useState(pathname);
 
@@ -80,6 +82,19 @@ export function MobileMenu({ pathname }: { pathname: string }) {
                   </Link>
                 </li>
               ))}
+              <li className="border-b border-iron">
+                <Link
+                  href="/favorite"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "block py-6 font-display text-2xl tracking-[0.15em] uppercase",
+                    isActive(pathname, "/favorite") ? "text-aged-gold" : "text-parchment",
+                  )}
+                >
+                  {t.favorites.title}
+                  {favorites.count > 0 && <span className="ml-3 text-parchment-muted tabular-nums">{favorites.count}</span>}
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>

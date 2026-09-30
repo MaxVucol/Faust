@@ -96,6 +96,12 @@
 }
 
 @layer base {
+  /* Long single words in uppercase, letter-spaced headings (e.g. "CONFIDENȚIALITATE") wrap instead of overflowing on phones. */
+  h1 {
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
   html {
     color-scheme: dark;
     /* Keep the scrollbar's space reserved so switching between short and long pages doesn't resize the fixed background. */

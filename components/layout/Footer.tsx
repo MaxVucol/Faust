@@ -5,6 +5,7 @@ import { SOCIAL_LINKS } from "@/components/ui/SocialIcons";
 import { SITE_NAME } from "@/lib/catalog";
 import { INFO_PAGE_ROUTES } from "@/lib/i18n/info-pages";
 import { getDictionary } from "@/lib/i18n/server";
+import { BUSINESS } from "@/lib/business";
 
 function FooterColumn({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
@@ -69,7 +70,7 @@ export async function Footer() {
           links={[
             { href: "/produse", label: l.games },
             { href: "/produse?sale=1", label: l.deals },
-            { href: "/produse?sort=newest", label: l.newReleases },
+            { href: "/produse?released=1&sort=newest", label: l.newReleases },
             { href: "/#genuri", label: l.genres },
           ]}
         />
@@ -87,7 +88,7 @@ export async function Footer() {
           title={t.footer.support}
           links={[
             { href: "/contact", label: l.contact },
-            { href: "mailto:contact@theironvault.md", label: "contact@theironvault.md" },
+            { href: `mailto:${BUSINESS.email}`, label: BUSINESS.email },
           ]}
         />
       </div>

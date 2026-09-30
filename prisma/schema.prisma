@@ -14,30 +14,50 @@ type LocalizedText {
   en String?
 }
 
+/// One purchasable version of a game (a platform, optionally an edition). Every field except the
+/// platform is optional: unknown activation/region/edition stay empty instead of being guessed, and a
+/// missing price or sale falls back to the game's own price and sale.
+type GameVariant {
+  platform         String
+  edition          String?
+  /// Where the key is redeemed, e.g. "Steam" or "PlayStation Store".
+  activation       String?
+  region           String?
+  price            Float?
+  discountPrice    Float?
+  discountStartsAt DateTime?
+  discountEndsAt   DateTime?
+  stock            Int?
+}
+
 model Game {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  slug           String    @unique
-  description    LocalizedText
-  price          Float
-  discountPrice  Float?
-  discountEndsAt DateTime?
-  coverImage     String
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  slug             String        @unique
+  description      LocalizedText
+  price            Float
+  discountPrice    Float?
+  /// A sale runs from discountStartsAt (immediately when unset) until discountEndsAt.
+  discountStartsAt DateTime?
+  discountEndsAt   DateTime?
+  /// Purchasable versions. When empty, each entry of `platforms` is one variant at the game's price.
+  variants         GameVariant[]
+  coverImage       String
   /// Optional landscape image for home-page cards only; falls back to the first screenshot.
-  cardImage      String?
+  cardImage        String?
   /// Optional portrait cover for the game page only; falls back to coverImage.
-  pageCoverImage String?
-  screenshots    String[]
-  genres         String[]
-  platforms      String[]
-  rating         Float
-  releaseDate    DateTime
-  developer      String
-  publisher      String
-  stock          Int
-  featured       Boolean   @default(false)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  pageCoverImage   String?
+  screenshots      String[]
+  genres           String[]
+  platforms        String[]
+  rating           Float
+  releaseDate      DateTime
+  developer        String
+  publisher        String
+  stock            Int
+  featured         Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model ContactMessage {

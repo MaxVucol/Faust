@@ -62,7 +62,7 @@ async function main() {
         publisher: g.publisher,
         description,
         coverImage: coverPath(g.slug, g.art),
-        screenshots: screenshotPaths(g.slug, g.art),
+        screenshots: screenshotPaths(g.art),
         cardImage: g.art?.card ?? null,
         pageCoverImage: g.art?.pageCover ?? null,
       },

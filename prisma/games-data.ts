@@ -287,7 +287,7 @@ export const games: GameSeed[] = [
     developer: "Game Science",
     publisher: "Game Science",
     stock: 75,
-    art: { cover: "/images/games/black-myth-wukong/cover-v2.jpg" },
+    art: { cover: "/images/games/black-myth-wukong/cover-v2.jpg", keyArt: "/images/games/black-myth-wukong/key-art.jpg" },
   },
   {
     title: "Darkest Dungeon II",
@@ -322,8 +322,10 @@ export function coverPath(slug: string, art?: GameSeed["art"]): string {
   return art?.cover ?? `/images/games/${slug}/cover.jpg`;
 }
 
-/** The first screenshot doubles as the landscape card image and detail banner, so key art goes first. */
-export function screenshotPaths(slug: string, art?: GameSeed["art"]): string[] {
-  const shots = [1, 2, 3, 4].map((n) => `/images/games/${slug}/shot-${n}.jpg`);
-  return art?.keyArt ? [art.keyArt, ...shots.slice(0, 3)] : shots;
+/**
+ * Real landscape images of the game, used as the page banner, the card fallback and the gallery.
+ * Only official art goes here, never stand-in illustrations; add real screenshots after the key art.
+ */
+export function screenshotPaths(art?: GameSeed["art"]): string[] {
+  return art?.keyArt ? [art.keyArt] : [];
 }

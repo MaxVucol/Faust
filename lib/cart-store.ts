@@ -35,6 +35,11 @@ function write(items: CartItem[]) {
   listeners.forEach((l) => l());
 }
 
+/** A cart line is one game on one platform (and edition). */
+export function lineKey(item: Pick<CartItem, "slug" | "platform" | "edition">): string {
+  return [item.slug, item.platform ?? "", item.edition ?? ""].join("|");
+}
+
 export const cartStore = {
   subscribe(listener: () => void) {
     listeners.add(listener);
@@ -49,18 +54,20 @@ export const cartStore = {
   getServerSnapshot: () => EMPTY,
   add(item: Omit<CartItem, "quantity">) {
     const items = read();
-    const existing = items.find((i) => i.slug === item.slug);
+    const key = lineKey(item);
+    const existing = items.find((i) => lineKey(i) === key);
     write(
       existing
-        ? items.map((i) => (i.slug === item.slug ? { ...i, quantity: i.quantity + 1 } : i))
+        ? items.map((i) => (lineKey(i) === key ? { ...i, quantity: i.quantity + 1 } : i))
         : [...items, { ...item, quantity: 1 }],
     );
   },
-  setQuantity(slug: string, quantity: number) {
+  /** `key` from lineKey(); 0 or less removes the line. */
+  setQuantity(key: string, quantity: number) {
     write(
       quantity <= 0
-        ? read().filter((i) => i.slug !== slug)
-        : read().map((i) => (i.slug === slug ? { ...i, quantity } : i)),
+        ? read().filter((i) => lineKey(i) !== key)
+        : read().map((i) => (lineKey(i) === key ? { ...i, quantity } : i)),
     );
   },
   clear() {

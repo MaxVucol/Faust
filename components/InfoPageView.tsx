@@ -24,7 +24,7 @@ export async function InfoPageView({ pageKey }: { pageKey: InfoPageKey }) {
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">
       <Breadcrumbs label={t.common.breadcrumbs} className="mb-6" items={[{ label: t.nav.home, href: "/" }, { label: page.title }]} />
-      <h1 className="font-display text-3xl font-semibold tracking-[0.12em] uppercase sm:text-4xl">{page.title}</h1>
+      <h1 className="font-display text-[1.75rem] leading-tight font-semibold tracking-[0.08em] uppercase sm:text-4xl sm:tracking-[0.12em]">{page.title}</h1>
       <p className="mt-4 text-lg text-parchment-muted">{page.intro}</p>
       <Divider double className="my-10" />
       <div className="space-y-10">
