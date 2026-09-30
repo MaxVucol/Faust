@@ -10,6 +10,12 @@ export function isOnSale(game: Priced, now: Date = new Date()): boolean {
   return game.discountPrice != null && game.discountEndsAt != null && game.discountEndsAt > now;
 }
 
+/** Released within the last 90 days (and not a future release). */
+export function isNewRelease(game: { releaseDate: Date }, now: Date = new Date()): boolean {
+  const age = now.getTime() - game.releaseDate.getTime();
+  return age >= 0 && age <= 90 * 24 * 60 * 60 * 1000;
+}
+
 export function effectivePrice(game: Priced, now: Date = new Date()): number {
   return isOnSale(game, now) ? (game.discountPrice as number) : game.price;
 }

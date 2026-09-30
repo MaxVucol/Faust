@@ -53,7 +53,7 @@ export function MobileMenu({ pathname }: { pathname: string }) {
           className="fixed inset-0 z-50 flex flex-col bg-base px-6 py-5"
         >
           <div className="flex items-center justify-between">
-            <PreferencesMenu placement="panel" />
+            <PreferencesMenu align="left" />
             <button
               type="button"
               aria-label={t.nav.closeMenu}

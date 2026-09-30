@@ -1,6 +1,5 @@
 "use client";
 
-import Form from "next/form";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,6 +10,7 @@ import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { SITE_NAME } from "@/lib/catalog";
 import { MobileMenu } from "./MobileMenu";
+import { SearchBox } from "./SearchBox";
 import { NAV_LINKS, isActive } from "./nav-links";
 
 export function Navbar() {
@@ -18,16 +18,23 @@ export function Navbar() {
   const { count } = useCart();
   const { t } = useI18n();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchPath, setSearchPath] = useState(pathname);
+
+  // Close the search bar when the route changes (a suggestion, a nav link, the logo…).
+  if (searchPath !== pathname) {
+    setSearchPath(pathname);
+    setSearchOpen(false);
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-gold-dark bg-[#0a0907] shadow-[0_1px_12px_rgb(192_154_85/0.15),0_8px_24px_rgb(0_0_0/0.6)]">
       <div className="mx-auto grid h-20 max-w-page grid-cols-[auto_1fr] items-center gap-4 lg:grid-cols-[auto_1fr_auto] xl:grid-cols-[1fr_auto_1fr] px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="col-start-1 flex items-center gap-3 justify-self-start font-brand text-base font-semibold tracking-[0.12em] whitespace-nowrap text-aged-gold uppercase sm:text-xl sm:tracking-[0.15em]"
+          className="col-start-1 flex min-w-0 items-center gap-2 justify-self-start font-brand text-[0.9rem] font-semibold tracking-[0.1em] sm:gap-3 whitespace-nowrap text-aged-gold uppercase sm:text-xl sm:tracking-[0.15em]"
         >
           {/* Pre-sized PNG, served as-is so the metal texture stays crisp. */}
-          <Image src="/images/logo-tv.png" alt="" width={262} height={320} priority unoptimized className="h-14 w-auto" />
+          <Image src="/images/logo-tv.png" alt="" width={262} height={320} priority unoptimized className="h-11 w-auto sm:h-14" />
           {SITE_NAME}
         </Link>
 
@@ -54,8 +61,8 @@ export function Navbar() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-4 justify-self-end sm:gap-5">
-          <PreferencesMenu className="hidden sm:flex" />
+        <div className="flex items-center gap-3.5 justify-self-end sm:gap-5">
+          <PreferencesMenu className="hidden sm:block" />
           <button
             type="button"
             onClick={() => setSearchOpen((v) => !v)}
@@ -69,37 +76,25 @@ export function Navbar() {
           <span aria-hidden className="hidden h-5 w-px bg-iron sm:block" />
           <Link
             href="/cos"
-            className="flex items-center gap-2 text-sm text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light"
+            aria-label={t.nav.cart(count)}
+            className="flex items-center gap-2 text-sm whitespace-nowrap text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light"
           >
             <ShoppingCart aria-hidden className="size-5" />
-            <span>{t.nav.cart(count)}</span>
+            {/* Narrow screens show just the count next to the icon. */}
+            <span aria-hidden className="hidden sm:inline">
+              {t.nav.cart(count)}
+            </span>
+            <span aria-hidden className="tabular-nums sm:hidden">
+              {count}
+            </span>
           </Link>
           <MobileMenu pathname={pathname} />
         </div>
       </div>
 
       {searchOpen && (
-        <div id="cautare" className="border-t border-iron bg-surface">
-          <Form
-            action="/produse"
-            onSubmit={() => setSearchOpen(false)}
-            className="mx-auto flex max-w-page gap-3 px-4 py-4 sm:px-6 lg:px-8"
-          >
-            <label htmlFor="q-nav" className="sr-only">
-              {t.nav.searchLabel}
-            </label>
-            <input
-              id="q-nav"
-              name="q"
-              type="search"
-              autoFocus
-              placeholder={t.nav.searchPlaceholder}
-              className="w-full border border-iron bg-base px-4 py-2.5 text-base text-parchment placeholder:text-parchment-muted/70 focus:border-aged-gold"
-            />
-            <button type="submit" className="bg-blood px-6 font-display-ui text-xs text-parchment hover:bg-blood-hover">
-              {t.nav.searchButton}
-            </button>
-          </Form>
+        <div id="cautare" className="border-t border-iron bg-surface px-4 py-4 sm:px-6 lg:px-8">
+          <SearchBox onClose={() => setSearchOpen(false)} />
         </div>
       )}
     </header>

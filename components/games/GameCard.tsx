@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { genreLabel, platformShort } from "@/lib/catalog";
-import { discountPercent, effectivePrice, formatRating, isOnSale } from "@/lib/format";
+import { discountPercent, effectivePrice, formatRating, isNewRelease, isOnSale } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
 import type { GameCardData } from "@/types";
 import { AddToCartButton } from "./AddToCartButton";
@@ -22,10 +22,11 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
           sizes="(min-width: 1536px) 340px, (min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw"
           priority={priority}
         />
-        {onSale && (
-          <Badge variant="blood" className="absolute top-3 left-3">
-            -{discountPercent(game)}%
-          </Badge>
+        {(onSale || isNewRelease(game)) && (
+          <div className="absolute top-3 left-3 flex gap-1.5">
+            {onSale && <Badge variant="blood">-{discountPercent(game)}%</Badge>}
+            {isNewRelease(game) && <Badge variant="gold">{t.game.newBadge}</Badge>}
+          </div>
         )}
       </Link>
       <div className="flex flex-1 flex-col p-5">
@@ -41,7 +42,7 @@ export async function GameCard({ game, priority }: { game: GameCardData; priorit
             {formatRating(game.rating)}
           </span>
           {game.stock > 0 ? (
-            <span className="text-parchment-muted">{t.game.inStock}</span>
+            <span className="text-stock-in">{t.game.inStock}</span>
           ) : (
             <span className="text-blood-text">{t.game.outOfStock}</span>
           )}

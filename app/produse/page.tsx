@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { ActiveFilters, clearFiltersHref } from "@/components/games/ActiveFilters";
 import { Filters } from "@/components/games/Filters";
 import { GameGrid } from "@/components/games/GameGrid";
 import { Pagination } from "@/components/games/Pagination";
 import { SortSelect } from "@/components/games/SortSelect";
+import { ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { SITE_NAME } from "@/lib/catalog";
 import { parseFilters, searchGames } from "@/lib/games";
@@ -49,12 +51,17 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
           <div className="mb-6 flex justify-end">
             <SortSelect value={filters.sort} />
           </div>
+          <ActiveFilters filters={filters} sp={sp} t={t} currency={currency} />
           {games.length > 0 ? (
             <GameGrid games={games} />
           ) : (
-            <p className="border border-iron bg-surface px-6 py-16 text-center text-parchment-muted">
-              {c.empty}
-            </p>
+            <div className="border border-iron bg-surface px-6 py-16 text-center">
+              <p className="font-display text-xl text-parchment">{c.emptyTitle}</p>
+              <p className="mt-2 text-parchment-muted">{c.emptyText}</p>
+              <ButtonLink href={clearFiltersHref(sp)} variant="ghost" className="mt-6">
+                {c.clearFilters}
+              </ButtonLink>
+            </div>
           )}
           <Pagination page={filters.page} pages={pages} searchParams={sp} />
         </section>

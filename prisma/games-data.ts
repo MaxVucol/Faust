@@ -74,7 +74,7 @@ export const games: GameSeed[] = [
     developer: "Capcom",
     publisher: "Capcom",
     stock: 200,
-    art: { cover: "/images/games/resident-evil-4/cover-v2.png", keyArt: "/images/games/resident-evil-4/key-art-v2.png", pageCover: "/images/games/resident-evil-4/page-cover.png" },
+    art: { cover: "/images/games/resident-evil-4/cover-v3.jpg", keyArt: "/images/games/resident-evil-4/key-art-v2.png", pageCover: "/images/games/resident-evil-4/page-cover.png" },
   },
   {
     title: "Europa Universalis V",
@@ -114,7 +114,7 @@ export const games: GameSeed[] = [
     developer: "NeoBards Entertainment",
     publisher: "Konami",
     stock: 70,
-    art: { cover: "/images/games/silent-hill-f/cover-v2.jpg", keyArt: "/images/games/silent-hill-f/key-art-v2.jpg", card: "/images/games/silent-hill-f/card.jpg", pageCover: "/images/games/silent-hill-f/page-cover.jpg" },
+    art: { cover: "/images/games/silent-hill-f/cover-v3.jpg", keyArt: "/images/games/silent-hill-f/key-art-v2.jpg", card: "/images/games/silent-hill-f/card.jpg", pageCover: "/images/games/silent-hill-f/page-cover.jpg" },
   },
   {
     title: "Anno 117: Pax Romana",
@@ -140,7 +140,7 @@ export const games: GameSeed[] = [
     developer: "Kojima Productions",
     publisher: "Sony Interactive Entertainment",
     stock: 150,
-    art: { cover: "/images/games/death-stranding-2-on-the-beach/cover-v2.jpg", keyArt: "/images/games/death-stranding-2-on-the-beach/key-art-v2.jpg", card: "/images/games/death-stranding-2-on-the-beach/card.jpg", pageCover: "/images/games/death-stranding-2-on-the-beach/page-cover.jpg" },
+    art: { cover: "/images/games/death-stranding-2-on-the-beach/cover-v3.jpg", keyArt: "/images/games/death-stranding-2-on-the-beach/key-art-v2.jpg", card: "/images/games/death-stranding-2-on-the-beach/card.jpg", pageCover: "/images/games/death-stranding-2-on-the-beach/page-cover.jpg" },
   },
   {
     title: "Lords of the Fallen",
@@ -286,6 +286,7 @@ export const games: GameSeed[] = [
     developer: "Game Science",
     publisher: "Game Science",
     stock: 75,
+    art: { cover: "/images/games/black-myth-wukong/cover-v2.jpg" },
   },
   {
     title: "Darkest Dungeon II",
@@ -312,7 +313,7 @@ export const games: GameSeed[] = [
     developer: "Team Cherry",
     publisher: "Team Cherry",
     stock: 90,
-    art: { cover: "/images/games/hollow-knight-silksong/cover-v2.jpg", keyArt: "/images/games/hollow-knight-silksong/key-art-v2.jpg", card: "/images/games/hollow-knight-silksong/card.jpg", pageCover: "/images/games/hollow-knight-silksong/page-cover.jpg" },
+    art: { cover: "/images/games/hollow-knight-silksong/cover-v3.jpg", keyArt: "/images/games/hollow-knight-silksong/key-art-v2.jpg", card: "/images/games/hollow-knight-silksong/card.jpg", pageCover: "/images/games/hollow-knight-silksong/page-cover.jpg" },
   },
 ];
 

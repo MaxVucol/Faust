@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
@@ -12,7 +12,7 @@ import { useCart } from "@/lib/use-cart";
 export function CartView() {
   const { t, currency } = useI18n();
   const c = t.cart;
-  const { items, total, setQuantity, clear } = useCart();
+  const { items, count, total, setQuantity, clear } = useCart();
 
   if (items.length === 0) {
     return (
@@ -31,34 +31,57 @@ export function CartView() {
         {items.map((item) => (
           <li key={item.slug} className="flex gap-4 border-b border-iron py-5">
             <div className="relative aspect-[3/4] w-20 shrink-0 border border-iron">
-              <Image src={item.coverImage} alt="" fill sizes="80px" className="object-cover saturate-[0.85]" />
+              <Image
+                src={item.coverImage}
+                alt=""
+                fill
+                sizes="80px"
+                className="object-cover saturate-[0.85]"
+              />
             </div>
             <div className="flex flex-1 flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
-                <Link prefetch href={`/produse/${item.slug}`} className="font-display text-sm font-semibold tracking-[0.1em] uppercase hover:text-aged-gold">
+                <Link
+                  prefetch
+                  href={`/produse/${item.slug}`}
+                  className="font-display text-sm font-semibold tracking-[0.1em] uppercase hover:text-aged-gold"
+                >
                   {item.title}
                 </Link>
-                <p className="text-sm text-aged-gold">{formatMoney(item.price, currency)}</p>
+                <p className="text-sm text-aged-gold">
+                  {formatMoney(item.price, currency)}
+                </p>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center">
+                  <button
+                    type="button"
+                    aria-label={c.decrease(item.title)}
+                    onClick={() => setQuantity(item.slug, item.quantity - 1)}
+                    className="border border-iron p-2 hover:border-aged-gold"
+                  >
+                    <Minus className="size-4" />
+                  </button>
+                  <span className="w-10 text-center" aria-label={c.quantity}>
+                    {item.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={c.increase(item.title)}
+                    onClick={() => setQuantity(item.slug, item.quantity + 1)}
+                    className="border border-iron p-2 hover:border-aged-gold"
+                  >
+                    <Plus className="size-4" />
+                  </button>
+                </div>
                 <button
                   type="button"
-                  aria-label={c.decrease(item.title)}
-                  onClick={() => setQuantity(item.slug, item.quantity - 1)}
-                  className="border border-iron p-2 hover:border-aged-gold"
+                  aria-label={c.remove(item.title)}
+                  onClick={() => setQuantity(item.slug, 0)}
+                  className="flex min-h-10 items-center gap-1.5 px-1 text-sm text-parchment-muted transition-colors duration-200 hover:text-blood-text"
                 >
-                  <Minus className="size-4" />
-                </button>
-                <span className="w-10 text-center" aria-label={c.quantity}>
-                  {item.quantity}
-                </span>
-                <button
-                  type="button"
-                  aria-label={c.increase(item.title)}
-                  onClick={() => setQuantity(item.slug, item.quantity + 1)}
-                  className="border border-iron p-2 hover:border-aged-gold"
-                >
-                  <Plus className="size-4" />
+                  <X aria-hidden className="size-4" />
+                  {c.removeLabel}
                 </button>
               </div>
             </div>
@@ -66,14 +89,23 @@ export function CartView() {
         ))}
       </ul>
       <aside className="h-fit border border-iron bg-surface p-6">
-        <p className="font-display-ui text-[0.7rem] text-parchment-muted">{c.total}</p>
-        <p className="mt-1 font-display text-2xl text-aged-gold">{formatMoney(total, currency)}</p>
+        <p className="text-sm text-parchment-muted">{c.items(count)}</p>
+        <p className="mt-4 font-display-ui text-[0.7rem] text-parchment-muted">
+          {c.total}
+        </p>
+        <p className="mt-1 font-display text-2xl text-aged-gold">
+          {formatMoney(total, currency)}
+        </p>
         <Divider className="my-6" />
         <Button className="w-full" disabled title={c.checkoutUnavailable}>
           {c.checkout}
         </Button>
         <p className="mt-3 text-sm text-parchment-muted">{c.checkoutSoon}</p>
-        <button type="button" onClick={clear} className="mt-6 font-display-ui text-[0.65rem] text-parchment-muted hover:text-parchment">
+        <button
+          type="button"
+          onClick={clear}
+          className="mt-6 font-display-ui text-[0.65rem] text-parchment-muted hover:text-parchment"
+        >
           {c.clear}
         </button>
       </aside>

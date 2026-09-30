@@ -22,7 +22,7 @@ export function platformShort(name: string): string {
 }
 
 /** Sort keys used in the URL; labels live in the dictionaries (t.sort). */
-export const SORT_OPTIONS = ["popular", "price-asc", "price-desc", "newest"] as const;
+export const SORT_OPTIONS = ["popular", "rating", "newest", "price-asc", "price-desc", "discount"] as const;
 
 export type SortValue = (typeof SORT_OPTIONS)[number];
 

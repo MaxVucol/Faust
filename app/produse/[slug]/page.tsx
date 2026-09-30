@@ -9,8 +9,9 @@ import { GameCard } from "@/components/games/GameCard";
 import { Price } from "@/components/games/Price";
 import { Tabs } from "@/components/games/Tabs";
 import { Badge } from "@/components/ui/Badge";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { genreLabel } from "@/lib/catalog";
+import { genreLabel, SITE_NAME } from "@/lib/catalog";
 import { discountPercent, effectivePrice, formatDate, formatRating, isOnSale } from "@/lib/format";
 import { getGameBySlug, getSimilarGames } from "@/lib/games";
 import { LOCALE_NAMES } from "@/lib/i18n/config";
@@ -18,6 +19,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { pickLocalized } from "@/lib/localized-text";
 
 const loadGame = cache(getGameBySlug);
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export async function generateMetadata({ params }: PageProps<"/produse/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -67,8 +69,33 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
   const onSale = isOnSale(game);
   const inStock = game.stock > 0;
 
+  // Product structured data. Prices are listed in MDL, the store's base currency. No aggregateRating:
+  // the rating is the store's own score, not an average of customer reviews.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: game.title,
+    image: [game.coverImage, ...game.screenshots.slice(0, 3)].map((src) => new URL(src, SITE_URL).href),
+    description: description?.text.split("\n")[0],
+    category: game.genres.join(", "),
+    brand: { "@type": "Brand", name: game.publisher },
+    offers: {
+      "@type": "Offer",
+      url: new URL(`/produse/${game.slug}`, SITE_URL).href,
+      priceCurrency: "MDL",
+      price: effectivePrice(game).toFixed(2),
+      availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      seller: { "@type": "Organization", name: SITE_NAME },
+    },
+  };
+
   return (
     <article>
+      <script
+        type="application/ld+json"
+        // Escape "<" so a title can never close the script tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <section className="relative isolate border-b border-iron">
         <Image src={game.screenshots[0] ?? game.coverImage} alt="" fill priority sizes="100vw" className="-z-10 object-cover saturate-[0.85]" />
         <div aria-hidden className="absolute inset-0 -z-10 bg-black/70" />
@@ -77,6 +104,11 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
             <Image src={game.pageCoverImage ?? game.coverImage} alt={g.coverAlt(game.title)} fill sizes="260px" className="object-cover saturate-[0.85]" />
           </div>
           <div>
+            <Breadcrumbs
+              label={t.common.breadcrumbs}
+              className="mb-5"
+              items={[{ label: t.nav.home, href: "/" }, { label: t.nav.products, href: "/produse" }, { label: game.title }]}
+            />
             <p className="font-display-ui text-xs text-aged-gold">{game.genres.map((x) => genreLabel(t.genres, x)).join(" / ")}</p>
             <h1 className="mt-3 font-display text-3xl font-semibold tracking-[0.12em] uppercase sm:text-5xl">{game.title}</h1>
             <ul className="mt-5 flex flex-wrap gap-2" aria-label={g.platforms}>
@@ -89,7 +121,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
             </ul>
             <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
               <div>
-                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.rating}</dt>
+                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{g.ratingSource}</dt>
                 <dd className="text-xl">{formatRating(game.rating)}</dd>
               </div>
               <div>

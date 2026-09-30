@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Diamond } from "@/components/ui/Ornaments";
 import { SOCIAL_LINKS } from "@/components/ui/SocialIcons";
-import { PLATFORMS, SITE_NAME } from "@/lib/catalog";
+import { SITE_NAME } from "@/lib/catalog";
+import { INFO_PAGE_ROUTES } from "@/lib/i18n/info-pages";
 import { getDictionary } from "@/lib/i18n/server";
-import { NAV_LINKS } from "./nav-links";
 
 function FooterColumn({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
@@ -29,6 +29,7 @@ function FooterColumn({ title, links }: { title: string; links: { href: string; 
 /** Mirrors the header: same near-black panel, same single gold hairline, same logo lockup. */
 export async function Footer() {
   const t = await getDictionary();
+  const l = t.footer.links;
   return (
     <footer className="relative z-10 mt-24 border-t border-gold-dark bg-[#0a0907]">
       {/* Small gold diamond set into the boundary line, centred. */}
@@ -62,19 +63,47 @@ export async function Footer() {
             ))}
           </ul>
         </div>
-        <FooterColumn title={t.footer.quickLinks} links={NAV_LINKS.map((l) => ({ href: l.href, label: t.nav[l.key] }))} />
+        {/* Every link has its own destination; nothing shares a placeholder route. */}
         <FooterColumn
-          title={t.footer.platforms}
-          links={PLATFORMS.map((p) => ({ href: `/produse?platform=${encodeURIComponent(p.name)}`, label: p.name }))}
+          title={t.footer.shop}
+          links={[
+            { href: "/produse", label: l.games },
+            { href: "/produse?sale=1", label: l.deals },
+            { href: "/produse?sort=newest", label: l.newReleases },
+            { href: "/#genuri", label: l.genres },
+          ]}
         />
-        <FooterColumn title={t.footer.info} links={t.footer.infoLinks.map((label) => ({ href: "/contact#faq", label }))} />
+        <FooterColumn
+          title={t.footer.information}
+          links={[
+            { href: "/despre-noi", label: l.about },
+            { href: INFO_PAGE_ROUTES.delivery, label: l.delivery },
+            { href: "/intrebari-frecvente", label: l.faq },
+            { href: INFO_PAGE_ROUTES.privacy, label: l.privacy },
+            { href: INFO_PAGE_ROUTES.terms, label: l.terms },
+          ]}
+        />
+        <FooterColumn
+          title={t.footer.support}
+          links={[
+            { href: "/contact", label: l.contact },
+            { href: "mailto:contact@theironvault.md", label: "contact@theironvault.md" },
+          ]}
+        />
       </div>
 
       <div className="mx-auto max-w-page px-4 sm:px-6 lg:px-8">
         <hr className="border-0 border-t border-gold-dark/40" />
         <div className="flex flex-col gap-2 py-7 text-sm text-parchment-muted sm:flex-row sm:justify-between">
           <p>{t.footer.rights(new Date().getFullYear(), SITE_NAME)}</p>
-          <p className="font-display-ui text-[0.65rem] text-aged-gold/80">{t.footer.motto}</p>
+          <p className="flex gap-5">
+            <Link href={INFO_PAGE_ROUTES.terms} className="hover:text-gold-light">
+              {l.terms}
+            </Link>
+            <Link href={INFO_PAGE_ROUTES.privacy} className="hover:text-gold-light">
+              {l.privacy}
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

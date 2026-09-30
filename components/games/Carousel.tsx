@@ -185,8 +185,10 @@ export function Carousel({ children, className = "max-w-[88%]", loop = false }: 
           items.map((child, i) => (
             <li
               key={`${copy}-${i}`}
-              // Only the middle copy is announced; the others are visual repeats.
+              // Only the middle copy is real; the others are visual repeats for the loop, so they are
+              // hidden from screen readers and made inert (no tab stops, no duplicate links).
               aria-hidden={copies > 1 && copy !== 1 ? true : undefined}
+              inert={copies > 1 && copy !== 1}
               className="w-full shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-4.5rem)/4)]"
             >
               {child}
