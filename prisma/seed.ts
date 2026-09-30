@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { localizedDescriptionSchema } from "../lib/localized-text";
 import { gameDescriptions } from "./game-descriptions";
 import { coverPath, games, screenshotPaths } from "./games-data";
+import { systemRequirements } from "./system-requirements";
 
 const prisma = new PrismaClient();
 const DAY = 24 * 60 * 60 * 1000;
@@ -23,6 +24,7 @@ async function main() {
         screenshots: screenshotPaths(art),
         cardImage: art?.card ?? null,
         pageCoverImage: art?.pageCover ?? null,
+        systemRequirements: systemRequirements[g.slug] ?? null,
         ...(discount && {
           discountPrice: Math.round(g.price * (1 - discount.percent / 100)) - 0.01,
           discountEndsAt: new Date(now + discount.days * DAY),

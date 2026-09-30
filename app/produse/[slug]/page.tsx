@@ -7,6 +7,7 @@ import { Gallery } from "@/components/games/Gallery";
 import { Carousel } from "@/components/games/Carousel";
 import { GameCard } from "@/components/games/GameCard";
 import { PurchasePanel, type PanelOffer } from "@/components/games/PurchasePanel";
+import { SystemRequirements } from "@/components/games/SystemRequirements";
 import { Tabs } from "@/components/games/Tabs";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -40,15 +41,6 @@ export async function generateMetadata({ params }: PageProps<"/produse/[slug]">)
     },
   };
 }
-
-/** Minimum / recommended values; row names come from t.game.requirementRows in the same order. */
-const REQUIREMENTS = [
-  ["Windows 10 / 11, 64-bit", "Windows 11, 64-bit"],
-  ["Intel Core i5-8400 / AMD Ryzen 5 2600", "Intel Core i7-10700 / AMD Ryzen 7 3700X"],
-  ["12 GB RAM", "16 GB RAM"],
-  ["GTX 1060 6 GB / RX 580 8 GB", "RTX 3060 / RX 6700 XT"],
-  ["60 GB SSD", "60 GB SSD"],
-] as const;
 
 function Detail({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -183,30 +175,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
               },
               {
                 label: g.requirements,
-                content: game.platforms.includes("PC") ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[600px] text-left text-[1.15rem] sm:text-[1.25rem]">
-                      <thead>
-                        <tr className="border-b border-iron font-display-ui text-[0.8rem] text-parchment-muted">
-                          <th scope="col" className="py-4 pr-5 font-normal">{g.component}</th>
-                          <th scope="col" className="py-4 pr-5 font-normal">{g.minimum}</th>
-                          <th scope="col" className="py-4 font-normal">{g.recommended}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {REQUIREMENTS.map(([min, rec], i) => (
-                          <tr key={g.requirementRows[i]} className="border-b border-iron">
-                            <th scope="row" className="py-4 pr-5 font-normal text-parchment-muted">{g.requirementRows[i]}</th>
-                            <td className="py-4 pr-5">{min}</td>
-                            <td className="py-4">{rec}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-parchment-muted">{g.consoleOnly}</p>
-                ),
+                content: <SystemRequirements requirements={game.systemRequirements} onPc={offers.some((o) => o.platform === "PC")} t={g} />,
               },
               {
                 label: g.details,

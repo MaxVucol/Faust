@@ -30,36 +30,56 @@ type GameVariant {
   stock            Int?
 }
 
+/// One column of PC system requirements. Every field is optional: what the publisher doesn't list
+/// stays empty.
+type RequirementSet {
+  os        String?
+  processor String?
+  memory    String?
+  graphics  String?
+  directX   String?
+  storage   String?
+}
+
+/// Verified PC requirements for a game, with the page they were copied from. Absent when no
+/// verified requirements exist; never filled from a template or another game.
+type SystemRequirements {
+  source      String
+  minimum     RequirementSet?
+  recommended RequirementSet?
+}
+
 model Game {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
-  title            String
-  slug             String        @unique
-  description      LocalizedText
-  price            Float
-  discountPrice    Float?
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  slug               String              @unique
+  description        LocalizedText
+  price              Float
+  discountPrice      Float?
   /// A sale runs from discountStartsAt (immediately when unset) until discountEndsAt.
-  discountStartsAt DateTime?
-  discountEndsAt   DateTime?
+  discountStartsAt   DateTime?
+  discountEndsAt     DateTime?
   /// Purchasable versions. When empty, each entry of `platforms` is one variant at the game's price.
-  variants         GameVariant[]
-  coverImage       String
+  variants           GameVariant[]
+  coverImage         String
   /// Optional landscape image for home-page cards only; falls back to the first screenshot.
-  cardImage        String?
+  cardImage          String?
   /// Optional portrait cover for the game page only; falls back to coverImage.
-  pageCoverImage   String?
-  screenshots      String[]
-  genres           String[]
-  platforms        String[]
+  pageCoverImage     String?
+  screenshots        String[]
+  genres             String[]
+  platforms          String[]
   /// The store's own score (shown as "The Iron Vault rating"). Empty until the store has rated
   /// the game; never filled with an invented number.
-  rating           Float?
-  releaseDate      DateTime
-  developer        String
-  publisher        String
-  stock            Int
-  featured         Boolean       @default(false)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  rating             Float?
+  releaseDate        DateTime
+  developer          String
+  publisher          String
+  stock              Int
+  systemRequirements SystemRequirements?
+  featured           Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 }
 
 model ContactMessage {
