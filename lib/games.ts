@@ -156,10 +156,10 @@ export async function searchGames(f: GameFilters): Promise<{ games: GameCardData
     // The store's featured picks first, then by rating.
     popular: (a, b) => Number(featuredSlugs.has(b.game.slug)) - Number(featuredSlugs.has(a.game.slug)) || score(b.game.rating) - score(a.game.rating) || byTitle(a, b),
     rating: (a, b) => score(b.game.rating) - score(a.game.rating) || byTitle(a, b),
-    newest: (a, b) => b.game.releaseDate.getTime() - a.game.releaseDate.getTime(),
+    newest: (a, b) => b.game.releaseDate.getTime() - a.game.releaseDate.getTime() || byTitle(a, b),
     "price-asc": (a, b) => a.price - b.price || byTitle(a, b),
     "price-desc": (a, b) => b.price - a.price || byTitle(a, b),
-    discount: (a, b) => maxDiscountPercent(b.offers, now) - maxDiscountPercent(a.offers, now) || score(b.game.rating) - score(a.game.rating),
+    discount: (a, b) => maxDiscountPercent(b.offers, now) - maxDiscountPercent(a.offers, now) || score(b.game.rating) - score(a.game.rating) || byTitle(a, b),
   };
   filtered.sort(sorters[f.sort]);
 
