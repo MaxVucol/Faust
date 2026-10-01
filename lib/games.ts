@@ -110,6 +110,26 @@ export async function suggestGames(q: string, take = 6): Promise<GameCardData[]>
 /** Sort key for the optional store rating: unrated games go after rated ones. */
 const score = (rating: number | null) => rating ?? -1;
 
+/** The price a game's card shows right now (its cheapest offer, in stock first), in MDL: what the price filter compares. */
+function cardPriceNow(game: Parameters<typeof gameOffers>[0], offers: ReturnType<typeof gameOffers>, now: Date): number {
+  const best = bestOffer(offers, now);
+  return best ? effectivePrice(best, now) : game.price;
+}
+
+/**
+ * The cheapest and the dearest card price in the whole catalogue right now (MDL), by the same rule as
+ * the price filter: the ends of the catalogue's price slider. Null when the catalogue is empty.
+ */
+export const getPriceBounds = cache(async (): Promise<{ min: number; max: number } | null> => {
+  const now = new Date();
+  const games = await prisma.game.findMany({
+    select: { price: true, discountPrice: true, discountStartsAt: true, discountEndsAt: true, platforms: true, variants: true, stock: true },
+  });
+  if (games.length === 0) return null;
+  const prices = games.map((g) => cardPriceNow(g, gameOffers(g), now));
+  return { min: Math.min(...prices), max: Math.max(...prices) };
+});
+
 /** Filters that the database can apply directly (everything except price and sale). */
 function buildWhere(f: GameFilters, now: Date): Prisma.GameWhereInput {
   const and: Prisma.GameWhereInput[] = [];
@@ -141,8 +161,7 @@ export async function searchGames(f: GameFilters): Promise<{ games: GameCardData
 
   const rows = found.map((game) => {
     const offers = gameOffers(game);
-    const best = bestOffer(offers, now);
-    return { game, offers, price: best ? effectivePrice(best, now) : game.price };
+    return { game, offers, price: cardPriceNow(game, offers, now) };
   });
   const filtered = rows.filter(
     (r) =>

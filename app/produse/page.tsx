@@ -6,7 +6,7 @@ import { SortSelect } from "@/components/games/SortSelect";
 import { ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { SITE_NAME } from "@/lib/catalog";
-import { catalogQuery, hasActiveOffers, parseFilters, searchCatalog } from "@/lib/games";
+import { catalogQuery, getPriceBounds, hasActiveOffers, parseFilters, searchCatalog } from "@/lib/games";
 import { getCurrency, getDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,10 +25,11 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
   const currency = await getCurrency();
   // Always the first batch: further games are appended by "Load more" without page URLs
   // (an old ?page=N link simply opens the catalogue from the start; canonical stays /produse).
-  const [{ games, total, pages }, t, offers] = await Promise.all([
+  const [{ games, total, pages }, t, offers, priceBounds] = await Promise.all([
     searchCatalog({ ...filters, page: 1 }, currency),
     getDictionary(),
     hasActiveOffers(),
+    getPriceBounds(),
   ]);
   const c = t.catalog;
   // "Only discounted" with nothing on sale anywhere: say so, rather than blame the filters.
@@ -46,7 +47,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
 
       <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
         <div>
-          <Filters filters={filters} />
+          <Filters filters={filters} priceBounds={priceBounds} total={total} />
         </div>
         <section aria-label={c.resultsAria}>
           <div className="mb-6 flex justify-end">
