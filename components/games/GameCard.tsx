@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Badge } from "@/components/ui/Badge";
-import { buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { genreLabel, platformShort } from "@/lib/catalog";
-import { effectivePrice, formatRating, isNewRelease, isOnSale } from "@/lib/format";
+import { formatRating, isNewRelease } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
 import { gameOffers } from "@/lib/offers";
+import { purchaseOptions } from "@/lib/purchase";
 import type { GameCardData } from "@/types";
-import { AddToCartButton } from "./AddToCartButton";
 import { DiscountBadge } from "./DiscountBadge";
 import { GameImage } from "./GameImage";
 import { GamePrice } from "./Price";
+import { QuickAdd } from "./QuickAdd";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,8 +27,8 @@ const DEFAULT_CARD_SIZES = "(min-width: 1536px) 340px, (min-width: 1280px) 30vw,
 
 /**
  * Catalogue card: cover (discount top-left, favourite star top-right), title, genres, rating and
- * stock, platforms, price, then the action. A game sold on one platform goes straight to the cart;
- * with several, the button leads to the product page to pick one, so nothing ambiguous is bought.
+ * stock, platforms, price, then "Add to cart" (QuickAdd): a game sold on one platform goes straight to
+ * the cart; with several, the purchase dialog asks which one, so nothing ambiguous is bought.
  *
  * `compact`: below the sm breakpoint (two cards per row) the card keeps only the cover, favourite,
  * discount, title and price (plus "out of stock" when it applies); the whole card leads to the game.
@@ -47,8 +47,6 @@ export async function GameCard({
   const t = await getDictionary();
   const offers = gameOffers(game);
   const inStock = offers.some((o) => o.stock > 0);
-  // Straight to the cart only when there is exactly one version (or nothing to buy at all).
-  const direct = offers.length === 1 || !inStock ? offers[0] : undefined;
   const href = `/produse/${game.slug}`;
   // Details hidden on phones in the compact grid; unchanged from sm up.
   const wide = compact ? { block: "hidden sm:block", flex: "hidden sm:flex" } : { block: "block", flex: "flex" };
@@ -93,26 +91,8 @@ export async function GameCard({
         <div className={cn("mt-auto", compact ? "pt-3 sm:pt-5" : "pt-5")}>
           <GamePrice game={game} className={compact ? "text-base sm:mb-4 sm:text-xl" : "mb-4 text-xl"} />
           <div className={wide.block}>
-            {direct ? (
-              <AddToCartButton
-                variant="outline"
-                className="w-full"
-                inStock={direct.stock > 0}
-                item={{
-                  slug: game.slug,
-                  title: game.title,
-                  platform: direct.platform,
-                  edition: direct.edition,
-                  price: effectivePrice(direct),
-                  oldPrice: isOnSale(direct) ? direct.price : null,
-                  coverImage: game.coverImage,
-                }}
-              />
-            ) : (
-              <Link prefetch={false} href={`${href}#cumpara`} className={buttonClasses("outline", "sm", "w-full")}>
-                {t.game.choosePlatform}
-              </Link>
-            )}
+            {/* The same "Add to cart" as on the home cards: one version goes straight in, several open the purchase dialog. */}
+            <QuickAdd game={{ slug: game.slug, title: game.title, coverImage: game.coverImage }} offers={purchaseOptions(game)} />
           </div>
         </div>
       </div>
