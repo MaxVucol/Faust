@@ -9,9 +9,9 @@ import { useFavorites } from "./FavoritesProvider";
  * Wishlist star for the top-right corner of a game cover. Place it as a sibling of the card's link
  * (never inside it), in a `relative` box, so a tap only toggles the star.
  *
- * Off: near-white outline at ~85% opacity; a faint dark shadow (not a glow) keeps it readable on
- * light covers. On: filled in the site's light gold at full opacity. The hit area is 44px; the star
- * itself is 20px.
+ * Off: near-white outline; a solid, half-transparent dark disc behind it (no gradient, no glow) and a
+ * faint drop shadow keep it readable on light and dark covers alike. On: filled in the site's light
+ * gold. The hit area is 44px; the star itself is 26px on a 38px disc.
  */
 export function FavoriteButton({ slug, title, className }: { slug: string; title: string; className?: string }) {
   const { t } = useI18n();
@@ -29,8 +29,8 @@ export function FavoriteButton({ slug, title, className }: { slug: string; title
       }}
       className={cn(
         "group/fav absolute top-1 right-1 z-10 flex size-11 items-center justify-center outline-none",
-        // A faint dark halo (no visible disc) keeps the outline readable on light covers.
-        "before:pointer-events-none before:absolute before:size-9 before:rounded-full before:bg-[radial-gradient(circle,rgb(0_0_0/0.3)_0%,rgb(0_0_0/0.1)_45%,transparent_68%)]",
+        // A plain dark disc under the star: contrast on bright art, barely visible on dark art.
+        "before:pointer-events-none before:absolute before:size-[38px] before:rounded-full before:bg-black/45 before:transition-colors before:duration-200 group-hover/fav:before:bg-black/60",
         // Focus ring drawn as an outline square, so it doesn't rely on colour alone.
         "focus-visible:after:absolute focus-visible:after:inset-1.5 focus-visible:after:border focus-visible:after:border-parchment",
         className,
@@ -38,10 +38,10 @@ export function FavoriteButton({ slug, title, className }: { slug: string; title
     >
       <Star
         aria-hidden
-        strokeWidth={1.75}
+        strokeWidth={1.9}
         className={cn(
-          "relative size-5 drop-shadow-[0_1px_2px_rgb(0_0_0/0.9)] transition-[color,fill,opacity,scale] duration-200 ease-out group-hover/fav:scale-[1.07] group-active/fav:scale-95 motion-reduce:transition-none",
-          active ? "fill-gold-light text-gold-light opacity-100" : "fill-transparent text-[#f6f0e3] opacity-85 group-hover/fav:opacity-100",
+          "relative size-[26px] drop-shadow-[0_1px_2px_rgb(0_0_0/0.9)] transition-[color,fill,opacity,scale] duration-200 ease-out group-hover/fav:scale-[1.07] group-active/fav:scale-95 motion-reduce:transition-none",
+          active ? "fill-gold-light text-gold-light opacity-100" : "fill-transparent text-[#f6f0e3] opacity-95 group-hover/fav:opacity-100",
         )}
       />
     </button>
