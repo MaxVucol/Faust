@@ -95,6 +95,7 @@ export async function GameCard({
           <div className={wide.block}>
             {direct ? (
               <AddToCartButton
+                variant="outline"
                 className="w-full"
                 inStock={direct.stock > 0}
                 item={{
@@ -108,7 +109,7 @@ export async function GameCard({
                 }}
               />
             ) : (
-              <Link prefetch={false} href={`${href}#cumpara`} className={buttonClasses("primary", "sm", "w-full")}>
+              <Link prefetch={false} href={`${href}#cumpara`} className={buttonClasses("outline", "sm", "w-full")}>
                 {t.game.choosePlatform}
               </Link>
             )}
