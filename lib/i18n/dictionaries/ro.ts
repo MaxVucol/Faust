@@ -143,6 +143,11 @@ export const ro = {
     Horror: "Horror",
     "Souls-like": "Souls-like",
     Adventure: "Aventură",
+    Family: "Familie",
+    Racing: "Curse",
+    Sports: "Sport",
+    Simulation: "Simulare",
+    Casual: "Casual",
   } as Record<string, string>,
   currencies: {
     MDL: "Leu moldovenesc",

@@ -6,9 +6,17 @@ export const GENRES = [
   { name: "Horror", slug: "horror" },
   { name: "Souls-like", slug: "souls-like" },
   { name: "Adventure", slug: "adventure" },
+  { name: "Family", slug: "family" },
+  { name: "Racing", slug: "racing" },
+  { name: "Sports", slug: "sports" },
+  { name: "Simulation", slug: "simulation" },
+  { name: "Casual", slug: "casual" },
 ] as const;
 
 export type GenreName = (typeof GENRES)[number]["name"];
+
+/** The genres with an artwork tile on the home page; the catalogue filter offers all of GENRES. */
+export const HOME_GENRES = GENRES.filter((g) => (["Action", "RPG", "Strategy", "Horror", "Souls-like", "Adventure"] as GenreName[]).includes(g.name));
 
 export const PLATFORMS = [
   { name: "PC", short: "PC" },

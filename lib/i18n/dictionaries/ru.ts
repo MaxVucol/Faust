@@ -147,6 +147,11 @@ export const ru: Dictionary = {
     Horror: "Хоррор",
     "Souls-like": "Souls-like",
     Adventure: "Приключения",
+    Family: "Для всей семьи",
+    Racing: "Гонки",
+    Sports: "Спорт",
+    Simulation: "Симуляторы",
+    Casual: "Казуальные",
   },
   currencies: {
     MDL: "Молдавский лей",

@@ -138,6 +138,11 @@ export const en: Dictionary = {
     Horror: "Horror",
     "Souls-like": "Souls-like",
     Adventure: "Adventure",
+    Family: "Family",
+    Racing: "Racing",
+    Sports: "Sports",
+    Simulation: "Simulation",
+    Casual: "Casual",
   },
   currencies: {
     MDL: "Moldovan leu",

@@ -692,4 +692,169 @@ export const gameDescriptions: Record<string, DescriptionSet> = {
       "A 2D metroidvania-style action adventure with hand-crafted pixel art and brutal combat against monstrous foes that stand between you and ending the cycle.",
     ),
   },
+  "subnautica-2": {
+    ro: j("Joc în Acces anticipat. Explorezi oceanul unei planete extraterestre noi, aduni resurse, îți construiești baze subacvatice și unelte și afli ce se ascunde în adâncuri. Se joacă singur sau în co-op cu până la patru jucători."),
+    ru: j("Игра в раннем доступе. Исследуйте океан новой инопланетной планеты, добывайте ресурсы, стройте подводные базы и инструменты и узнайте, что скрывают глубины. Можно играть одному или в кооперативе до четырёх человек."),
+    en: j("In Early Access. Explore the ocean of a new alien world, gather resources, build underwater bases and tools, and find out what lies in the depths. Play alone or in co-op with up to four players."),
+  },
+  "minecraft-dungeons-ii": {
+    ro: j("Continuarea aventurii de acțiune din universul Minecraft. Lupți cu illagerii, explorezi Sift, o dimensiune nouă, și îți echipezi eroul cu arme, armuri și artefacte. Până la patru jucători, pe același ecran sau online."),
+    ru: j("Продолжение приключенческого экшена во вселенной Minecraft. Сражайтесь с иллагерами, исследуйте новое измерение Сифт и собирайте героя из оружия, брони и артефактов. До четырёх игроков на одном экране или по сети."),
+    en: j("The follow-up to the Minecraft action adventure. Fight the illagers, explore the Sift, a new dimension, and kit out your hero with weapons, armour and artifacts. Up to four players, on one screen or online."),
+  },
+  "lego-batman-legacy-of-the-dark-knight": {
+    ro: j("Povestea lui Batman în varianta LEGO: lupte cu răufăcătorii celebri, gadgeturi și un Gotham City deschis pe care îl explorezi liber. Umorul specific LEGO face jocul potrivit pentru toată familia."),
+    ru: j("История Бэтмена в версии LEGO: схватки с известными злодеями, гаджеты и открытый Готэм-Сити, который можно свободно исследовать. Фирменный юмор LEGO делает игру подходящей для всей семьи."),
+    en: j("Batman's story told the LEGO way: fights with famous villains, gadgets and an open Gotham City to explore freely. The signature LEGO humour makes it a fit for the whole family."),
+  },
+  "hades-ii": {
+    ro: j("Roguelike de acțiune de la Supergiant Games. Ca Melinoë, prințesa Lumii de Dincolo, folosești vrăjitoria și darurile zeilor ca să-l înfrunți pe Cronos, Titanul Timpului. Fiecare încercare aduce alte arme, puteri și dialoguri."),
+    ru: j("Экшен-рогалик от Supergiant Games. В роли Мелинои, принцессы Подземного мира, вы используете колдовство и дары богов, чтобы бросить вызов Кроносу, титану времени. Каждый забег — новое оружие, силы и диалоги."),
+    en: j("An action roguelike from Supergiant Games. As Melinoë, princess of the Underworld, you use sorcery and the gods' boons to take on Chronos, the Titan of Time. Every run brings different weapons, powers and dialogue."),
+  },
+  "spongebob-squarepants-titans-of-the-tide": {
+    ro: j("Platformer 3D în care salvezi Bikini Bottom de fantome, după cearta dintre Olandezul Zburător și Regele Neptun. Treci oricând între SpongeBob și Patrick și le combini abilitățile ca să rezolvi niveluri și lupte."),
+    ru: j("3D-платформер, в котором нужно спасти Бикини-Боттом от призраков после ссоры Летучего Голландца и царя Нептуна. Переключайтесь между Губкой Бобом и Патриком и сочетайте их умения в уровнях и боях."),
+    en: j("A 3D platformer in which you save Bikini Bottom from ghosts after a clash between the Flying Dutchman and King Neptune. Switch between SpongeBob and Patrick at any time and combine their skills in levels and fights."),
+  },
+  "ea-sports-fc-26": {
+    ro: j("Simulatorul de fotbal al EA, cu cluburi, ligi și jucători licențiați. Joci cariera de antrenor sau de jucător, Ultimate Team și meciuri online, plus un mod de turneu internațional cu 48 de echipe."),
+    ru: j("Футбольный симулятор EA с лицензированными клубами, лигами и игроками. Карьера тренера или игрока, Ultimate Team и онлайн-матчи, а также режим международного турнира на 48 команд."),
+    en: j("EA's football sim with licensed clubs, leagues and players. Play manager or player career, Ultimate Team and online matches, plus a 48-team international tournament mode."),
+  },
+  "nba-2k26": {
+    ro: j("Simulatorul de baschet cu echipele și jucătorii NBA și WNBA. Îți construiești cariera în MyCAREER, conduci o franciză în MyNBA sau îți strângi echipa de cărți în MyTEAM și joci online."),
+    ru: j("Баскетбольный симулятор с командами и игроками НБА и ЖНБА. Стройте карьеру в MyCAREER, руководите франшизой в MyNBA или собирайте состав в MyTEAM и играйте по сети."),
+    en: j("The basketball sim with NBA and WNBA teams and players. Build a career in MyCAREER, run a franchise in MyNBA or collect a squad in MyTEAM, and play online."),
+  },
+  "sonic-racing-crossworlds": {
+    ro: j("Curse arcade cu Sonic și personajele SEGA, pe uscat, pe apă și în aer. Inelele de călătorie te mută în mijlocul cursei pe alte trasee, iar mașina se configurează după stilul tău. Se joacă și pe ecran împărțit, și online."),
+    ru: j("Аркадные гонки с Соником и героями SEGA по земле, воде и воздуху. Кольца перемещения посреди заезда переносят на другие трассы, а машину можно настроить под себя. Есть разделённый экран и онлайн."),
+    en: j("Arcade racing with Sonic and SEGA characters on land, water and air. Travel Rings move the race to other tracks mid-lap, and you tune your car to your style. Split-screen and online play included."),
+  },
+  "assassins-creed-shadows": {
+    ro: j("Japonia feudală, într-o lume deschisă cu anotimpuri care se schimbă. Joci alternativ cu Naoe, o shinobi care se strecoară neobservată, și cu Yasuke, un samurai care luptă deschis."),
+    ru: j("Феодальная Япония в открытом мире со сменой времён года. Вы играете то за Наоэ, синоби, которая действует скрытно, то за Ясукэ, самурая, сражающегося в открытую."),
+    en: j("Feudal Japan in an open world with changing seasons. You alternate between Naoe, a shinobi who moves unseen, and Yasuke, a samurai who fights in the open."),
+  },
+  "split-fiction": {
+    ro: j("Aventură exclusiv în doi, de la creatorii lui It Takes Two. Două scriitoare prinse în propriile povești trec prin lumi SF și fantasy, fiecare cu alte mecanici. Se joacă pe ecran împărțit sau online, iar prietenul are nevoie doar de versiunea gratuită."),
+    ru: j("Приключение строго для двоих от создателей It Takes Two. Две писательницы, запертые в собственных историях, проходят научно-фантастические и фэнтезийные миры, и в каждом свои механики. Разделённый экран или онлайн; другу хватит бесплатного пропуска."),
+    en: j("A strictly two-player adventure from the makers of It Takes Two. Two writers trapped in their own stories cross sci-fi and fantasy worlds, each with its own mechanics. Split-screen or online; your friend only needs the free pass."),
+  },
+  "two-point-museum": {
+    ro: j("Construiești și administrezi muzee, de la fosile la exponate cu stafii. Trimiți expediții după piese noi, aranjezi sălile, angajezi personal și ții vizitatorii mulțumiți, cu umorul cunoscut din Two Point Hospital."),
+    ru: j("Стройте и ведите музеи — от окаменелостей до экспонатов с привидениями. Отправляйте экспедиции за находками, обустраивайте залы, нанимайте персонал и радуйте посетителей, с юмором в духе Two Point Hospital."),
+    en: j("Build and run museums, from fossils to haunted exhibits. Send expeditions for new pieces, lay out the halls, hire staff and keep visitors happy, with the humour of Two Point Hospital."),
+  },
+  "the-last-of-us-part-ii-remastered": {
+    ro: j("Povestea lui Ellie și a lui Abby într-o Americă distrusă de pandemie, cu supraviețuire, furișare și lupte dure. Versiunea remasterizată adaugă grafică îmbunătățită și modul roguelike No Return."),
+    ru: j("История Элли и Эбби в Америке, разрушенной пандемией: выживание, скрытность и жёсткие бои. В ремастере улучшена графика и добавлен режим-рогалик «Без возврата»."),
+    en: j("Ellie and Abby's story in a pandemic-ravaged America, with survival, stealth and brutal fights. The remaster adds improved visuals and the roguelike No Return mode."),
+  },
+  "microsoft-flight-simulator-2024": {
+    ro: j("Simulator de zbor cu întreaga planetă redată din date reale. Pilotezi avioane, elicoptere și planoare și îți construiești o carieră: zboruri cu pasageri, stingerea incendiilor din aer, căutare și salvare și alte misiuni."),
+    ru: j("Авиасимулятор, в котором вся планета воссоздана по реальным данным. Самолёты, вертолёты и планеры, а также карьера пилота: пассажирские рейсы, тушение пожаров с воздуха, поисково-спасательные операции и другие задания."),
+    en: j("A flight simulator with the whole planet built from real-world data. Fly planes, helicopters and gliders and build a career: passenger flights, aerial firefighting, search and rescue and more."),
+  },
+  "lego-horizon-adventures": {
+    ro: j("Povestea lui Aloy din Horizon, spusă în stil LEGO, pentru toată familia. Vânezi mașinării, îți decorezi satul Mother's Heart și joci singur sau în co-op, pe același ecran ori online."),
+    ru: j("История Элой из Horizon в стиле LEGO для всей семьи. Охотьтесь на машины, украшайте деревню Сердце Матери и играйте в одиночку или вдвоём — на одном экране или по сети."),
+    en: j("Aloy's Horizon story told in LEGO style for the whole family. Hunt machines, decorate the village of Mother's Heart and play solo or in co-op, on one screen or online."),
+  },
+  "planet-coaster-2": {
+    ro: j("Construiești și administrezi un parc de distracții: montagne russe, tobogane cu apă, piscine și magazine. Proiectezi atracțiile piesă cu piesă, urmărești bugetul și fericirea vizitatorilor și îți împarți creațiile cu alți jucători."),
+    ru: j("Стройте и ведите парк развлечений: американские горки, водные горки, бассейны и магазины. Проектируйте аттракционы по деталям, следите за бюджетом и настроением гостей и делитесь творениями с другими игроками."),
+    en: j("Build and run a theme park: roller coasters, water slides, pools and shops. Design rides piece by piece, watch the budget and your guests' happiness, and share your creations with other players."),
+  },
+  "sonic-x-shadow-generations": {
+    ro: j("Două jocuri într-unul: Sonic Generations, cu Sonic clasic și modern pe nivele de mare viteză, și Shadow Generations, o aventură nouă cu Shadow și puterile lui speciale."),
+    ru: j("Две игры в одной: Sonic Generations с классическим и современным Соником на скоростных уровнях и Shadow Generations — новое приключение Шэдоу с его особыми способностями."),
+    en: j("Two games in one: Sonic Generations, with Classic and Modern Sonic on high-speed stages, and Shadow Generations, a new adventure for Shadow and his special powers."),
+  },
+  "balatro": {
+    ro: j("Roguelike cu cărți de joc construit pe mâinile de poker. Strângi jokeri care schimbă regulile, îți modifici pachetul și combini efecte ca să depășești scoruri tot mai mari."),
+    ru: j("Карточный рогалик на основе покерных комбинаций. Собирайте джокеров, меняющих правила, улучшайте колоду и сочетайте эффекты, чтобы набирать всё более высокие очки."),
+    en: j("A card roguelike built on poker hands. Collect jokers that bend the rules, change your deck and chain effects to beat ever higher scores."),
+  },
+  "disney-dreamlight-valley": {
+    ro: j("Joc de viață liniștit cu personaje Disney și Pixar. Cultivi, gătești, pescuiești, îți decorezi casa și valea și îndeplinești misiuni alături de eroi precum Mickey, Moana sau WALL-E."),
+    ru: j("Спокойный симулятор жизни с героями Disney и Pixar. Выращивайте урожай, готовьте, рыбачьте, обустраивайте дом и долину и выполняйте задания вместе с Микки, Моаной, ВАЛЛ-И и другими."),
+    en: j("A relaxed life sim with Disney and Pixar characters. Farm, cook, fish, decorate your home and the valley, and take on quests with heroes such as Mickey, Moana and WALL-E."),
+  },
+  "bluey-the-videogame": {
+    ro: j("Joc pentru copii mici după serialul Bluey: patru episoade jucabile, locuri cunoscute din desen și jocurile preferate ale lui Bluey și Bingo. Până la patru jucători pe același ecran."),
+    ru: j("Игра для малышей по мультсериалу «Блуи»: четыре играбельные серии, знакомые места и любимые игры Блуи и Бинго. До четырёх игроков на одном экране."),
+    en: j("A game for young children based on the Bluey show: four playable episodes, familiar places and Bluey and Bingo's favourite games. Up to four players on one screen."),
+  },
+  "cities-skylines-ii": {
+    ro: j("Construcție de orașe la scară mare: zonare, drumuri, transport public, servicii și economie. Orașul are anotimpuri și cicluri zi-noapte, iar locuitorii reacționează la fiecare decizie a ta."),
+    ru: j("Градостроительный симулятор большого масштаба: зонирование, дороги, общественный транспорт, службы и экономика. В городе сменяются времена года и день с ночью, а жители реагируют на каждое ваше решение."),
+    en: j("City building on a large scale: zoning, roads, public transport, services and the economy. The city has seasons and day-night cycles, and residents react to each of your decisions."),
+  },
+  "hot-wheels-unleashed-2-turbocharged": {
+    ro: j("Curse arcade cu peste 130 de mașinuțe Hot Wheels pe pistele portocalii celebre. Sari, derapezi și te lovești de adversari, iar în editor îți construiești propriile trasee. Ecran împărțit și online."),
+    ru: j("Аркадные гонки на более чем 130 машинках Hot Wheels по знаменитым оранжевым трассам. Прыжки, заносы и тараны соперников, а в редакторе можно строить свои трассы. Разделённый экран и онлайн."),
+    en: j("Arcade racing with more than 130 Hot Wheels cars on the famous orange tracks. Jump, drift and ram your rivals, and build your own tracks in the editor. Split-screen and online."),
+  },
+  "paw-patrol-world": {
+    ro: j("Aventură 3D pentru copii cu cățeii din Patrula cățelușilor. Explorezi liber Adventure Bay, schimbi oricând între cățeii cu vehiculele lor și îl oprești pe primarul Humdinger."),
+    ru: j("3D-приключение для детей со щенками из «Щенячьего патруля». Свободно исследуйте Бухту приключений, переключайтесь между щенками и их машинами и остановите мэра Хамдингера."),
+    en: j("A 3D adventure for children with the PAW Patrol pups. Roam Adventure Bay freely, switch between the pups and their vehicles at any time, and stop Mayor Humdinger."),
+  },
+  "dave-the-diver": {
+    ro: j("Ziua pescuiești și explorezi Blue Hole, o groapă oceanică misterioasă, iar seara conduci un restaurant de sushi cu ce ai prins. Un joc pixel-art relaxat, cu multe surprize pe parcurs."),
+    ru: j("Днём вы ныряете и исследуете загадочную Голубую дыру, а вечером управляете суши-рестораном из своего улова. Неспешная пиксельная игра с множеством сюрпризов."),
+    en: j("By day you dive and explore the mysterious Blue Hole; by night you run a sushi restaurant with your catch. A relaxed pixel-art game with plenty of surprises."),
+  },
+  "lego-star-wars-the-skywalker-saga": {
+    ro: j("Toate cele nouă filme ale sagăi Skywalker în stil LEGO. Peste 300 de personaje jucabile, peste 100 de vehicule și 23 de planete de explorat, cu umor potrivit pentru toată familia."),
+    ru: j("Все девять фильмов саги о Скайуокерах в стиле LEGO. Более 300 играбельных персонажей, свыше 100 транспортных средств и 23 планеты, а юмор подходит для всей семьи."),
+    en: j("All nine Skywalker saga films in LEGO style. Over 300 playable characters, more than 100 vehicles and 23 planets to explore, with humour for the whole family."),
+  },
+  "powerwash-simulator": {
+    ro: j("Cureți cu mașina de spălat cu presiune case, vehicule și locuri de joacă până strălucesc. Un joc liniștit, fără grabă, pe care îl poți juca și în co-op online."),
+    ru: j("Отмывайте мойкой высокого давления дома, машины и детские площадки до блеска. Спокойная игра без спешки, в которую можно играть и в онлайн-кооперативе."),
+    en: j("Clean houses, vehicles and playgrounds with a pressure washer until they shine. A calm, unhurried game you can also play in online co-op."),
+  },
+  "forza-horizon-5": {
+    ro: j("Curse în lume deschisă prin Mexic, de la deșert și jungle la orașe și vulcani, cu sute de mașini reale. Participi la festivalul Horizon, concurezi online și îți construiești propriile curse și provocări."),
+    ru: j("Гонки в открытом мире по Мексике — от пустынь и джунглей до городов и вулканов — на сотнях реальных машин. Участвуйте в фестивале Horizon, соревнуйтесь онлайн и создавайте свои заезды и испытания."),
+    en: j("Open-world racing across Mexico, from desert and jungle to cities and volcanoes, in hundreds of real cars. Take part in the Horizon festival, race online and build your own events and challenges."),
+  },
+  "overcooked-all-you-can-eat": {
+    ro: j("Overcooked! 1 și 2 remasterizate, cu peste 200 de nivele. Gătiți împreună în bucătării haotice, împărțiți sarcinile și serviți comenzile la timp. Până la patru jucători, pe același ecran sau online."),
+    ru: j("Ремастер Overcooked! 1 и 2 с более чем 200 уровнями. Готовьте вместе на хаотичных кухнях, делите обязанности и успевайте выдавать заказы. До четырёх игроков на одном экране или по сети."),
+    en: j("Overcooked! 1 and 2 remastered, with over 200 levels. Cook together in chaotic kitchens, split the jobs and serve orders on time. Up to four players, on one screen or online."),
+  },
+  "minecraft-dungeons": {
+    ro: j("Joc de acțiune în stilul dungeon crawler-elor clasice, în universul Minecraft. Lupți cu monștri, strângi echipament și arme și îl înfrunți pe Arch-Illager, singur sau cu până la trei prieteni."),
+    ru: j("Экшен в духе классических данжен-кроулеров во вселенной Minecraft. Сражайтесь с монстрами, собирайте снаряжение и оружие и бросьте вызов Архиразбойнику в одиночку или с тремя друзьями."),
+    en: j("An action game in the style of classic dungeon crawlers, set in the Minecraft universe. Fight monsters, collect gear and weapons and take on the Arch-Illager alone or with up to three friends."),
+  },
+  "red-dead-redemption-2": {
+    ro: j("Vestul Sălbatic în 1899, în rolul lui Arthur Morgan, membru al bandei Van der Linde aflate pe fugă. O lume deschisă uriașă, cu jafuri, vânătoare, călărie și o poveste lungă despre sfârșitul unei epoci."),
+    ru: j("Дикий Запад 1899 года глазами Артура Моргана из банды Ван дер Линде, скрывающейся от закона. Огромный открытый мир с ограблениями, охотой, верховой ездой и длинной историей о конце эпохи."),
+    en: j("The Wild West in 1899, as Arthur Morgan of the Van der Linde gang on the run. A huge open world with robberies, hunting, riding and a long story about the end of an era."),
+  },
+  "the-elder-scrolls-v-skyrim-special-edition": {
+    ro: j("RPG clasic în lume deschisă: ești Dovahkiin și înfrunți dragonii care s-au întors în Skyrim. Ediția specială include jocul de bază și cele trei extinderi oficiale, cu grafică îmbunătățită."),
+    ru: j("Классическая ролевая игра в открытом мире: вы Довакин и противостоите драконам, вернувшимся в Скайрим. Особое издание включает основную игру и три официальных дополнения с улучшенной графикой."),
+    en: j("A classic open-world RPG: you are the Dragonborn, facing the dragons that have returned to Skyrim. The Special Edition includes the base game and its three official expansions with improved visuals."),
+  },
+  "stardew-valley": {
+    ro: j("Moștenești ferma bunicului și o refaci de la zero: cultivi, crești animale, pescuiești, explorezi minele și te împrietenești cu locuitorii orașului. Se joacă singur sau în co-op, cu prietenii."),
+    ru: j("Вы получаете в наследство дедушкину ферму и восстанавливаете её с нуля: выращивайте урожай, разводите животных, рыбачьте, исследуйте шахты и заводите друзей среди жителей. Можно играть одному или в кооперативе с друзьями."),
+    en: j("You inherit your grandfather's farm and rebuild it from scratch: grow crops, raise animals, fish, explore the mines and befriend the townspeople. Play alone or in co-op with friends."),
+  },
+  "euro-truck-simulator-2": {
+    ro: j("Conduci camioane prin zeci de orașe europene și livrezi marfă pe distanțe lungi. Câștigi bani, cumperi camioane și garaje, angajezi șoferi și îți extinzi propria firmă de transport."),
+    ru: j("Водите грузовики по десяткам европейских городов и доставляйте грузы на большие расстояния. Зарабатывайте, покупайте грузовики и гаражи, нанимайте водителей и развивайте свою транспортную компанию."),
+    en: j("Drive trucks through dozens of European cities and deliver cargo over long distances. Earn money, buy trucks and garages, hire drivers and grow your own haulage company."),
+  },
+  "tony-hawks-pro-skater-3-4": {
+    ro: j("Remake-ul jocurilor de skateboarding Tony Hawk's Pro Skater 3 și 4. Combini trickuri în parcuri clasice și noi, cu skateri reali, editor de parcuri și multiplayer online."),
+    ru: j("Ремейк скейтбордических Tony Hawk's Pro Skater 3 и 4. Связывайте трюки в комбо в классических и новых парках, со знаменитыми скейтерами, редактором парков и онлайн-мультиплеером."),
+    en: j("The remake of the skateboarding games Tony Hawk's Pro Skater 3 and 4. Chain tricks into combos in classic and new parks, with real skaters, a park editor and online multiplayer."),
+  },
 };

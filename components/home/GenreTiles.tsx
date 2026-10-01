@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { GENRES, genreLabel } from "@/lib/catalog";
+import { HOME_GENRES, genreLabel } from "@/lib/catalog";
 import { getDictionary } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +18,7 @@ export async function GenreTiles() {
   const t = await getDictionary();
   return (
     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-      {GENRES.map((genre) => {
+      {HOME_GENRES.map((genre) => {
         const art = GENRE_ART[genre.slug];
         return (
           <li key={genre.slug}>
