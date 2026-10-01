@@ -6,7 +6,7 @@ export const ro = {
   meta: {
     siteSuffix: "Jocuri video",
     description:
-      "Magazin online de jocuri video pentru PC și console. Chei originale, livrare imediată și oferte săptămânale.",
+      "Magazin online de jocuri video pentru PC și console. Chei originale, livrare digitală pe email și oferte săptămânale.",
     heroAlt: "Cavaler privind spre o fortăreață gotică, într-un peisaj montan întunecat",
     homeTitle: "The Iron Vault — Jocuri care te definesc",
     productsDescription:
@@ -88,7 +88,7 @@ export const ro = {
     deliveryValue: "Cheie digitală, trimisă pe email",
     currencyNote: "Prețurile se stabilesc în MDL; suma în altă valută este orientativă.",
     purchaseFacts: ["Cheie de activare digitală, fără livrare fizică", "Fără costuri de livrare"],
-    paymentNote: "Plata online nu este încă disponibilă, așa că deocamdată comenzile nu pot fi finalizate pe site.",
+    paymentNote: "Comanda se plasează din coș, fără plată pe site: te contactăm pentru confirmare, iar plata se face după aceea.",
     ratingSource: "Rating The Iron Vault",
     newBadge: "Nou",
     coverAlt: (title: string) => `Coperta jocului ${title}`,
@@ -232,7 +232,7 @@ export const ro = {
     clear: "Golește coșul",
     order: {
       title: "Datele comenzii",
-      note: "Plata se face după confirmare: te contactăm în scurt timp pentru detalii.",
+      note: "Nu plătești nimic acum: după ce trimiți comanda, te contactăm pentru confirmare și plată.",
       name: "Nume",
       phone: "Telefon",
       email: "Email",
@@ -297,16 +297,16 @@ export const ro = {
       {
         question: "Cât durează livrarea unei chei?",
         answer:
-          "Magazinul vinde doar chei digitale, trimise pe email. Plata online nu este încă disponibilă, așa că deocamdată comenzile nu pot fi finalizate și nicio cheie nu este livrată prin site.",
+          "Magazinul vinde doar chei digitale. După ce trimiți comanda, te contactăm pentru confirmare și plată, iar cheia îți este trimisă pe email după confirmarea plății.",
       },
       {
         question: "Ce metode de plată acceptați?",
-        answer: "Deocamdată niciuna: plata online nu este încă disponibilă și site-ul nu procesează plăți. Metodele de plată vor fi anunțate pe pagina „Livrare și plată” când vor fi lansate.",
+        answer: "Plata online nu este încă disponibilă, iar pe site nu se fac plăți. După ce trimiți comanda, te contactăm pentru confirmare și stabilim împreună cum se face plata.",
       },
       {
         question: "Pot returna un joc?",
         answer:
-          "Momentan pe site nu se pot face cumpărături, deci nici retururi. Condițiile de retur vor fi publicate împreună cu lansarea plății online.",
+          "Până la confirmare și plată poți renunța oricând la comandă: spune-ne când te contactăm. Condițiile de retur pentru o cheie deja primită ți le comunicăm la confirmarea comenzii, înainte de plată.",
       },
       {
         question: "Cheia nu funcționează. Ce fac?",

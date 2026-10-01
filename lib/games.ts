@@ -6,6 +6,7 @@ import { effectivePrice } from "./format";
 import { anyOnSale, bestOffer, gameOffers, maxDiscountPercent } from "./offers";
 import { dictionaries } from "./i18n/dictionaries";
 import { prisma } from "./prisma";
+import { searchKey } from "./utils";
 import type { GameCardData } from "@/types";
 
 export const cardSelect = {
@@ -73,19 +74,20 @@ export function parseFilters(sp: SearchParams): GameFilters {
 /**
  * Free-text match used by the catalogue and the header suggestions: the title, plus any genre whose
  * key or localized name contains the query (so "strategie" or "хоррор" work), plus any platform
- * whose name or short code contains it ("ps5", "switch").
+ * whose name or short code contains it ("ps5", "switch"). Diacritics are ignored on both sides
+ * (searchKey), so "yotei" finds "Ghost of Yōtei" and "actiune" finds the "Acțiune" genre. The
+ * database can't compare that way, so titles are matched here: one light query of slugs and titles.
  */
-export function textSearchWhere(q: string): Prisma.GameWhereInput {
-  const needle = q.trim().toLowerCase();
+async function textSearchWhere(q: string): Promise<Prisma.GameWhereInput> {
+  const needle = searchKey(q.trim());
   const genres = GENRES.filter((g) => {
     const names = [g.name, ...Object.values(dictionaries).map((d) => d.genres[g.name] ?? "")];
-    return names.some((n) => n.toLowerCase().includes(needle));
+    return names.some((n) => searchKey(n).includes(needle));
   }).map((g) => g.name);
-  const platforms = PLATFORMS.filter((p) => p.name.toLowerCase().includes(needle) || p.short.toLowerCase().includes(needle)).map((p) => p.name);
-  // On MongoDB, Prisma turns `contains` into a regular expression without escaping it, so "(" or
-  // ".*" would be read as regex syntax. Escape it: the query always matches literally.
-  const literal = q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const or: Prisma.GameWhereInput[] = [{ title: { contains: literal, mode: "insensitive" } }];
+  const platforms = PLATFORMS.filter((p) => searchKey(p.name).includes(needle) || searchKey(p.short).includes(needle)).map((p) => p.name);
+  const titles = await prisma.game.findMany({ select: { slug: true, title: true } });
+  const slugs = titles.filter((g) => searchKey(g.title).includes(needle)).map((g) => g.slug);
+  const or: Prisma.GameWhereInput[] = [{ slug: { in: slugs } }];
   if (genres.length) or.push({ genres: { hasSome: genres } });
   if (platforms.length) or.push({ platforms: { hasSome: platforms } });
   return { OR: or };
@@ -93,11 +95,11 @@ export function textSearchWhere(q: string): Prisma.GameWhereInput {
 
 /** Up to `take` games for the search box: exact and prefix title matches first, then by rating. */
 export async function suggestGames(q: string, take = 6): Promise<GameCardData[]> {
-  const needle = q.trim().toLowerCase();
+  const needle = searchKey(q.trim());
   if (needle.length < 2) return [];
-  const found = await prisma.game.findMany({ where: textSearchWhere(q), select: cardSelect, orderBy: { rating: "desc" }, take: 30 });
+  const found = await prisma.game.findMany({ where: await textSearchWhere(q), select: cardSelect, orderBy: { rating: "desc" }, take: 30 });
   const rank = (title: string) => {
-    const t = title.toLowerCase();
+    const t = searchKey(title);
     if (t === needle) return 0;
     if (t.startsWith(needle)) return 1;
     if (t.split(/[\s:]+/).some((w) => w.startsWith(needle))) return 2;
@@ -131,9 +133,9 @@ export const getPriceBounds = cache(async (): Promise<{ min: number; max: number
 });
 
 /** Filters that the database can apply directly (everything except price and sale). */
-function buildWhere(f: GameFilters, now: Date): Prisma.GameWhereInput {
+async function buildWhere(f: GameFilters, now: Date): Promise<Prisma.GameWhereInput> {
   const and: Prisma.GameWhereInput[] = [];
-  if (f.q) and.push(textSearchWhere(f.q));
+  if (f.q) and.push(await textSearchWhere(f.q));
   if (f.genres.length) and.push({ genres: { hasSome: f.genres } });
   if (f.platforms.length) and.push({ platforms: { hasSome: f.platforms } });
   if (f.minRating !== undefined) and.push({ rating: { gte: f.minRating } });
@@ -154,7 +156,7 @@ function buildWhere(f: GameFilters, now: Date): Prisma.GameWhereInput {
 export async function searchGames(f: GameFilters): Promise<{ games: GameCardData[]; total: number; pages: number }> {
   const now = new Date();
   const [found, featured] = await Promise.all([
-    prisma.game.findMany({ where: buildWhere(f, now), select: cardSelect }),
+    prisma.game.findMany({ where: await buildWhere(f, now), select: cardSelect }),
     prisma.game.findMany({ where: { featured: true }, select: { slug: true } }),
   ]);
   const featuredSlugs = new Set(featured.map((g) => g.slug));

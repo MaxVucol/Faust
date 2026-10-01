@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
 import { useFavorites } from "@/components/favorites/FavoritesProvider";
 import { useI18n } from "@/components/i18n/I18nProvider";
@@ -31,6 +31,9 @@ export function MobileMenu({ pathname }: { pathname: string }) {
   // The panel stays mounted while it fades out, then leaves the page (so its links aren't prefetched).
   const [rendered, setRendered] = useState(false);
   const [openedAt, setOpenedAt] = useState(pathname);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -43,16 +46,50 @@ export function MobileMenu({ pathname }: { pathname: string }) {
     close();
   }
 
+  // Closed by the visitor (Escape or the close button): focus returns to the menu button.
+  const dismiss = useCallback(() => {
+    close();
+    triggerRef.current?.focus();
+  }, [close]);
+
+  // While open the panel is a modal dialog, as in the catalogue's filter panel: focus moves into it
+  // (the close button) and stays there (Tab wraps), and the page behind doesn't scroll. Widening the
+  // window to the full navigation (xl) closes it, since the header then shows the same links.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      // An Escape the preferences dropdown has already handled (closing itself) leaves the menu open.
+      if (e.key === "Escape" && !e.defaultPrevented) dismiss();
+      else if (e.key === "Tab" && panelRef.current) {
+        const focusable = [...panelRef.current.querySelectorAll<HTMLElement>("button, a[href], input, select, textarea")].filter(
+          (el) => !el.hasAttribute("disabled") && el.tabIndex >= 0,
+        );
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!panelRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first?.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    const wide = window.matchMedia("(min-width: 1280px)");
+    const onWide = () => wide.matches && close();
     document.addEventListener("keydown", onKey);
+    wide.addEventListener("change", onWide);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
+      wide.removeEventListener("change", onWide);
       document.body.style.overflow = "";
     };
-  }, [open, close]);
+  }, [open, close, dismiss]);
 
   // Opening: the panel fades in and its contents glide down 10px into place (the entry state comes
   // from @starting-style). Closing reverses it a little faster. The header's menu button turns into
@@ -61,8 +98,10 @@ export function MobileMenu({ pathname }: { pathname: string }) {
   const glide = cn("transition-[translate]", open ? cn("translate-y-0 starting:-translate-y-2.5", OPEN_TIMING) : cn("-translate-y-2.5", CLOSE_TIMING));
 
   return (
-    <div className="flex lg:hidden">
+    <div className="flex xl:hidden">
+      {/* A 44px touch target around the 24px icon; the negative margins keep the icon where it was. */}
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-controls="meniu-mobil"
@@ -72,12 +111,13 @@ export function MobileMenu({ pathname }: { pathname: string }) {
           setOpen(true);
           setRendered(true);
         }}
-        className="flex size-6 items-center justify-center text-parchment-muted hover:text-parchment"
+        className="-mr-2.5 flex size-11 items-center justify-center text-parchment-muted hover:text-parchment sm:-ml-2.5"
       >
         <MenuIcon open={open} />
       </button>
       {rendered && (
         <div
+          ref={panelRef}
           id="meniu-mobil"
           role="dialog"
           aria-modal="true"
@@ -95,12 +135,14 @@ export function MobileMenu({ pathname }: { pathname: string }) {
           <div className={cn("relative z-10 flex items-center justify-between", glide)}>
             <PreferencesMenu align="left" />
           </div>
-          {/* Exactly over the header's menu button (same size, same corner). */}
+          {/* Exactly over the header's menu button (same 44px box, same corner: the header's side padding
+              less the button's 10px negative margin). */}
           <button
+            ref={closeRef}
             type="button"
             aria-label={t.nav.closeMenu}
-            onClick={close}
-            className="absolute top-7 right-4 z-20 flex size-6 items-center justify-center text-parchment-muted hover:text-parchment sm:right-6"
+            onClick={dismiss}
+            className="absolute top-4.5 right-1.5 z-20 flex size-11 items-center justify-center text-parchment-muted hover:text-parchment sm:right-3.5 lg:right-5.5"
           >
             <MenuIcon open />
           </button>

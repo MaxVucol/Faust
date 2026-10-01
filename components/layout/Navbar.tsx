@@ -4,15 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, ShoppingCart, Star, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useCart } from "@/lib/use-cart";
 import { useFavorites } from "@/components/favorites/FavoritesProvider";
 import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { SITE_NAME } from "@/lib/catalog";
+import { cn } from "@/lib/utils";
 import { MobileMenu } from "./MobileMenu";
 import { SearchBox } from "./SearchBox";
 import { NAV_LINKS, isActive } from "./nav-links";
+
+/** A header control's hit area: at least 44px square on phones, 44px tall from sm up (see the tools row). */
+const HIT_AREA = "h-11 min-w-11 items-center justify-center sm:-mx-2.5 sm:min-w-0 sm:px-2.5";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -21,6 +25,7 @@ export function Navbar() {
   const { t } = useI18n();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchPath, setSearchPath] = useState(pathname);
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close the search bar when the route changes (a suggestion, a nav link, the logo…).
   if (searchPath !== pathname) {
@@ -30,7 +35,9 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-gold-dark bg-[#0a0907] shadow-[0_1px_12px_rgb(192_154_85/0.15),0_8px_24px_rgb(0_0_0/0.6)]">
-      <div className="mx-auto grid h-20 max-w-page grid-cols-[auto_1fr] items-center gap-4 lg:grid-cols-[auto_1fr_auto] xl:grid-cols-[1fr_auto_1fr] px-4 sm:px-6 lg:px-8">
+      {/* The full navigation needs 1280px (xl): below that the wordmark, the links and the tools don't
+          fit on one row in every language, so narrower screens use the menu button instead. */}
+      <div className="mx-auto grid h-20 max-w-page grid-cols-[auto_1fr] items-center gap-4 xl:grid-cols-[1fr_auto_1fr] px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="col-start-1 flex min-w-0 items-center gap-2 justify-self-start font-brand text-[0.9rem] font-semibold tracking-[0.1em] sm:gap-3 whitespace-nowrap text-aged-gold uppercase sm:text-xl sm:tracking-[0.15em]"
@@ -40,7 +47,7 @@ export function Navbar() {
           {SITE_NAME}
         </Link>
 
-        <nav aria-label={t.nav.mainAria} className="hidden h-full justify-self-center lg:block">
+        <nav aria-label={t.nav.mainAria} className="hidden h-full justify-self-center xl:block">
           <ul className="flex h-full items-center gap-7 xl:gap-14 2xl:gap-16">
             {NAV_LINKS.map((link) => {
               const active = isActive(pathname, link.href);
@@ -63,15 +70,19 @@ export function Navbar() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-3.5 justify-self-end sm:gap-5">
+        {/* Touch targets: on phones the controls are 44px boxes side by side (the box is the spacing);
+            from sm up each reaches halfway into the 20px gap (padding offset by a negative margin),
+            so the hit areas grow without moving any icon. */}
+        <div className="flex items-center justify-self-end sm:gap-5">
           <PreferencesMenu className="hidden sm:block" />
           <button
+            ref={searchButtonRef}
             type="button"
             onClick={() => setSearchOpen((v) => !v)}
             aria-expanded={searchOpen}
             aria-controls="cautare"
             aria-label={searchOpen ? t.nav.closeSearch : t.nav.search}
-            className="text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light"
+            className={cn("flex", HIT_AREA, "text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light")}
           >
             {searchOpen ? <X className="size-5" /> : <Search className="size-5" />}
           </button>
@@ -79,7 +90,7 @@ export function Navbar() {
           <Link
             href="/favorite"
             aria-label={t.favorites.nav(favorites.count)}
-            className="hidden items-center gap-1.5 text-sm text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light sm:flex"
+            className={cn(HIT_AREA, "hidden gap-1.5 text-sm text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light sm:flex")}
           >
             <Star aria-hidden strokeWidth={1.75} className={favorites.count > 0 ? "size-5 fill-aged-gold text-aged-gold" : "size-5"} />
             {favorites.count > 0 && (
@@ -92,7 +103,7 @@ export function Navbar() {
           <Link
             href="/cos"
             aria-label={t.nav.cart(count)}
-            className="flex items-center gap-2 text-sm whitespace-nowrap text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light"
+            className={cn("flex", HIT_AREA, "gap-2 text-sm whitespace-nowrap text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light")}
           >
             <ShoppingCart aria-hidden className="size-5" />
             {/* Narrow screens show just the count next to the icon. */}
@@ -109,7 +120,13 @@ export function Navbar() {
 
       {searchOpen && (
         <div id="cautare" className="border-t border-iron bg-surface px-4 py-4 sm:px-6 lg:px-8">
-          <SearchBox onClose={() => setSearchOpen(false)} />
+          <SearchBox
+            onClose={(returnFocus) => {
+              setSearchOpen(false);
+              // Closed from the keyboard: focus goes back to the button that opened it.
+              if (returnFocus) searchButtonRef.current?.focus();
+            }}
+          />
         </div>
       )}
     </header>

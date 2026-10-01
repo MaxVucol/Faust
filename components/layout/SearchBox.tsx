@@ -16,9 +16,10 @@ type Status = "idle" | "loading" | "done" | "error";
  * Header search with live suggestions (an ARIA combobox). Typing two or more characters asks
  * /api/search for up to six games — by title, genre or platform. Arrow keys move through the
  * suggestions, Enter opens the highlighted game or the full results page, Escape closes the list
- * and then the search bar.
+ * and then the search bar. `onClose(returnFocus)`: true when closed from the keyboard, so the caller can
+ * put focus back on the button that opened it; false when a result is opened (the page changes).
  */
-export function SearchBox({ onClose }: { onClose: () => void }) {
+export function SearchBox({ onClose }: { onClose: (returnFocus: boolean) => void }) {
   const { t, currency } = useI18n();
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -59,7 +60,7 @@ export function SearchBox({ onClose }: { onClose: () => void }) {
 
   const showList = listOpen && query.length >= 2 && status !== "idle";
   const go = (href: string) => {
-    onClose();
+    onClose(false);
     router.push(href);
   };
   const allResultsHref = `/produse?q=${encodeURIComponent(query)}`;
@@ -79,7 +80,7 @@ export function SearchBox({ onClose }: { onClose: () => void }) {
     } else if (e.key === "Escape") {
       e.preventDefault();
       if (showList) setListOpen(false);
-      else onClose();
+      else onClose(true);
     }
   };
 

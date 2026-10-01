@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { placeOrder } from "@/app/actions";
 import { useI18n } from "@/components/i18n/I18nProvider";
@@ -48,8 +48,20 @@ export function CheckoutForm({ items, onPlaced }: { items: CartItem[]; onPlaced:
   });
   const lines = items.map(({ slug, platform, edition, quantity }) => ({ slug, platform, edition, quantity }));
 
+  // After a rejected submission, focus the first field marked invalid and bring it to the middle of the
+  // screen (clear of the sticky header), so the visitor sees what to fix; the submit button had focus
+  // and is disabled while sending, which would otherwise drop focus to the page.
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (state.status !== "error") return;
+    const field = formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']");
+    if (!field) return;
+    field.focus({ preventScroll: true });
+    field.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, [state]);
+
   return (
-    <form action={action} noValidate aria-labelledby="order-title" className="space-y-5">
+    <form ref={formRef} action={action} noValidate aria-labelledby="order-title" className="space-y-5">
       <Honeypot />
       <input type="hidden" name="items" value={JSON.stringify(lines)} />
       <div className="border-b border-gold-dark/50 pb-3">

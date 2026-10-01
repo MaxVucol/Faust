@@ -19,20 +19,20 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
   ro: {
     delivery: {
       title: "Livrare și plată",
-      description: "Cum primești jocurile cumpărate de la The Iron Vault și ce metode de plată sunt disponibile.",
+      description: "Cum primești jocurile cumpărate de la The Iron Vault și cum se face plata.",
       intro: "Toate produsele din magazin sunt digitale: primești o cheie de activare, nu un disc sau o cutie.",
       sections: [
         {
           title: "Livrare",
           body: [
-            "Cheia de activare se trimite pe adresa de email indicată la comandă și rămâne disponibilă în contul tău.",
+            "Cheia de activare se trimite pe adresa de email indicată la comandă, după confirmarea plății.",
             "Nu există livrare fizică și nici costuri de transport.",
           ],
         },
         {
           title: "Plată",
           body: [
-            "Plata online nu este încă disponibilă. Până la lansarea ei, comenzile nu pot fi finalizate pe site.",
+            "Plata online nu este încă disponibilă, așa că pe site nu se fac plăți. Trimiți comanda din coș, te contactăm pentru confirmare, iar plata se face după confirmare.",
             "Prețurile sunt stabilite în lei moldovenești (MDL). Afișarea în alte valute (RON, EUR, USD, RUB) folosește un curs de referință fix și are doar rol informativ.",
           ],
         },
@@ -45,8 +45,12 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
     privacy: {
       title: "Politica de confidențialitate",
       description: "Ce date colectează The Iron Vault, de ce și cum le poți șterge.",
-      intro: "Colectăm doar datele de care avem nevoie pentru a răspunde mesajelor și a trimite newsletterul.",
+      intro: "Colectăm doar datele de care avem nevoie pentru a procesa comenzile, a răspunde mesajelor și a trimite newsletterul.",
       sections: [
+        {
+          title: "Comenzi",
+          body: ["Când trimiți o comandă, primim numele, telefonul, emailul, comentariul și jocurile din coș, ca să te contactăm pentru confirmare și plată."],
+        },
         {
           title: "Formularul de contact",
           body: ["Când ne scrii, păstrăm numele, adresa de email, subiectul și mesajul, ca să îți putem răspunde."],
@@ -59,7 +63,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
           title: "Cookie-uri și stocare locală",
           body: [
             "Folosim trei cookie-uri funcționale, valabile un an: limba (lang), valuta (currency) și lista jocurilor tale favorite (favorites).",
-            "Coșul de cumpărături este salvat doar în browserul tău (localStorage) și nu este trimis către server.",
+            "Coșul de cumpărături este salvat în browserul tău (localStorage); conținutul lui ne este trimis doar când trimiți o comandă.",
             "Nu folosim cookie-uri de publicitate sau de urmărire.",
           ],
         },
@@ -89,7 +93,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
         },
         {
           title: "Comenzi",
-          body: ["Plata online nu este încă disponibilă, așa că în acest moment nu se pot plasa comenzi pe site."],
+          body: ["Comanda trimisă din coș ajunge la noi ca cerere de comandă. Te contactăm pentru confirmare, iar plata se face după aceea; plata online nu este încă disponibilă."],
         },
         {
           title: "Contact",
@@ -101,20 +105,20 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
   ru: {
     delivery: {
       title: "Доставка и оплата",
-      description: "Как вы получаете игры, купленные в The Iron Vault, и какие способы оплаты доступны.",
+      description: "Как вы получаете игры, купленные в The Iron Vault, и как проходит оплата.",
       intro: "Все товары в магазине цифровые: вы получаете ключ активации, а не диск или коробку.",
       sections: [
         {
           title: "Доставка",
           body: [
-            "Ключ активации отправляется на email, указанный при заказе, и остаётся доступен в вашем аккаунте.",
+            "Ключ активации отправляется на email, указанный при заказе, после подтверждения оплаты.",
             "Физической доставки нет, поэтому нет и расходов на пересылку.",
           ],
         },
         {
           title: "Оплата",
           body: [
-            "Онлайн-оплата пока недоступна. До её запуска оформить заказ на сайте нельзя.",
+            "Онлайн-оплата пока недоступна, поэтому на сайте платежи не принимаются. Вы отправляете заказ из корзины, мы связываемся с вами для подтверждения, а оплата проходит после подтверждения.",
             "Цены установлены в молдавских леях (MDL). Показ в других валютах (RON, EUR, USD, RUB) использует фиксированный справочный курс и носит информационный характер.",
           ],
         },
@@ -127,8 +131,12 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
     privacy: {
       title: "Политика конфиденциальности",
       description: "Какие данные собирает The Iron Vault, зачем и как их удалить.",
-      intro: "Мы собираем только те данные, которые нужны, чтобы отвечать на сообщения и отправлять рассылку.",
+      intro: "Мы собираем только те данные, которые нужны, чтобы обрабатывать заказы, отвечать на сообщения и отправлять рассылку.",
       sections: [
+        {
+          title: "Заказы",
+          body: ["Когда вы отправляете заказ, мы получаем имя, телефон, email, комментарий и игры из корзины, чтобы связаться с вами для подтверждения и оплаты."],
+        },
         {
           title: "Форма обратной связи",
           body: ["Когда вы нам пишете, мы сохраняем имя, email, тему и текст сообщения, чтобы ответить вам."],
@@ -141,7 +149,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
           title: "Cookie и локальное хранилище",
           body: [
             "Мы используем три функциональных cookie, они хранятся один год: язык (lang), валюта (currency) и список избранных игр (favorites).",
-            "Корзина сохраняется только в вашем браузере (localStorage) и не отправляется на сервер.",
+            "Корзина сохраняется в вашем браузере (localStorage); её содержимое попадает к нам только при отправке заказа.",
             "Рекламных и отслеживающих cookie мы не используем.",
           ],
         },
@@ -171,7 +179,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
         },
         {
           title: "Заказы",
-          body: ["Онлайн-оплата пока недоступна, поэтому сейчас оформить заказ на сайте нельзя."],
+          body: ["Заказ, отправленный из корзины, поступает к нам как заявка. Мы связываемся с вами для подтверждения, а оплата проходит после него; онлайн-оплата пока недоступна."],
         },
         {
           title: "Контакты",
@@ -183,20 +191,20 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
   en: {
     delivery: {
       title: "Delivery and payment",
-      description: "How you receive games bought from The Iron Vault and which payment methods are available.",
+      description: "How you receive games bought from The Iron Vault and how payment works.",
       intro: "Everything in the store is digital: you receive an activation key, not a disc or a box.",
       sections: [
         {
           title: "Delivery",
           body: [
-            "The activation key is sent to the email address given with the order and stays available in your account.",
+            "The activation key is sent to the email address given with the order, once payment is confirmed.",
             "There is no physical delivery and no shipping cost.",
           ],
         },
         {
           title: "Payment",
           body: [
-            "Online payment is not available yet. Until it launches, orders can't be completed on the site.",
+            "Online payment is not available yet, so no payments are taken on the site. You send the order from the cart, we contact you to confirm it, and payment follows confirmation.",
             "Prices are set in Moldovan lei (MDL). Showing them in other currencies (RON, EUR, USD, RUB) uses a fixed reference rate and is for information only.",
           ],
         },
@@ -209,8 +217,12 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
     privacy: {
       title: "Privacy policy",
       description: "What data The Iron Vault collects, why, and how to have it deleted.",
-      intro: "We only collect the data we need to answer messages and send the newsletter.",
+      intro: "We only collect the data we need to handle orders, answer messages and send the newsletter.",
       sections: [
+        {
+          title: "Orders",
+          body: ["When you send an order, we receive your name, phone, email, comment and the games in your cart, so we can contact you to confirm it and arrange payment."],
+        },
         {
           title: "Contact form",
           body: ["When you write to us, we keep your name, email address, subject and message so we can reply."],
@@ -223,7 +235,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
           title: "Cookies and local storage",
           body: [
             "We use three functional cookies, kept for one year: your language (lang), currency (currency) and your list of favourite games (favorites).",
-            "Your cart is saved only in your browser (localStorage) and is never sent to the server.",
+            "Your cart is saved in your browser (localStorage); its contents reach us only when you send an order.",
             "We don't use advertising or tracking cookies.",
           ],
         },
@@ -253,7 +265,7 @@ export const infoPages: Record<Locale, Record<InfoPageKey, InfoPage>> = {
         },
         {
           title: "Orders",
-          body: ["Online payment is not available yet, so orders can't be placed on the site at the moment."],
+          body: ["An order sent from the cart reaches us as an order request. We contact you to confirm it, and payment follows confirmation; online payment is not available yet."],
         },
         {
           title: "Contact",

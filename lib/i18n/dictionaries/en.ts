@@ -3,7 +3,7 @@ import type { Dictionary } from "./ro";
 export const en: Dictionary = {
   meta: {
     siteSuffix: "Video games",
-    description: "Online store for PC and console video games. Genuine keys, instant delivery and weekly deals.",
+    description: "Online store for PC and console video games. Genuine keys, digital delivery by email and weekly deals.",
     heroAlt: "A knight gazing at a gothic fortress in a dark mountain landscape",
     homeTitle: "The Iron Vault — Games that define you",
     productsDescription: "The full catalogue: action, RPG, strategy, horror, souls-like and adventure games for PC and consoles.",
@@ -84,7 +84,7 @@ export const en: Dictionary = {
     deliveryValue: "Digital key by email",
     currencyNote: "Prices are set in MDL; amounts in other currencies are for reference.",
     purchaseFacts: ["Digital activation key, no physical delivery", "No delivery charge"],
-    paymentNote: "Online payment isn't available yet, so orders can't be completed on the site for now.",
+    paymentNote: "Orders are placed from the cart with no payment on the site: we contact you to confirm, and payment follows confirmation.",
     ratingSource: "The Iron Vault rating",
     newBadge: "New",
     coverAlt: (title: string) => `Cover of ${title}`,
@@ -227,7 +227,7 @@ export const en: Dictionary = {
     clear: "Empty cart",
     order: {
       title: "Order details",
-      note: "Payment after confirmation: we'll contact you shortly with the details.",
+      note: "Nothing to pay now: after you send the order, we'll contact you to confirm it and arrange payment.",
       name: "Name",
       phone: "Phone",
       email: "Email",
@@ -292,16 +292,16 @@ export const en: Dictionary = {
       {
         question: "How long does key delivery take?",
         answer:
-          "The store only sells digital keys, sent by email. Online payment isn't available yet, so orders can't be completed for now and no keys are delivered through the site.",
+          "The store only sells digital keys. After you send an order, we contact you to confirm it and arrange payment; the key is sent to your email once payment is confirmed.",
       },
       {
         question: "Which payment methods do you accept?",
-        answer: "None yet: online payment isn't available and the site doesn't process payments. Payment methods will be listed on the Delivery and payment page when it launches.",
+        answer: "Online payment isn't available yet, and the site doesn't take payments. After you send an order, we contact you to confirm it and agree on how to pay.",
       },
       {
         question: "Can I return a game?",
         answer:
-          "Purchases can't be made on the site yet, so there are no returns either. Return terms will be published when online payment launches.",
+          "Until an order is confirmed and paid, you can cancel it at any time: just tell us when we contact you. Return terms for a key you have already received are given when we confirm the order, before payment.",
       },
       {
         question: "My key doesn't work. What should I do?",
