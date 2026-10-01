@@ -12,11 +12,13 @@ type AddToCartButtonProps = {
   label?: string;
   size?: "md" | "sm";
   className?: string;
+  /** "outline" where the button is secondary (home cards); the product page keeps the solid one. */
+  variant?: "primary" | "outline";
   /** Runs after the item is in the cart (e.g. to close the platform dialog). */
   onAdded?: () => void;
 };
 
-export function AddToCartButton({ item, inStock, label, size = "sm", className, onAdded }: AddToCartButtonProps) {
+export function AddToCartButton({ item, inStock, label, size = "sm", className, variant = "primary", onAdded }: AddToCartButtonProps) {
   const { t } = useI18n();
   const { add } = useCart();
   const [added, setAdded] = useState(false);
@@ -31,6 +33,7 @@ export function AddToCartButton({ item, inStock, label, size = "sm", className, 
   return (
     <Button
       size={size}
+      variant={variant}
       className={className}
       onClick={() => {
         add(item);

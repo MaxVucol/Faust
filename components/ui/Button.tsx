@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "glass" | "ghost" | "gold";
+type Variant = "primary" | "glass" | "ghost" | "gold" | "outline";
 type Size = "md" | "sm";
 
 const base =
@@ -21,6 +21,10 @@ const variants: Record<Variant, string> = {
   // The checkout's final action: solid antique gold with dark lettering, a shade lighter on hover,
   // darker and nudged down when pressed. No glow.
   gold: "border border-gold-light bg-gold-light text-ink transition-[background-color,border-color,translate] duration-200 hover:border-[#cfab68] hover:bg-[#cfab68] active:translate-y-px active:border-aged-gold active:bg-aged-gold",
+  // A secondary action that must not outweigh what it sits next to (e.g. "Add to cart" on a home card,
+  // where the cover and its sale badge lead): a thin dark-gold frame, gold lettering, a faint fill on hover.
+  outline:
+    "border border-gold-dark/80 text-gold-light transition-[background-color,border-color,color] duration-300 hover:border-gold-light hover:bg-gold-light/[0.08] hover:text-[#e0c487]",
 };
 
 const sizes: Record<Size, string> = {

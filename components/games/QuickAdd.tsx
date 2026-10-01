@@ -34,7 +34,7 @@ export function QuickAdd({ game, offers, className }: QuickAddProps) {
 
   if (offers.length === 0) return null;
   if (offers.length === 1) {
-    return <AddToCartButton className={cn("w-full", className)} inStock={offers[0].inStock} item={cartItemFor(game, offers[0])} />;
+    return <AddToCartButton variant="outline" className={cn("w-full", className)} inStock={offers[0].inStock} item={cartItemFor(game, offers[0])} />;
   }
 
   const offer = offers[index];
@@ -45,6 +45,7 @@ export function QuickAdd({ game, offers, className }: QuickAddProps) {
     <>
       <Button
         size="sm"
+        variant={inStock ? "outline" : "ghost"}
         className={cn("w-full", className)}
         disabled={!inStock}
         aria-haspopup="dialog"
