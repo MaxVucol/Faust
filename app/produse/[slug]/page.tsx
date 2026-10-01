@@ -5,7 +5,7 @@ import { cache, type ReactNode } from "react";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Gallery } from "@/components/games/Gallery";
 import { Carousel } from "@/components/games/Carousel";
-import { GameCard } from "@/components/games/GameCard";
+import { GameCard, SIMILAR_CARD_SIZES } from "@/components/games/GameCard";
 import { PurchasePanel, type PanelOffer } from "@/components/games/PurchasePanel";
 import { SystemRequirements } from "@/components/games/SystemRequirements";
 import { Tabs } from "@/components/games/Tabs";
@@ -214,7 +214,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
             {/* Slightly narrower than the page; side arrows move through the list. */}
             <Carousel mobileArrows className="max-w-[calc(100%-5rem)] sm:max-w-[88%]">
               {similar.map((g) => (
-                <GameCard key={g.id} game={g} />
+                <GameCard key={g.id} game={g} sizes={SIMILAR_CARD_SIZES} />
               ))}
             </Carousel>
           </section>

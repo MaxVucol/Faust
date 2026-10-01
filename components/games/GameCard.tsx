@@ -15,6 +15,17 @@ import { GamePrice } from "./Price";
 import { cn } from "@/lib/utils";
 
 /**
+ * `sizes` for the cover in each place the card is shown, matched to the measured card width.
+ * Catalogue grid: two columns on phones (42–45vw), two on tablets (43–46vw), two then three beside the
+ * filters (31–35vw, 23–24vw) and four from 1400px (17–19.4vw). Similar games carousel: one card plus
+ * the arrows on phones (65–80vw), two from 640px (38–40vw), four from 1024px (19–20.2vw).
+ * The default fits the favourites grid.
+ */
+export const CATALOG_CARD_SIZES = "(min-width: 1400px) 20vw, (min-width: 1280px) 24vw, (min-width: 1024px) 35vw, (min-width: 640px) 46vw, 50vw";
+export const SIMILAR_CARD_SIZES = "(min-width: 1024px) 20vw, (min-width: 640px) 41vw, 80vw";
+const DEFAULT_CARD_SIZES = "(min-width: 1536px) 340px, (min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw";
+
+/**
  * Catalogue card: cover (discount top-left, favourite star top-right), title, genres, rating and
  * stock, platforms, price, then the action. A game sold on one platform goes straight to the cart;
  * with several, the button leads to the product page to pick one, so nothing ambiguous is bought.
@@ -22,7 +33,17 @@ import { cn } from "@/lib/utils";
  * `compact`: below the sm breakpoint (two cards per row) the card keeps only the cover, favourite,
  * discount, title and price (plus "out of stock" when it applies); the whole card leads to the game.
  */
-export async function GameCard({ game, priority, compact = false }: { game: GameCardData; priority?: boolean; compact?: boolean }) {
+export async function GameCard({
+  game,
+  priority,
+  compact = false,
+  sizes = DEFAULT_CARD_SIZES,
+}: {
+  game: GameCardData;
+  priority?: boolean;
+  compact?: boolean;
+  sizes?: string;
+}) {
   const t = await getDictionary();
   const offers = gameOffers(game);
   const inStock = offers.some((o) => o.stock > 0);
@@ -34,13 +55,10 @@ export async function GameCard({ game, priority, compact = false }: { game: Game
   return (
     <Card interactive className="flex h-full flex-col">
       <div className="relative border-b border-iron">
-        <Link prefetch href={href} className="relative block aspect-[3/4] overflow-hidden">
-          <GameImage
-            src={game.coverImage}
-            alt={t.game.coverAlt(game.title)}
-            sizes="(min-width: 1536px) 340px, (min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw"
-            priority={priority}
-          />
+        {/* No prefetch: cards come into view by the dozen while scrolling the catalogue or swiping the
+            similar games, and prefetching each game page costs a request mid-scroll. A tap still navigates. */}
+        <Link prefetch={false} href={href} className="relative block aspect-[3/4] overflow-hidden">
+          <GameImage src={game.coverImage} alt={t.game.coverAlt(game.title)} sizes={sizes} priority={priority} />
         </Link>
         <FavoriteButton slug={game.slug} title={game.title} />
         <div className="pointer-events-none absolute top-3 left-3 flex flex-col items-start gap-1.5">
@@ -50,7 +68,7 @@ export async function GameCard({ game, priority, compact = false }: { game: Game
       </div>
       <div className={cn("flex flex-1 flex-col", compact ? "p-3 sm:p-5" : "p-5")}>
         <h3 className={cn("font-display font-semibold uppercase", compact ? "text-sm tracking-[0.06em] sm:text-base sm:tracking-[0.1em]" : "text-base tracking-[0.1em]")}>
-          <Link prefetch href={href} className="transition-colors duration-300 hover:text-aged-gold">
+          <Link prefetch={false} href={href} className="transition-colors duration-300 hover:text-aged-gold">
             {game.title}
           </Link>
         </h3>
@@ -90,7 +108,7 @@ export async function GameCard({ game, priority, compact = false }: { game: Game
                 }}
               />
             ) : (
-              <Link href={`${href}#cumpara`} className={buttonClasses("primary", "sm", "w-full")}>
+              <Link prefetch={false} href={`${href}#cumpara`} className={buttonClasses("primary", "sm", "w-full")}>
                 {t.game.choosePlatform}
               </Link>
             )}

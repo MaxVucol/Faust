@@ -13,9 +13,11 @@ export async function FeaturedCard({ game }: { game: GameCardData }) {
   const t = await getDictionary();
   return (
     <Card interactive className="h-full">
-      <Link prefetch href={`/produse/${game.slug}`} className="block h-full">
+      {/* No prefetch, as on the other home cards: a tap still navigates. */}
+      <Link prefetch={false} href={`/produse/${game.slug}`} className="block h-full">
         <div className="relative aspect-video overflow-hidden border-b border-bronze">
-          <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 1024px) 33vw, 100vw" />
+          {/* One card per row below 768px (88–93vw), three per row from 768px (28–31vw). */}
+          <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes="(min-width: 768px) 32vw, 90vw" />
           <DiscountBadge game={game} />
         </div>
         <div className="p-5">
