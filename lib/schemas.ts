@@ -21,6 +21,26 @@ export function contactSchema(t: Dictionary) {
   });
 }
 
+/** One cart line as the checkout form sends it; prices are never taken from the browser. */
+const orderLineSchema = z.object({
+  slug: z.string().trim().min(1).max(120),
+  platform: z.string().trim().max(60).optional(),
+  edition: z.string().trim().max(80).nullish(),
+  quantity: z.number().int().min(1).max(99),
+});
+
+export function orderSchema(t: Dictionary) {
+  const e = t.contact.errors;
+  const o = t.cart.order.errors;
+  return z.object({
+    name: z.string().trim().min(2, e.nameMin).max(80, e.nameMax),
+    phone: z.string().trim().regex(/^\+?[0-9][0-9\s().-]{5,19}$/, o.phone),
+    email: z.string().trim().pipe(z.email(e.email)),
+    comment: z.string().trim().max(500, o.commentMax),
+    items: z.array(orderLineSchema, o.cart).min(1, o.cart).max(30, o.cart),
+  });
+}
+
 export function newsletterSchema(t: Dictionary) {
   return z.object({
     email: z.string().trim().toLowerCase().pipe(z.email(t.contact.errors.email)),

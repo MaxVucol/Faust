@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 import { GENRES, PAGE_SIZE, PLATFORMS, RELEASED_OPTIONS, SORT_OPTIONS, type SortValue } from "./catalog";
+import { toMdl, type Currency } from "./currency";
 import { effectivePrice } from "./format";
 import { anyOnSale, bestOffer, gameOffers, maxDiscountPercent } from "./offers";
 import { dictionaries } from "./i18n/dictionaries";
@@ -168,6 +169,25 @@ export async function searchGames(f: GameFilters): Promise<{ games: GameCardData
     total: filtered.length,
     pages: Math.ceil(filtered.length / PAGE_SIZE),
   };
+}
+
+/**
+ * The catalogue page's search (the page and its "Load more" batches): price filters are typed in the
+ * visitor's currency, prices are stored in MDL.
+ */
+export function searchCatalog(f: GameFilters, currency: Currency) {
+  const inMdl = (v: number | undefined) => (v === undefined ? undefined : toMdl(v, currency));
+  return searchGames({ ...f, minPrice: inMdl(f.minPrice), maxPrice: inMdl(f.maxPrice) });
+}
+
+/** The catalogue's filters, sort and search as a query string (no page: batches are loaded in place). */
+export function catalogQuery(sp: SearchParams): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(sp)) {
+    if (key === "page" || value === undefined) continue;
+    for (const v of Array.isArray(value) ? value : [value]) params.append(key, v);
+  }
+  return params.toString();
 }
 
 export function getFeaturedGames(take = 3) {

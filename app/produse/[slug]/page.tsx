@@ -6,16 +6,17 @@ import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Gallery } from "@/components/games/Gallery";
 import { Carousel } from "@/components/games/Carousel";
 import { GameCard, SIMILAR_CARD_SIZES } from "@/components/games/GameCard";
-import { PurchasePanel, type PanelOffer } from "@/components/games/PurchasePanel";
+import { PurchasePanel } from "@/components/games/PurchasePanel";
 import { SystemRequirements } from "@/components/games/SystemRequirements";
 import { Tabs } from "@/components/games/Tabs";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { genreLabel, SITE_NAME } from "@/lib/catalog";
-import { discountPercent, effectivePrice, formatDate, formatRating, isOnSale } from "@/lib/format";
+import { formatDate, formatRating } from "@/lib/format";
 import { getGameBySlug, getSimilarGames } from "@/lib/games";
 import { galleryImages } from "@/lib/gallery";
 import { gameOffers } from "@/lib/offers";
+import { purchaseOptions, type PanelOffer } from "@/lib/purchase";
 import { LOCALE_NAMES } from "@/lib/i18n/config";
 import { getI18n } from "@/lib/i18n/server";
 import { pickLocalized } from "@/lib/localized-text";
@@ -66,20 +67,8 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
   const now = new Date();
   const offers = gameOffers(game);
   const inStock = offers.some((o) => o.stock > 0);
-  const panelOffers: PanelOffer[] = offers.map((o) => {
-    const sale = isOnSale(o, now);
-    return {
-      platform: o.platform,
-      edition: o.edition,
-      activation: o.activation,
-      region: o.region,
-      inStock: o.stock > 0,
-      price: effectivePrice(o, now),
-      oldPrice: sale ? o.price : null,
-      percent: sale ? discountPercent(o) : 0,
-      saleEnds: sale && o.discountEndsAt ? formatDate(o.discountEndsAt, locale) : null,
-    };
-  });
+  // Same versions and prices as the home cards' "Add to cart" (lib/purchase.ts).
+  const panelOffers: PanelOffer[] = purchaseOptions(game, locale, now);
   const prices = panelOffers.map((o) => o.price);
 
   // Product structured data. Prices are listed in MDL, the store's base currency. No aggregateRating:

@@ -8,16 +8,18 @@ import { platformShort } from "@/lib/catalog";
 import { formatDate, isNewRelease } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
 import { getI18n } from "@/lib/i18n/server";
+import { QuickAdd } from "@/components/games/QuickAdd";
+import { purchaseOptions } from "@/lib/purchase";
 import type { GameCardData } from "@/types";
 import { CAROUSEL_CARD_SIZES, CardArrow, MetaList } from "./CardParts";
 
 export async function NewsCard({ game }: { game: GameCardData }) {
   const { locale, t } = await getI18n();
   return (
-    <Card interactive className="h-full">
+    <Card interactive className="flex h-full flex-col">
       {/* No prefetch: a carousel brings a new card into view on every swipe, and prefetching each
           game page then costs a request and main-thread parsing mid-swipe. A tap still navigates. */}
-      <Link prefetch={false} href={`/produse/${game.slug}`} className="block h-full">
+      <Link prefetch={false} href={`/produse/${game.slug}`} className="block flex-1">
         <div className="relative aspect-[3/1] overflow-hidden border-b border-bronze">
           <GameImage src={game.cardImage ?? game.screenshots[0] ?? game.coverImage} alt="" sizes={CAROUSEL_CARD_SIZES} />
           <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
@@ -38,6 +40,10 @@ export async function NewsCard({ game }: { game: GameCardData }) {
           </div>
         </div>
       </Link>
+      {/* Outside the link: adding to the cart never opens the game page. */}
+      <div className="px-4 pb-4">
+        <QuickAdd game={{ slug: game.slug, title: game.title, coverImage: game.coverImage }} offers={purchaseOptions(game)} />
+      </div>
       <FavoriteButton slug={game.slug} title={game.title} />
     </Card>
   );

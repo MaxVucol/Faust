@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "glass" | "ghost";
+type Variant = "primary" | "glass" | "ghost" | "gold";
 type Size = "md" | "sm";
 
 const base =
@@ -18,6 +18,9 @@ const variants: Record<Variant, string> = {
     "hover:border-[#E0C487] hover:text-[#F0DDA8] hover:shadow-[inset_0_0_14px_rgb(224_196_135/0.3),0_0_18px_rgb(192_154_85/0.3)] hover:before:opacity-100 " +
     "focus-visible:before:opacity-100",
   ghost: "border border-iron text-parchment transition-colors duration-300 hover:border-aged-gold hover:text-aged-gold",
+  // The checkout's final action: solid antique gold with dark lettering, a shade lighter on hover,
+  // darker and nudged down when pressed. No glow.
+  gold: "border border-gold-light bg-gold-light text-ink transition-[background-color,border-color,translate] duration-200 hover:border-[#cfab68] hover:bg-[#cfab68] active:translate-y-px active:border-aged-gold active:bg-aged-gold",
 };
 
 const sizes: Record<Size, string> = {

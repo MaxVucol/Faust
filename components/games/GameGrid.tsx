@@ -1,18 +1,19 @@
+import { getCurrency, getLocale } from "@/lib/i18n/server";
 import type { GameCardData } from "@/types";
-import { CATALOG_CARD_SIZES, GameCard } from "./GameCard";
+import { CatalogGrid } from "./CatalogGrid";
+import { gameGridItems } from "./GameGridItems";
 
 /**
  * Catalogue grid. Phones get two compact cards per row (cover, title, price); from 1400px the desktop
  * shows four per row next to the filters (written as 87.5rem so it sorts after the rem-based xl).
+ * Further batches are appended in place by "Load more" (CatalogGrid).
  */
-export function GameGrid({ games }: { games: GameCardData[] }) {
+export async function GameGrid({ games, pages, query }: { games: GameCardData[]; pages: number; query: string }) {
+  const [currency, locale] = await Promise.all([getCurrency(), getLocale()]);
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 min-[87.5rem]:grid-cols-4 3xl:grid-cols-5">
-      {games.map((game, i) => (
-        <li key={game.id}>
-          <GameCard game={game} priority={i < 4} compact sizes={CATALOG_CARD_SIZES} />
-        </li>
-      ))}
-    </ul>
+    // Keyed by everything the cards depend on: new filters, currency or language start again from the first batch.
+    <CatalogGrid key={`${query}|${currency}|${locale}`} query={query} pages={pages}>
+      {gameGridItems(games, true)}
+    </CatalogGrid>
   );
 }

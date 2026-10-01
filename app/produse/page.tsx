@@ -2,13 +2,11 @@ import type { Metadata } from "next";
 import { ActiveFilters, clearFiltersHref } from "@/components/games/ActiveFilters";
 import { Filters } from "@/components/games/Filters";
 import { GameGrid } from "@/components/games/GameGrid";
-import { Pagination } from "@/components/games/Pagination";
 import { SortSelect } from "@/components/games/SortSelect";
 import { ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { SITE_NAME } from "@/lib/catalog";
-import { hasActiveOffers, parseFilters, searchGames } from "@/lib/games";
-import { toMdl } from "@/lib/currency";
+import { catalogQuery, hasActiveOffers, parseFilters, searchCatalog } from "@/lib/games";
 import { getCurrency, getDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,10 +23,10 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
   const sp = await searchParams;
   const filters = parseFilters(sp);
   const currency = await getCurrency();
-  // Filter inputs are shown in the selected currency; prices are stored in MDL.
-  const inMdl = (v: number | undefined) => (v === undefined ? undefined : toMdl(v, currency));
+  // Always the first batch: further games are appended by "Load more" without page URLs
+  // (an old ?page=N link simply opens the catalogue from the start; canonical stays /produse).
   const [{ games, total, pages }, t, offers] = await Promise.all([
-    searchGames({ ...filters, minPrice: inMdl(filters.minPrice), maxPrice: inMdl(filters.maxPrice) }),
+    searchCatalog({ ...filters, page: 1 }, currency),
     getDictionary(),
     hasActiveOffers(),
   ]);
@@ -56,7 +54,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
           </div>
           <ActiveFilters filters={filters} sp={sp} t={t} currency={currency} />
           {games.length > 0 ? (
-            <GameGrid games={games} />
+            <GameGrid games={games} pages={pages} query={catalogQuery(sp)} />
           ) : (
             <div className="border border-iron bg-surface px-6 py-16 text-center">
               <p className="font-display text-xl text-parchment">{noOffers ? c.noOffersTitle : c.emptyTitle}</p>
@@ -66,7 +64,6 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
               </ButtonLink>
             </div>
           )}
-          <Pagination page={filters.page} pages={pages} searchParams={sp} />
         </section>
       </div>
     </div>

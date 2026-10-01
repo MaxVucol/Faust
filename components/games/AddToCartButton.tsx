@@ -12,9 +12,11 @@ type AddToCartButtonProps = {
   label?: string;
   size?: "md" | "sm";
   className?: string;
+  /** Runs after the item is in the cart (e.g. to close the platform dialog). */
+  onAdded?: () => void;
 };
 
-export function AddToCartButton({ item, inStock, label, size = "sm", className }: AddToCartButtonProps) {
+export function AddToCartButton({ item, inStock, label, size = "sm", className, onAdded }: AddToCartButtonProps) {
   const { t } = useI18n();
   const { add } = useCart();
   const [added, setAdded] = useState(false);
@@ -33,6 +35,7 @@ export function AddToCartButton({ item, inStock, label, size = "sm", className }
       onClick={() => {
         add(item);
         setAdded(true);
+        onAdded?.();
       }}
     >
       <span aria-live="polite">{added ? t.game.addedToCart : (label ?? t.game.addToCart)}</span>

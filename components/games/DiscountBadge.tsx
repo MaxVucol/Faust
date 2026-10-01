@@ -4,9 +4,10 @@ import { cn } from "@/lib/utils";
 import type { GameCardData } from "@/types";
 
 /**
- * Sale pennant for the top-left corner of a cover (the top-right belongs to the favourite star):
- * flat crimson with the store's swallow-tail notch, the percentage large and bold so it reads before
- * the card's text. Renders nothing when no version of the game is on sale right now.
+ * Sale badge for the top-left corner of a cover (the top-right belongs to the favourite star): a solid
+ * crimson block with the percentage in large, bold figures, so a sale reads before anything else on the
+ * card without covering much of the art. A thin dark rim keeps its edge crisp on bright artwork.
+ * Renders nothing when no version of the game is on sale right now.
  */
 export async function DiscountBadge({ game, inline = false }: { game: GameCardData; /** Inside a positioned stack instead of the cover corner. */ inline?: boolean }) {
   const percent = maxDiscountPercent(gameOffers(game));
@@ -15,7 +16,7 @@ export async function DiscountBadge({ game, inline = false }: { game: GameCardDa
   return (
     <span
       className={cn(
-        "inline-block bg-crimson py-1.5 pr-4 pl-2.5 font-display text-[0.95rem] leading-none font-semibold tracking-[0.04em] text-parchment tabular-nums [clip-path:polygon(0_0,100%_0,calc(100%-7px)_50%,100%_100%,0_100%)]",
+        "inline-block border border-black/40 bg-crimson px-2 py-1.5 font-display text-lg leading-none font-bold tracking-[0.02em] text-parchment tabular-nums sm:px-2.5 sm:py-2 sm:text-2xl",
         !inline && "absolute top-3 left-3",
       )}
     >
