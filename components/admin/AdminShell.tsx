@@ -75,9 +75,14 @@ function Profile({ name, email }: { name: string; email: string }) {
           Logout
         </button>
       </form>
-      <Link href="/" className="mt-1 block px-1 text-xs text-parchment-muted underline-offset-4 hover:text-parchment hover:underline">
-        View the shop
-      </Link>
+      <div className="mt-1 flex gap-4 px-1 text-xs">
+        <Link href="/account" className="text-parchment-muted underline-offset-4 hover:text-parchment hover:underline">
+          My account
+        </Link>
+        <Link href="/" className="text-parchment-muted underline-offset-4 hover:text-parchment hover:underline">
+          View the shop
+        </Link>
+      </div>
     </div>
   );
 }

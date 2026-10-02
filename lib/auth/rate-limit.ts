@@ -66,6 +66,16 @@ export async function consume(rules: LimitRule[], now = Date.now()): Promise<boo
 
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 
+const ONE_HOUR = 60 * 60 * 1000;
+
+/** Registration: 5 accounts per IP and 3 attempts per email per hour, counted before anything is created. */
+export function registerRules(ip: string, email: string): LimitRule[] {
+  return [
+    { key: `register:ip:${ip}`, limit: 5, windowMs: ONE_HOUR },
+    { key: `register:email:${emailKey(email)}`, limit: 3, windowMs: ONE_HOUR },
+  ];
+}
+
 /** Sign-in: 10 attempts per IP and 5 per email per 15 minutes, counted before the password is checked. */
 export function signInRules(ip: string, email: string): LimitRule[] {
   return [

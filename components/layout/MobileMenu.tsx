@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { HeaderAccount } from "@/components/auth/AccountMenu";
 import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
 import { useFavorites } from "@/components/favorites/FavoritesProvider";
 import { useI18n } from "@/components/i18n/I18nProvider";
@@ -24,7 +25,7 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-export function MobileMenu({ pathname }: { pathname: string }) {
+export function MobileMenu({ pathname, account }: { pathname: string; account: HeaderAccount }) {
   const { t } = useI18n();
   const favorites = useFavorites();
   const [open, setOpen] = useState(false);
@@ -176,6 +177,18 @@ export function MobileMenu({ pathname }: { pathname: string }) {
                   {favorites.count > 0 && <span className="ml-3 text-parchment-muted tabular-nums">{favorites.count}</span>}
                 </Link>
               </li>
+              {/* The account: sign-in for guests; the account (and Administration for an admin) once signed in. */}
+              {(account ? [{ href: "/account", label: t.nav.account }, ...(account.admin ? [{ href: "/admin", label: t.nav.administration }] : [])] : [{ href: "/login", label: t.nav.login }]).map((l) => (
+                <li key={l.href} className="border-b border-iron">
+                  <Link
+                    href={l.href}
+                    onClick={close}
+                    className={cn("block py-6 font-display text-2xl tracking-[0.15em] uppercase", isActive(pathname, l.href) ? "text-aged-gold" : "text-parchment")}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>

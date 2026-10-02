@@ -4,14 +4,14 @@ import { redirect } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
 import { logout } from "@/app/admin/actions";
 import { isAdmin } from "@/lib/admin/auth";
-import { getSessionUser } from "@/lib/auth/user";
+import { getSessionUser, loginUrl } from "@/lib/auth/user";
 
 export const metadata: Metadata = { title: "Access denied" };
 
-/** Signed in, but without admin rights (another role or a blocked account). */
+/** Signed in, but without admin rights (an ordinary account, or one blocked since signing in). */
 export default async function ForbiddenPage() {
   const user = await getSessionUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect(loginUrl("/admin"));
   if (isAdmin(user)) redirect("/admin");
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
@@ -30,6 +30,9 @@ export default async function ForbiddenPage() {
               Sign in with another account
             </button>
           </form>
+          <Link href="/account" className="flex min-h-11 items-center justify-center px-5 font-display-ui text-[0.68rem] text-parchment-muted hover:text-parchment">
+            My account
+          </Link>
           <Link href="/" className="flex min-h-11 items-center justify-center px-5 font-display-ui text-[0.68rem] text-parchment-muted hover:text-parchment">
             Back to the shop
           </Link>

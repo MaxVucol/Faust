@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword } from "./password";
-import { consume, RateLimitUnavailable, signInRules } from "./rate-limit";
+import { hashPassword, verifyPassword } from "./password";
+import { consume, RateLimitUnavailable, registerRules, signInRules, type LimitRule } from "./rate-limit";
 import { createSessionToken, LEGACY_SESSION_COOKIE, readSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from "./session";
 
 /**
@@ -13,8 +13,11 @@ import { createSessionToken, LEGACY_SESSION_COOKIE, readSessionToken, SESSION_CO
  * per request.
  */
 
-/** Where signing in happens until the public /login page exists (a later migration stage). */
-export const LOGIN_PATH = "/admin/login";
+/** The site's sign-in page (it takes a local ?next= path; see lib/auth/redirect.ts). */
+export const LOGIN_PATH = "/login";
+
+/** The sign-in page, returning to `next` (a local path) afterwards. */
+export const loginUrl = (next: string) => `${LOGIN_PATH}?next=${encodeURIComponent(next)}`;
 
 /** What pages may know about the signed-in account (never the password hash). */
 export type SessionUser = {
@@ -37,11 +40,24 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   return { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status, signedInAt: claims.iat };
 });
 
-/** For pages that need any active account: not signed in (or blocked) → the sign-in page. */
-export async function requireUser(): Promise<SessionUser> {
+/** For pages that need any active account: not signed in (or blocked) → the sign-in page, back to `next` afterwards. */
+export async function requireUser(next: string): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user || user.status !== "active") redirect(LOGIN_PATH);
+  if (!user || user.status !== "active") redirect(loginUrl(next));
   return user;
+}
+
+/** Counts an attempt; "rate-limited" over the limit, "unavailable" when the limit can't be checked (fail-closed). */
+async function limit(rules: LimitRule[], what: string): Promise<"ok" | "rate-limited" | "unavailable"> {
+  try {
+    return (await consume(rules)) ? "ok" : "rate-limited";
+  } catch (error) {
+    if (error instanceof RateLimitUnavailable) {
+      console.error(`${what} refused: rate limit unavailable`, error.message);
+      return "unavailable";
+    }
+    throw error;
+  }
 }
 
 // Compared against when the email is unknown, so a wrong email takes as long as a wrong password.
@@ -55,15 +71,8 @@ export type SignInResult = { ok: true; user: { id: string; role: string } } | { 
  * attempt is refused. A blocked account gets no session.
  */
 export async function signIn(email: string, password: string, ip: string): Promise<SignInResult> {
-  try {
-    if (!(await consume(signInRules(ip, email)))) return { ok: false, reason: "rate-limited" };
-  } catch (error) {
-    if (error instanceof RateLimitUnavailable) {
-      console.error("sign-in refused: rate limit unavailable", error.message);
-      return { ok: false, reason: "unavailable" };
-    }
-    throw error;
-  }
+  const allowed = await limit(signInRules(ip, email), "sign-in");
+  if (allowed !== "ok") return { ok: false, reason: allowed };
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, role: true, status: true, passwordHash: true, sessionVersion: true } });
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !valid) return { ok: false, reason: "invalid" };
@@ -71,6 +80,31 @@ export async function signIn(email: string, password: string, ip: string): Promi
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await startSession(user.id, user.sessionVersion ?? 0);
   return { ok: true, user: { id: user.id, role: user.role } };
+}
+
+export type RegisterResult = { ok: true } | { ok: false; reason: "taken" | "rate-limited" | "unavailable" };
+
+/**
+ * Public registration: always an ordinary, active account (role "user", status "active", session
+ * version 0); nothing from the visitor decides the role. Attempts are counted first. On success the
+ * new account is signed in. Emails have no unique index in the database, so a second account created
+ * for the same email at the same moment is removed again and reported as taken.
+ */
+export async function registerUser(input: { name: string; email: string; password: string }, ip: string): Promise<RegisterResult> {
+  const allowed = await limit(registerRules(ip, input.email), "registration");
+  if (allowed !== "ok") return { ok: false, reason: allowed };
+  if (await prisma.user.findUnique({ where: { email: input.email }, select: { id: true } })) return { ok: false, reason: "taken" };
+  const created = await prisma.user.create({
+    data: { name: input.name, email: input.email, passwordHash: await hashPassword(input.password), role: "user", status: "active", sessionVersion: 0, lastLoginAt: new Date() },
+    select: { id: true },
+  });
+  const same = await prisma.user.findMany({ where: { email: input.email }, select: { id: true }, orderBy: { createdAt: "asc" } });
+  if (same.length > 1 && same[0].id !== created.id) {
+    await prisma.user.delete({ where: { id: created.id } });
+    return { ok: false, reason: "taken" };
+  }
+  await startSession(created.id, 0);
+  return { ok: true };
 }
 
 /** Issues a fresh session cookie (a new token every time, so a session is never carried over). */

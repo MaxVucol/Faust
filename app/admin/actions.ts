@@ -5,12 +5,9 @@ import { redirect } from "next/navigation";
 import { AdminAccessError, assertAdmin } from "@/lib/admin/auth";
 import { createUserSchema, gameSchema, issuesByPath, orderStatusSchema, saleSchema, updateUserSchema } from "@/lib/admin/schemas";
 import { hashPassword } from "@/lib/auth/password";
-import { loginSchema } from "@/lib/auth/schemas";
-import { sessionsConfigured } from "@/lib/auth/session";
-import { endSession, LOGIN_PATH, revokeSessions, signIn, startSession } from "@/lib/auth/user";
+import { endSession, LOGIN_PATH, revokeSessions, startSession } from "@/lib/auth/user";
 import { GENRES } from "@/lib/catalog";
 import { prisma } from "@/lib/prisma";
-import { clientIp } from "@/lib/rate-limit";
 
 /**
  * The admin panel's writes. Each action checks the session itself (assertAdmin) before reading its
@@ -42,29 +39,7 @@ function refresh() {
 }
 
 // ---------- Session ----------
-// Signing in and out use the site's single session (lib/auth). The admin panel's sign-in page is
-// the site's sign-in until the public one exists; it returns to the panel.
-
-export type LoginState = { error?: string; fieldErrors?: Record<string, string>; email?: string };
-
-const SIGN_IN_ERRORS = {
-  invalid: "Wrong email or password.",
-  blocked: "This account is blocked.",
-  "rate-limited": "Too many attempts. Wait a few minutes and try again.",
-  unavailable: "Signing in is temporarily unavailable. Try again in a few minutes.",
-} as const;
-
-export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
-  const email = String(formData.get("email") ?? "").slice(0, 200);
-  if (!sessionsConfigured()) return { error: "Signing in is not configured on this server (AUTH_SECRET).", email };
-  const parsed = loginSchema.safeParse({ email, password: String(formData.get("password") ?? "") });
-  if (!parsed.success) return { fieldErrors: issuesByPath(parsed.error), email };
-  const result = await signIn(parsed.data.email, parsed.data.password, await clientIp());
-  if (!result.ok) return { error: SIGN_IN_ERRORS[result.reason], email };
-  const next = String(formData.get("next") ?? "");
-  // Only back into the panel, never to another site.
-  redirect(/^\/admin(\/[a-z0-9\-/]*)?(\?[^\s]*)?$/i.test(next) && !next.startsWith(LOGIN_PATH) ? next : "/admin");
-}
+// Signing in happens on the site's /login (app/auth/actions.ts); the panel only signs out.
 
 export async function logout(): Promise<void> {
   await endSession();

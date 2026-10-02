@@ -1,7 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { ADMIN_FRESHNESS } from "@/lib/auth/session";
-import { getSessionUser, LOGIN_PATH, type SessionUser } from "@/lib/auth/user";
+import { getSessionUser, loginUrl, type SessionUser } from "@/lib/auth/user";
 
 /**
  * The admin panel's gates, on top of the site's single session (lib/auth). Admin rights are an active
@@ -24,15 +24,15 @@ export const isFresh = (u: Pick<SessionUser, "signedInAt">, now = Date.now()) =>
 const toAdmin = (u: SessionUser): AdminUser => ({ id: u.id, name: u.name, email: u.email, role: u.role });
 
 /**
- * Gate for every admin page and every admin data read: not signed in → the sign-in page; signed in
- * without admin rights → the access-denied page; an admin whose sign-in is older than ADMIN_FRESHNESS →
- * the sign-in page to confirm the password.
+ * Gate for every admin page and every admin data read: not signed in → the site's sign-in page (back to
+ * /admin afterwards); signed in without admin rights → the access-denied page; an admin whose sign-in is
+ * older than ADMIN_FRESHNESS → the sign-in page to confirm the password.
  */
 export async function requireAdmin(): Promise<AdminUser> {
   const user = await getSessionUser();
-  if (!user) redirect(LOGIN_PATH);
+  if (!user) redirect(loginUrl("/admin"));
   if (!isAdmin(user)) redirect("/admin/forbidden");
-  if (!isFresh(user)) redirect(`${LOGIN_PATH}?reauth=1`);
+  if (!isFresh(user)) redirect(`${loginUrl("/admin")}&reauth=1`);
   return toAdmin(user);
 }
 

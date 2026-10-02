@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { HideOnAdmin } from "@/components/layout/HideOnAdmin";
 import { Navbar } from "@/components/layout/Navbar";
 import { SITE_NAME } from "@/lib/catalog";
+import { getSessionUser } from "@/lib/auth/user";
 import { getFavorites } from "@/lib/favorites-server";
 import { INTL_LOCALES, OG_LOCALES } from "@/lib/i18n/config";
 import { getCurrency, getI18n } from "@/lib/i18n/server";
@@ -49,7 +50,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = { themeColor: "#0E0D0B", colorScheme: "dark" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [{ locale, t }, currency, favorites] = await Promise.all([getI18n(), getCurrency(), getFavorites()]);
+  const [{ locale, t }, currency, favorites, user] = await Promise.all([getI18n(), getCurrency(), getFavorites(), getSessionUser().catch(() => null)]);
+  // Only what the header needs; no database read without a valid session cookie, and a failed read only
+  // shows the guest menu instead of breaking the page.
+  const account = user && user.status === "active" ? { name: user.name, admin: user.role === "admin" } : null;
   const fonts = [cinzel, forum, garamond, cormorant].map((f) => f.variable).join(" ");
   return (
     <html lang={INTL_LOCALES[locale]} className={fonts}>
@@ -63,7 +67,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               {t.common.skipToContent}
             </a>
             <HideOnAdmin>
-              <Navbar />
+              <Navbar account={account} />
             </HideOnAdmin>
             <main id="continut" className="relative z-10 flex-1">
               {children}

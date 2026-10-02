@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { priceLines, type PricedLine } from "@/lib/cart-pricing";
 import { convert, formatAmount } from "@/lib/currency";
+import { getSessionUser } from "@/lib/auth/user";
 import { getCurrency, getDictionary, getLocale } from "@/lib/i18n/server";
 import { allowAttempt, clientIp, isBot } from "@/lib/rate-limit";
 import { cartLineSchema, contactSchema, newsletterSchema, orderSchema } from "@/lib/schemas";
@@ -99,11 +100,14 @@ export async function placeOrder(_prev: FormState, formData: FormData): Promise<
     return { status: "error", message: o.errors.failed };
   }
   // Kept for the admin panel once the shop has it. The customer's order is already placed at this
-  // point, so a failed save is only logged.
+  // point, so a failed save is only logged. Signed in: the order belongs to the account (its id, from the
+  // session, never from the form); a guest order has no account.
   try {
+    const user = await getSessionUser();
     await prisma.order.create({
       data: {
         number,
+        userId: user && user.status === "active" ? user.id : null,
         name: order.name,
         email: order.email,
         phone: order.phone,

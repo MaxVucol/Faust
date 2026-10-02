@@ -112,6 +112,8 @@ model User {
   lastLoginAt  DateTime?
   /// Moves on to end every session of the account (lib/auth/user.ts revokeSessions). Missing = 0.
   sessionVersion Int?
+  /// Orders placed while signed in (Order.userId). Not stored on the user document.
+  orders       Order[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -132,6 +134,10 @@ model Order {
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
   /// "IV-…", the number the customer sees.
   number        String      @unique
+  /// The account the order was placed from; null for a guest checkout. Never set from an email match.
+  userId        String?     @db.ObjectId
+  /// Deleting the account keeps its orders, as guest orders.
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   name          String
   email         String
   phone         String

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, ShoppingCart, Star, X } from "lucide-react";
 import { useRef, useState } from "react";
+import { AccountMenu, type HeaderAccount } from "@/components/auth/AccountMenu";
 import { useCart } from "@/lib/use-cart";
 import { useFavorites } from "@/components/favorites/FavoritesProvider";
 import { PreferencesMenu } from "@/components/i18n/PreferencesMenu";
@@ -18,7 +19,8 @@ import { NAV_LINKS, isActive } from "./nav-links";
 /** A header control's hit area: at least 44px square on phones, 44px tall from sm up (see the tools row). */
 const HIT_AREA = "h-11 min-w-11 items-center justify-center sm:-mx-2.5 sm:min-w-0 sm:px-2.5";
 
-export function Navbar() {
+/** `account`: the signed-in visitor (name, whether an admin), read on the server for each request. */
+export function Navbar({ account }: { account: HeaderAccount }) {
   const pathname = usePathname();
   const { count } = useCart();
   const favorites = useFavorites();
@@ -99,6 +101,8 @@ export function Navbar() {
               </span>
             )}
           </Link>
+          {/* Profile: in the header from sm up; on phones it lives in the menu. */}
+          <AccountMenu account={account} className="hidden sm:block" />
           <span aria-hidden className="hidden h-5 w-px bg-iron sm:block" />
           <Link
             href="/cos"
@@ -114,7 +118,7 @@ export function Navbar() {
               {count}
             </span>
           </Link>
-          <MobileMenu pathname={pathname} />
+          <MobileMenu pathname={pathname} account={account} />
         </div>
       </div>
 
