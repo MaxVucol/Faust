@@ -1,4 +1,9 @@
-// Server only (node:crypto); also used by scripts/create-admin.ts, which runs outside Next, so no "server-only" import.
+/**
+ * Password hashing for every account (shop users and admins). Server only (node:crypto); also used by
+ * scripts/create-admin.ts, which runs outside Next, so there is no "server-only" import. The stored
+ * format ("scrypt$N$salt$hash") and parameters are unchanged since the admin panel introduced them,
+ * so every existing hash keeps working.
+ */
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual, type ScryptOptions } from "node:crypto";
 
 const scrypt = (password: string, salt: Buffer, keylen: number, options: ScryptOptions) =>

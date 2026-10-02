@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { emailSchema as email, passwordSchema as password } from "@/lib/auth/schemas";
 import { GENRES, PLATFORMS } from "@/lib/catalog";
 
 /**
@@ -96,9 +97,7 @@ export const saleSchema = z
   })
   .superRefine((s, ctx) => checkSale(s, ctx));
 
-const password = z.string().min(10, "At least 10 characters").max(200, "At most 200 characters");
 const name = z.string().trim().min(2, "At least 2 characters").max(80, "At most 80 characters");
-const email = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email"));
 const role = z.enum(["admin", "user"], "Choose a role");
 const status = z.enum(["active", "blocked"], "Choose a status");
 
@@ -116,8 +115,6 @@ export const orderStatusSchema = z.object({
   status: z.enum(["new", "processing", "completed", "cancelled"]),
   paymentStatus: z.enum(["unpaid", "paid", "refunded"]),
 });
-
-export const loginSchema = z.object({ email, password: z.string().min(1, "Required").max(200) });
 
 /** Flattens zod issues to "path.to.field" → first message, which the forms show under each field. */
 export function issuesByPath(error: z.ZodError): Record<string, string> {

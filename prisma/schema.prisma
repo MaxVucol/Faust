@@ -97,8 +97,8 @@ model NewsletterSubscriber {
   createdAt DateTime @default(now())
 }
 
-/// An account that can sign in to /admin. Only role "admin" may use the admin panel; any other role
-/// (or a blocked account) signs in but is refused. Created with `npm run admin:create`; never seeded.
+/// An account of the site. Only an active account with role "admin" may use the admin panel; blocked
+/// accounts can't sign in. Admins are created with `npm run admin:create`; never seeded.
 model User {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
   email        String    @unique
@@ -110,6 +110,8 @@ model User {
   /// "active" or "blocked".
   status       String    @default("active")
   lastLoginAt  DateTime?
+  /// Moves on to end every session of the account (lib/auth/user.ts revokeSessions). Missing = 0.
+  sessionVersion Int?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }

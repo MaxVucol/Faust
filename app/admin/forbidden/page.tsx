@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
 import { logout } from "@/app/admin/actions";
-import { getSessionUser } from "@/lib/admin/auth";
+import { isAdmin } from "@/lib/admin/auth";
+import { getSessionUser } from "@/lib/auth/user";
 
 export const metadata: Metadata = { title: "Access denied" };
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = { title: "Access denied" };
 export default async function ForbiddenPage() {
   const user = await getSessionUser();
   if (!user) redirect("/admin/login");
-  if (user.role === "admin" && user.status === "active") redirect("/admin");
+  if (isAdmin(user)) redirect("/admin");
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md border border-gold-dark bg-[#100d0a]/95 px-7 py-8 text-center">

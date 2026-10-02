@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/Button";
 import { FieldError, Input, Label } from "@/components/ui/Input";
 import { Notice } from "./ui";
 
-export function LoginForm({ next, configured }: { next: string; configured: boolean }) {
+/** `reauthEmail`: an admin whose sign-in is too old for the panel, asked for the password again. */
+export function LoginForm({ next, configured, reauthEmail }: { next: string; configured: boolean; reauthEmail: string | null }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(login, {});
   // Controlled, so the email survives a failed attempt (the password is cleared on purpose).
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(reauthEmail ?? "");
   const errors = state.fieldErrors ?? {};
   return (
     <form action={action} noValidate className="space-y-5">
-      {!configured && <Notice tone="error">Admin sign-in is not configured on this server (ADMIN_SESSION_SECRET).</Notice>}
+      {!configured && <Notice tone="error">Signing in is not configured on this server (AUTH_SECRET).</Notice>}
+      {reauthEmail && !state.error && <Notice tone="info">For security, the admin panel asks for your password again after 8 hours.</Notice>}
       {state.error && <Notice tone="error">{state.error}</Notice>}
       <input type="hidden" name="next" value={next} />
       <div>

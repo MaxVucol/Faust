@@ -1,15 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminAccessError, assertAdmin } from "@/lib/admin/auth";
-import { hashPassword, verifyPassword } from "@/lib/admin/password";
-import { createUserSchema, gameSchema, issuesByPath, loginSchema, orderStatusSchema, saleSchema, updateUserSchema } from "@/lib/admin/schemas";
-import { createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE, sessionsConfigured } from "@/lib/admin/session";
+import { createUserSchema, gameSchema, issuesByPath, orderStatusSchema, saleSchema, updateUserSchema } from "@/lib/admin/schemas";
+import { hashPassword } from "@/lib/auth/password";
+import { loginSchema } from "@/lib/auth/schemas";
+import { sessionsConfigured } from "@/lib/auth/session";
+import { endSession, LOGIN_PATH, revokeSessions, signIn, startSession } from "@/lib/auth/user";
 import { GENRES } from "@/lib/catalog";
 import { prisma } from "@/lib/prisma";
-import { allowAttempt, clientIp } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/rate-limit";
 
 /**
  * The admin panel's writes. Each action checks the session itself (assertAdmin) before reading its
@@ -26,7 +27,10 @@ async function guarded(run: () => Promise<ActionResult>): Promise<ActionResult> 
     await assertAdmin();
     return await run();
   } catch (error) {
-    if (error instanceof AdminAccessError) return { ok: false, error: error.message === "Unauthorized" ? "Your session has ended. Sign in again." : "You don't have permission to do this." };
+    if (error instanceof AdminAccessError) {
+      if (error.message === "Stale") return { ok: false, error: "For security, confirm your password: sign in again, then repeat this action." };
+      return { ok: false, error: error.message === "Unauthorized" ? "Your session has ended. Sign in again." : "You don't have permission to do this." };
+    }
     console.error("admin action failed", error instanceof Error ? error.message : error);
     return { ok: false, error: "Something went wrong while saving. Nothing was changed; please try again." };
   }
@@ -38,39 +42,33 @@ function refresh() {
 }
 
 // ---------- Session ----------
+// Signing in and out use the site's single session (lib/auth). The admin panel's sign-in page is
+// the site's sign-in until the public one exists; it returns to the panel.
 
 export type LoginState = { error?: string; fieldErrors?: Record<string, string>; email?: string };
 
-// Compared against when the email is unknown, so a wrong email takes as long as a wrong password.
-const DUMMY_HASH = "scrypt$32768$AAAAAAAAAAAAAAAAAAAAAA$" + "A".repeat(86);
+const SIGN_IN_ERRORS = {
+  invalid: "Wrong email or password.",
+  blocked: "This account is blocked.",
+  "rate-limited": "Too many attempts. Wait a few minutes and try again.",
+  unavailable: "Signing in is temporarily unavailable. Try again in a few minutes.",
+} as const;
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").slice(0, 200);
-  if (!sessionsConfigured()) return { error: "Admin sign-in is not configured on this server (ADMIN_SESSION_SECRET).", email };
+  if (!sessionsConfigured()) return { error: "Signing in is not configured on this server (AUTH_SECRET).", email };
   const parsed = loginSchema.safeParse({ email, password: String(formData.get("password") ?? "") });
   if (!parsed.success) return { fieldErrors: issuesByPath(parsed.error), email };
-  if (!allowAttempt(`admin-login:${await clientIp()}`, 10, 15 * 60 * 1000)) return { error: "Too many attempts. Wait a few minutes and try again.", email };
-
-  const user = await prisma.user.findUnique({ where: { email: parsed.data.email }, select: { id: true, passwordHash: true } });
-  const valid = await verifyPassword(parsed.data.password, user?.passwordHash ?? DUMMY_HASH);
-  if (!user || !valid) return { error: "Wrong email or password.", email };
-
-  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-  (await cookies()).set(SESSION_COOKIE, createSessionToken(user.id), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_MAX_AGE,
-  });
+  const result = await signIn(parsed.data.email, parsed.data.password, await clientIp());
+  if (!result.ok) return { error: SIGN_IN_ERRORS[result.reason], email };
   const next = String(formData.get("next") ?? "");
   // Only back into the panel, never to another site.
-  redirect(/^\/admin(\/[a-z0-9\-/]*)?(\?[^\s]*)?$/i.test(next) && !next.startsWith("/admin/login") ? next : "/admin");
+  redirect(/^\/admin(\/[a-z0-9\-/]*)?(\?[^\s]*)?$/i.test(next) && !next.startsWith(LOGIN_PATH) ? next : "/admin");
 }
 
 export async function logout(): Promise<void> {
-  (await cookies()).delete(SESSION_COOKIE);
-  redirect("/admin/login");
+  await endSession();
+  redirect(LOGIN_PATH);
 }
 
 // ---------- Games ----------
@@ -181,7 +179,7 @@ export async function createUser(input: unknown): Promise<ActionResult> {
     if (!parsed.success) return { ok: false, error: "Check the highlighted fields.", fieldErrors: issuesByPath(parsed.error) };
     const { password, ...u } = parsed.data;
     if (await prisma.user.findUnique({ where: { email: u.email }, select: { id: true } })) return { ok: false, error: "Check the highlighted fields.", fieldErrors: { email: "An account with this email already exists" } };
-    const created = await prisma.user.create({ data: { ...u, passwordHash: await hashPassword(password) }, select: { id: true } });
+    const created = await prisma.user.create({ data: { ...u, passwordHash: await hashPassword(password), sessionVersion: 0 }, select: { id: true } });
     revalidatePath("/admin", "layout");
     return { ok: true, id: created.id, message: "User created." };
   });
@@ -199,6 +197,14 @@ export async function updateUser(input: unknown): Promise<ActionResult> {
     if (losesAdmin && id === me.id) return { ok: false, error: "You can't remove your own admin access." };
     if (losesAdmin && !(await anotherAdmin(id))) return { ok: false, error: "At least one active admin must remain." };
     await prisma.user.update({ where: { id }, data: { ...u, ...(password ? { passwordHash: await hashPassword(password) } : {}) } });
+    // A new password, a block or losing the admin role ends every session of that account.
+    const blocked = current.status === "active" && u.status !== "active";
+    const demoted = current.role === "admin" && u.role !== "admin";
+    if (password || blocked || demoted) {
+      const version = await revokeSessions(id);
+      // Changing your own password keeps you signed in here, with a new session.
+      if (id === me.id) await startSession(id, version);
+    }
     revalidatePath("/admin", "layout");
     return { ok: true, message: "User saved." };
   });
@@ -212,6 +218,7 @@ export async function deleteUser(id: string): Promise<ActionResult> {
     const user = await prisma.user.findUnique({ where: { id }, select: { role: true, status: true } });
     if (!user) return { ok: false, error: "This user was already deleted." };
     if (user.role === "admin" && user.status === "active" && !(await anotherAdmin(id))) return { ok: false, error: "At least one active admin must remain." };
+    // Deleting the account also ends its sessions (the account no longer exists).
     await prisma.user.delete({ where: { id } });
     revalidatePath("/admin", "layout");
     return { ok: true, message: "User deleted." };

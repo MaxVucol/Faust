@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Notice, PageHeader, Panel, Pill } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/admin/auth";
-import { SESSION_MAX_AGE, sessionsConfigured } from "@/lib/admin/session";
+import { ADMIN_FRESHNESS, SESSION_MAX_AGE, sessionSecretSource } from "@/lib/auth/session";
 import { SHOP_TIME_ZONE } from "@/lib/admin/time";
 import { PAGE_SIZE, PLATFORMS, SITE_NAME } from "@/lib/catalog";
 import { CURRENCIES, DEFAULT_CURRENCY, formatAmount, RATES_PER_UNIT } from "@/lib/currency";
@@ -34,6 +34,7 @@ export default async function SettingsPage() {
   await requireAdmin();
   const telegram = Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim() && process.env.TELEGRAM_CHAT_ID?.trim());
   const siteUrlFromEnv = Boolean(process.env.NEXT_PUBLIC_SITE_URL?.trim());
+  const secretSource = sessionSecretSource();
   return (
     <>
       <PageHeader title="Settings" description="How the shop is configured right now." />
@@ -45,7 +46,11 @@ export default async function SettingsPage() {
           <dl>
             <Row label="Store name" value={SITE_NAME} where="lib/catalog.ts · SITE_NAME" />
             <Row label="Public address" value={SITE_URL} where={siteUrlFromEnv ? "Environment: NEXT_PUBLIC_SITE_URL" : "Vercel's production domain (NEXT_PUBLIC_SITE_URL not set)"} />
-            <Row label="Admin sign-in" value={<>{yes(sessionsConfigured())} · sessions last {SESSION_MAX_AGE / 3600} hours</>} where="Environment: ADMIN_SESSION_SECRET (32+ characters)" />
+            <Row
+              label="Sign-in"
+              value={<>{yes(secretSource !== null)} · sessions last {SESSION_MAX_AGE / 86400} days; the admin panel asks for the password again after {ADMIN_FRESHNESS / 3600} hours</>}
+              where={secretSource === "ADMIN_SESSION_SECRET" ? "Environment: AUTH_SECRET is not set; the former ADMIN_SESSION_SECRET is used for now (transitional)" : "Environment: AUTH_SECRET (32+ characters)"}
+            />
             <Row label="Time zone for sale dates" value={SHOP_TIME_ZONE} where="lib/admin/time.ts" />
           </dl>
         </Panel>
