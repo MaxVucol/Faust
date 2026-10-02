@@ -35,14 +35,15 @@ export async function GenreTiles() {
                   sizes="(min-width: 1024px) 16vw, (min-width: 640px) 33vw, 50vw"
                   className={cn(
                     "object-cover transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:group-hover:scale-100",
-                    !art && "saturate-50",
+                    art ? "brightness-[1.06]" : "saturate-50",
                   )}
                 />
+                {/* Real art: a faint overall shade, deepening at the bottom so the label stays readable. */}
                 <span
                   aria-hidden
                   className={cn(
                     "absolute inset-0",
-                    art ? "bg-black/25" : "bg-black/45",
+                    art ? "bg-[linear-gradient(to_top,rgb(0_0_0/0.5),rgb(0_0_0/0.1)_45%,rgb(0_0_0/0.08))]" : "bg-black/45",
                   )}
                 />
               </span>
