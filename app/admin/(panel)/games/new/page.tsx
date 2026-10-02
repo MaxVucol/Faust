@@ -11,7 +11,7 @@ export default async function NewGamePage() {
   return (
     <>
       <BackLink href="/admin/games">All games</BackLink>
-      <PageHeader eyebrow="Catalogue · New game" title="Add game" description="The game appears in the shop as soon as it is created." />
+      <PageHeader title="Add game" description="The game appears in the shop as soon as it is created." />
       <GameForm id={null} initial={gameToForm(null)} />
     </>
   );

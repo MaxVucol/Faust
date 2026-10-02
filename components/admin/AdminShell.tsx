@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { BadgePercent, ExternalLink, FolderTree, Gamepad2, ImageIcon, LayoutDashboard, LogOut, Menu, Receipt, Settings, UserRound, Users, X } from "lucide-react";
+import { BadgePercent, ChevronDown, ExternalLink, FolderTree, Gamepad2, ImageIcon, LayoutDashboard, LogOut, Menu, Receipt, Settings, UserRound, Users, X } from "lucide-react";
 import { logout } from "@/app/admin/actions";
 import { Diamond } from "@/components/ui/Ornaments";
 import { cn } from "@/lib/utils";
@@ -129,6 +129,70 @@ function Profile({ name, email }: { name: string; email: string }) {
   );
 }
 
+/** The signed-in admin, top right: name and role; opens a small menu (account, the shop, logout). */
+function ProfileMenu({ name }: { name: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  const item = "flex min-h-11 w-full items-center gap-3 px-4 text-left text-[0.95rem] text-parchment-muted transition-colors hover:bg-gold-light/[0.06] hover:text-parchment";
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls="admin-profile-menu"
+        onClick={() => setOpen((v) => !v)}
+        className="flex min-h-12 items-center gap-3 px-2 text-left transition-colors hover:text-gold-light"
+      >
+        <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full border border-gold-dark/80 bg-black/50">
+          <UserRound className="size-[18px] text-parchment" strokeWidth={1.5} />
+        </span>
+        <span className="hidden min-w-0 sm:block">
+          <span className="block max-w-40 truncate font-display text-[0.95rem] leading-tight font-semibold text-gold-light">{name}</span>
+          <span className="block text-xs leading-tight text-parchment-muted">Administrator</span>
+        </span>
+        <ChevronDown aria-hidden className={cn("size-4 text-parchment-muted transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div id="admin-profile-menu" role="menu" className="absolute top-full right-0 z-50 mt-1 w-56 border border-gold-dark/70 bg-[#0d0b08] py-1 shadow-[0_18px_40px_rgb(0_0_0/0.7)]">
+          <Link role="menuitem" href="/account" className={item} onClick={() => setOpen(false)}>
+            <UserRound aria-hidden className="size-4 text-gold-dark" strokeWidth={1.75} /> My account
+          </Link>
+          <Link role="menuitem" href="/" className={item} onClick={() => setOpen(false)}>
+            <ExternalLink aria-hidden className="size-4 text-gold-dark" strokeWidth={1.75} /> View the shop
+          </Link>
+          <div className="my-1 h-px bg-iron" />
+          <form action={logout}>
+            <button role="menuitem" type="submit" className={cn(item, "hover:text-blood-text")}>
+              <LogOut aria-hidden className="size-4" strokeWidth={1.75} /> Logout
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The work area's top bar (from lg up), in the sidebar's colour, with the profile menu on the right. */
+function TopBar({ name }: { name: string }) {
+  return (
+    <div className="relative z-20 hidden h-[3.75rem] items-center justify-end border-b border-gold-dark/40 bg-[#0a0907] px-6 shadow-[0_8px_24px_rgb(0_0_0/0.35)] lg:flex">
+      <ProfileMenu name={name} />
+    </div>
+  );
+}
+
 /**
  * The panel's frame: a fixed sidebar from lg up; below lg a top bar whose menu button opens the same
  * navigation as a drawer (a modal: Escape or the backdrop closes it, the page behind doesn't scroll,
@@ -162,8 +226,8 @@ export function AdminShell({ user, children }: { user: { name: string; email: st
   }, [open]);
 
   return (
-    // A faint warm light falls from the top of the work area, as from the shop's header; nothing more.
-    <div className="min-h-screen bg-base bg-[radial-gradient(ellipse_80%_40%_at_60%_0%,rgb(192_154_85/0.05),transparent)] lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+    // No fill of its own: the work area sits on the storefront's vault-hall background (body::before).
+    <div className="min-h-screen lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-screen flex-col border-r border-gold-dark/40 bg-[#0a0907] shadow-[1px_0_0_rgb(0_0_0/0.6),8px_0_24px_rgb(0_0_0/0.35)] lg:flex">
         <div className="px-5 pt-5 pb-4">
           <Brand />
@@ -173,8 +237,8 @@ export function AdminShell({ user, children }: { user: { name: string; email: st
           <Diamond className="size-1.5 border border-gold-light" />
           <span className="h-px flex-1 bg-gold-dark/60" />
         </div>
+        {/* The account and Logout live in the top bar's profile menu from lg up. */}
         <Nav pathname={pathname} />
-        <Profile {...user} />
       </aside>
 
       <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-gold-dark/60 bg-[#0a0907]/95 px-4 py-2.5 shadow-[0_8px_24px_rgb(0_0_0/0.5)] backdrop-blur lg:hidden">
@@ -215,8 +279,11 @@ export function AdminShell({ user, children }: { user: { name: string; email: st
           document.body,
         )}
 
-      <div className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-9 2xl:px-14">
-        <div className="mx-auto max-w-[110rem]">{children}</div>
+      <div className="min-w-0">
+        <TopBar name={user.name} />
+        <div className="px-4 py-6 sm:px-6 lg:px-10 lg:py-8 2xl:px-14">
+          <div className="mx-auto max-w-[110rem]">{children}</div>
+        </div>
       </div>
     </div>
   );

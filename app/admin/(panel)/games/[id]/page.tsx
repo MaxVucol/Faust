@@ -19,7 +19,7 @@ export default async function EditGamePage({ params, searchParams }: PageProps<"
     <>
       <BackLink href="/admin/games">All games</BackLink>
       <PageHeader
-        eyebrow="Catalogue · Game"
+       
         title={game.title}
         description={<>Added {adminDateTime(game.createdAt)} · last changed {adminDateTime(game.updatedAt)}</>}
         actions={

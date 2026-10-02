@@ -22,7 +22,7 @@ export default async function DiscountsPage({ searchParams }: PageProps<"/admin/
   return (
     <>
       <PageHeader
-        eyebrow="Catalogue"
+       
         title="Discounts"
         description="Sales on games and on versions with their own price: a sale price with an end date (and an optional start). The shop shows a sale only while it runs, so expired ones change nothing. There are no promo codes."
       />

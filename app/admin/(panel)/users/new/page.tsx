@@ -10,7 +10,7 @@ export default async function NewUserPage() {
   return (
     <>
       <BackLink href="/admin/users">All users</BackLink>
-      <PageHeader eyebrow="Trade · New user" title="Add user" description="Give the person their email and password yourself; there is no sign-up or email invitation." />
+      <PageHeader title="Add user" description="Give the person their email and password yourself; there is no sign-up or email invitation." />
       <Panel className="max-w-3xl px-5 py-6 sm:px-6">
         <UserForm id={null} initial={{ name: "", email: "", role: "admin", status: "active", password: "" }} />
       </Panel>

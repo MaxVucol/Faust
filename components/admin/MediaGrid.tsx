@@ -12,7 +12,7 @@ function MediaCard({ item }: { item: MediaItem }) {
   const [broken, setBroken] = useState(false);
   const [copied, setCopied] = useState(false);
   return (
-    <li className="group flex min-w-0 flex-col border border-gold-dark/40 bg-panel transition-colors hover:border-gold-dark/80">
+    <li className="group flex min-w-0 flex-col border border-gold-dark/40 bg-[#0d0b08]/90 transition-colors hover:border-gold-dark/80">
       <span className="relative block aspect-[4/3] overflow-hidden border-b border-iron bg-panel-deep bg-[repeating-conic-gradient(rgb(255_255_255/0.025)_0_25%,transparent_0_50%)] bg-[length:16px_16px]">
         {broken ? (
           <span className="absolute inset-0 flex items-center justify-center text-sm text-blood-text">File not found</span>

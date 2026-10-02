@@ -34,8 +34,8 @@ function Field({ id, label, error, hint, children, className }: { id: string; la
 
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <fieldset className="min-w-0 border border-gold-dark/45 bg-panel px-5 pt-3 pb-6 shadow-[inset_0_1px_0_rgb(224_196_135/0.05)] sm:px-6">
-      <legend className="flex items-center gap-2.5 bg-base px-2.5 font-display-ui text-[0.7rem] text-gold-light">
+    <fieldset className="min-w-0 border border-gold-dark/50 bg-[#0d0b08]/90 px-5 pt-3 pb-6 shadow-[0_10px_30px_rgb(0_0_0/0.35)] sm:px-6">
+      <legend className="flex items-center gap-2.5 px-2.5 font-display-ui text-[0.7rem] text-gold-light">
         <Diamond className="size-1.5 bg-gold-dark" />
         {title}
       </legend>

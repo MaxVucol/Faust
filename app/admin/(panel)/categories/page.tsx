@@ -12,7 +12,7 @@ export default async function CategoriesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Catalogue"
+       
         title="Categories"
         description="The shop's genres. They are fixed keys with names in three languages (the catalogue filters, home tiles and translations rely on them), so a new genre is added in code; here you see their use and can move games between them."
       />

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLeft, ArrowRight, CircleAlert, CircleCheck, Info, type LucideIcon } from "lucide-react";
-import { Corners, Diamond } from "@/components/ui/Ornaments";
+import { Diamond } from "@/components/ui/Ornaments";
 import { formatAmount } from "@/lib/currency";
+import { Emblem, type EmblemKind } from "./Emblem";
 import { cn } from "@/lib/utils";
 
 /*
@@ -63,59 +64,61 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
 
 /* ── Headings and frames ─────────────────────────────────────────────────────────────────────────── */
 
-/** The storefront's section marker (│◇│), small. */
-function Marker() {
-  return (
-    <span aria-hidden className="flex shrink-0 items-center gap-1">
-      <span className="h-3 w-px bg-gold-dark" />
-      <Diamond className="size-2 border border-gold-light" />
-      <span className="h-3 w-px bg-gold-dark" />
-    </span>
-  );
-}
-
-/** An engraved rule held by a small diamond, as under the storefront's section titles. */
+/** An engraved rule held by a small diamond at its centre, as under the storefront's section titles. */
 export function Rule({ className }: { className?: string }) {
   return (
     <div aria-hidden className={cn("flex items-center gap-2", className)}>
-      <span className="h-px flex-1 bg-gold-dark/50" />
-      <Diamond className="size-1.5 border border-gold-dark" />
-      <span className="h-px w-10 bg-gold-dark/50" />
+      <span className="h-px flex-1 bg-gradient-to-r from-gold-dark/10 to-gold-dark/60" />
+      <Diamond className="size-1.5 border border-gold-light/80" />
+      <span className="h-px flex-1 bg-gradient-to-l from-gold-dark/10 to-gold-dark/60" />
     </div>
   );
 }
 
-/**
- * A page's title block: the section it belongs to (small caps), the title in the storefront's cast-gold
- * lettering behind its marker, a short muted description, and the page's actions on the right.
- */
-export function PageHeader({ title, description, actions, eyebrow }: { title: string; description?: ReactNode; actions?: ReactNode; eyebrow?: string }) {
+/** Four small gold ticks just inside a frame's corners (the frame must be `relative`). */
+export function Ticks() {
+  const tick = "pointer-events-none absolute size-1.5 border-gold-light/55";
   return (
-    <header className="mb-7 lg:mb-8">
+    <>
+      <span aria-hidden className={cn(tick, "top-[3px] left-[3px] border-t border-l")} />
+      <span aria-hidden className={cn(tick, "top-[3px] right-[3px] border-t border-r")} />
+      <span aria-hidden className={cn(tick, "bottom-[3px] left-[3px] border-b border-l")} />
+      <span aria-hidden className={cn(tick, "right-[3px] bottom-[3px] border-r border-b")} />
+    </>
+  );
+}
+
+/** A page's title block: a gold diamond and the title, a short muted description, the page's actions on the right. */
+export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
+  return (
+    <header className="mb-6 lg:mb-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          {eyebrow && <p className="mb-2 font-display-ui text-[0.6rem] tracking-[0.24em] text-parchment-muted">{eyebrow}</p>}
-          <h1 className="flex items-center gap-3">
-            <Marker />
-            <span className="text-gold min-w-0 font-display text-2xl leading-tight font-semibold tracking-[0.12em] uppercase sm:text-[1.75rem]">{title}</span>
+          <h1 className="flex items-center gap-3.5">
+            <Diamond className="size-2 bg-gold-light" />
+            <span className="min-w-0 font-display text-[1.75rem] leading-tight font-semibold tracking-[0.12em] text-parchment uppercase sm:text-[2.1rem]">{title}</span>
           </h1>
-          {description && <p className="mt-2.5 max-w-3xl text-base leading-relaxed text-parchment-muted">{description}</p>}
+          {description && <p className="mt-1 max-w-3xl pl-[1.4rem] text-base leading-relaxed text-parchment-muted">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2.5">{actions}</div>}
       </div>
-      <Rule className="mt-5" />
+      <Rule className="mt-4" />
     </header>
   );
 }
 
-/** Blackened panel in the shop's thin dark-gold frame, with an optional titled header strip. */
-export function Panel({ title, aside, children, className }: { title?: string; aside?: ReactNode; children: ReactNode; className?: string }) {
+/** Panel surface: near-black over the vault-hall background, in the shop's thin dark-gold frame. */
+const surface = "relative min-w-0 border border-gold-dark/50 bg-[#0d0b08]/90 shadow-[0_10px_30px_rgb(0_0_0/0.35)]";
+
+/** A titled panel: an icon and the title in small gold caps over an inset rule, corner ticks on the frame. */
+export function Panel({ title, icon: Icon, aside, children, className }: { title?: string; icon?: LucideIcon; aside?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("min-w-0 border border-gold-dark/45 bg-panel shadow-[inset_0_1px_0_rgb(224_196_135/0.05)]", className)}>
+    <section className={cn(surface, className)}>
+      <Ticks />
       {title && (
-        <div className="flex min-h-12 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-iron bg-panel-deep/60 px-5 py-3">
+        <div className="mx-3 flex min-h-12 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-gold-dark/30 px-2 py-1">
           <h2 className="flex items-center gap-2.5 font-display-ui text-[0.7rem] text-gold-light">
-            <Diamond className="size-1.5 bg-gold-dark" />
+            {Icon ? <Icon aria-hidden className="size-4 text-gold-light/90" strokeWidth={1.6} /> : <Diamond className="size-1.5 bg-gold-dark" />}
             {title}
           </h2>
           {aside}
@@ -126,34 +129,36 @@ export function Panel({ title, aside, children, className }: { title?: string; a
   );
 }
 
-/** A small link for a panel header's right side ("All orders →"). */
+/** A small link for a panel header's right side ("All orders"). */
 export function PanelLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link href={href} className="group inline-flex min-h-8 items-center gap-1.5 font-display-ui text-[0.6rem] text-parchment-muted transition-colors hover:text-gold-light">
+    <Link href={href} className="group inline-flex min-h-8 items-center gap-1.5 text-sm text-parchment-muted transition-colors hover:text-gold-light">
       {children}
-      <ArrowRight aria-hidden className="size-3 transition-transform group-hover:translate-x-0.5" />
+      <ArrowRight aria-hidden className="size-3 opacity-0 transition-[opacity,translate] group-hover:translate-x-0.5 group-hover:opacity-100" />
     </Link>
   );
 }
 
-/** A figure at a glance: small caps label, the number in cast gold, a muted line under it. */
-export function StatCard({ label, value, note, href, icon: Icon }: { label: string; value: ReactNode; note?: ReactNode; href?: string; icon?: LucideIcon }) {
+/**
+ * A figure at a glance: an icon and small caps label, the number, a muted line under it. `emblem` sets
+ * the section's heraldic medallion (components/admin/Emblem.tsx) into the card's right side.
+ */
+export function StatCard({ label, value, note, href, icon: Icon, emblem }: { label: string; value: ReactNode; note?: ReactNode; href?: string; icon?: LucideIcon; emblem?: EmblemKind }) {
   const body = (
     <>
-      <Corners />
-      {/* A short gold rule over the label, like a plate's engraved edge. */}
-      <span aria-hidden className="absolute top-0 left-5 h-px w-10 bg-gold-light/70" />
-      <p className="flex items-center justify-between gap-3 font-display-ui text-[0.62rem] tracking-[0.2em] text-parchment-muted">
+      {emblem && <Emblem kind={emblem} className="pointer-events-none absolute top-1/2 right-5 size-[7.25rem] -translate-y-1/2 opacity-75 transition-opacity duration-500 group-hover:opacity-100" />}
+      <Ticks />
+      <p className="relative flex items-center gap-3 font-display-ui text-[0.64rem] tracking-[0.2em] text-parchment">
+        {Icon && <Icon aria-hidden className="size-5 text-gold-light/90" strokeWidth={1.4} />}
         {label}
-        {Icon && <Icon aria-hidden className="size-4 text-gold-dark transition-colors group-hover:text-gold-light" strokeWidth={1.5} />}
       </p>
-      <p className="text-gold mt-3 font-display text-[1.85rem] leading-none font-semibold tabular-nums">{value}</p>
-      {note && <p className="mt-2.5 border-t border-iron/70 pt-2.5 text-sm text-parchment-muted">{note}</p>}
+      <p className="relative mt-2.5 font-display text-[2.1rem] leading-none font-semibold whitespace-nowrap text-[#e2cf9f] tabular-nums [text-shadow:0_0_10px_#0a0907,0_0_20px_#0a0907]">{value}</p>
+      {note && <p className="relative mt-2.5 text-sm text-parchment-muted">{note}</p>}
     </>
   );
-  const cls = "group relative block border border-gold-dark/45 bg-panel px-5 pt-4 pb-4";
+  const cls = cn(surface, "group block overflow-hidden px-5 pt-5 pb-4");
   return href ? (
-    <Link href={href} className={cn(cls, "transition-colors duration-200 hover:border-gold-light/80 hover:bg-[#130f0b]")}>
+    <Link href={href} className={cn(cls, "transition-colors duration-200 hover:border-gold-light/80")}>
       {body}
     </Link>
   ) : (
@@ -161,18 +166,16 @@ export function StatCard({ label, value, note, href, icon: Icon }: { label: stri
   );
 }
 
-/** An intentional "nothing here": the icon in a gold diamond frame, a title and what to do next. */
+/** An intentional "nothing here": the icon in a small gold frame, a title and what to do next. */
 export function EmptyState({ title, text, action, icon: Icon = Info }: { title: string; text?: ReactNode; action?: ReactNode; icon?: LucideIcon }) {
   return (
-    <div className="flex flex-col items-center px-6 py-12 text-center sm:py-14">
-      <span aria-hidden className="relative flex size-14 items-center justify-center">
-        <span className="absolute inset-1.5 rotate-45 border border-gold-dark/70 bg-panel-deep" />
-        <Icon className="relative size-5 text-gold-light/90" strokeWidth={1.5} />
+    <div className="flex flex-col items-center px-6 py-8 text-center sm:py-9">
+      <span aria-hidden className="flex size-10 items-center justify-center border border-gold-dark/70 bg-panel-deep/80">
+        <Icon className="size-[18px] text-gold-light/90" strokeWidth={1.5} />
       </span>
-      <p className="mt-5 font-display text-lg tracking-[0.1em] text-parchment uppercase">{title}</p>
-      <Rule className="mt-3 w-28 [&>span:last-child]:flex-1" />
-      {text && <p className="mt-3 max-w-md text-parchment-muted">{text}</p>}
-      {action && <div className="mt-6">{action}</div>}
+      <p className="mt-3 font-display text-[1.05rem] font-semibold tracking-[0.08em] text-parchment">{title}</p>
+      {text && <p className="mt-1 max-w-md text-[0.95rem] leading-snug text-parchment-muted">{text}</p>}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }

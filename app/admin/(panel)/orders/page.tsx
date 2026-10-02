@@ -13,7 +13,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
   const filtered = ["q", "status", "payment"].some((k) => v(k));
   return (
     <>
-      <PageHeader eyebrow="Trade" title="Orders" description="Orders sent from the cart. Amounts are charged in MDL; the currency column is what the customer was viewing." />
+      <PageHeader title="Orders" description="Orders sent from the cart. Amounts are charged in MDL; the currency column is what the customer was viewing." />
       <Panel>
         <FilterBar basePath="/admin/orders" active={filtered}>
           <div className="md:min-w-56 md:flex-1">

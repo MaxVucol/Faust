@@ -14,7 +14,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
   return (
     <>
       <PageHeader
-        eyebrow="Trade"
+       
         title="Users"
         description="Accounts that can sign in here. Customers order without an account; their orders are matched to an account by email."
         actions={<Link href="/admin/users/new" className={btn("primary", "md")}><Plus aria-hidden className="size-4" /> Add user</Link>}

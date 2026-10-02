@@ -21,7 +21,7 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
     <>
       <BackLink href="/admin/users">All users</BackLink>
       <PageHeader
-        eyebrow="Trade · User"
+       
         title={user.name}
         description={<>Registered {adminDate(user.createdAt)} · {user.lastLoginAt ? `last sign-in ${adminDateTime(user.lastLoginAt)}` : "never signed in"}</>}
         actions={me.id === user.id ? <Pill tone="gold">This is you</Pill> : <ConfirmDelete action={deleteUser.bind(null, user.id)} name={user.email} redirectTo="/admin/users" />}

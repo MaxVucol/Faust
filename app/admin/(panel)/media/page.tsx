@@ -21,7 +21,7 @@ export default async function MediaPage({ searchParams }: PageProps<"/admin/medi
   return (
     <>
       <PageHeader
-        eyebrow="Catalogue"
+       
         title="Media"
         description={`${total} images used by the catalogue. The files ship with the site (public/images) and are served by the CDN; to add one, add the file to the project and deploy, then use its path in a game.`}
       />

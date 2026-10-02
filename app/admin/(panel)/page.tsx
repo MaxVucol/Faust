@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ChartNoAxesColumn, Coins, Gamepad2, PackageOpen, Receipt, Trophy, Users } from "lucide-react";
+import { ChartNoAxesColumn, ChartNoAxesCombined, Coins, Gamepad2, PackageOpen, Receipt, ShoppingBag, Star, Trophy, Users } from "lucide-react";
 import { adminDate, adminDateTime, EmptyState, mdl, ORDER_TONE, PageHeader, Panel, PanelLink, Pill, StatCard, tr } from "@/components/admin/ui";
 import { getDashboard } from "@/lib/admin/data";
 import { cn } from "@/lib/utils";
@@ -15,15 +15,15 @@ export default async function DashboardPage() {
   const orders30 = d.days.reduce((s, x) => s + x.orders, 0);
   return (
     <>
-      <PageHeader eyebrow="Overview" title="Dashboard" description="The shop at a glance. Revenue counts every order except cancelled ones, in MDL." />
+      <PageHeader title="Dashboard" description="The shop at a glance. Revenue counts every order except cancelled ones, in MDL." />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Gamepad2} label="Games" value={d.gameCount} note={`${d.onSale} on sale · ${d.outOfStock} out of stock`} href="/admin/games" />
-        <StatCard icon={Users} label="Users" value={d.userCount} note="Admin panel accounts" href="/admin/users" />
-        <StatCard icon={Receipt} label="Orders" value={d.orderCount} note={`${d.openOrders} awaiting processing`} href="/admin/orders" />
-        <StatCard icon={Coins} label="Revenue" value={mdl(d.revenue)} note={`${d.subscribers} newsletter subscribers · ${d.messages} messages`} />
+        <StatCard icon={Gamepad2} emblem="games" label="Games" value={d.gameCount} note={`${d.onSale} on sale · ${d.outOfStock} out of stock`} href="/admin/games" />
+        <StatCard icon={Users} emblem="users" label="Users" value={d.userCount} note="Admin panel accounts" href="/admin/users" />
+        <StatCard icon={Receipt} emblem="orders" label="Orders" value={d.orderCount} note={`${d.openOrders} awaiting processing`} href="/admin/orders" />
+        <StatCard icon={Coins} emblem="revenue" label="Revenue" value={mdl(d.revenue)} note={`${d.subscribers} newsletter subscribers · ${d.messages} messages`} />
       </div>
 
-      <Panel title="Sales · last 30 days" aside={<span className="text-sm text-parchment-muted tabular-nums">{orders30} orders · <span className="text-gold-light">{mdl(last30)}</span></span>} className="mt-6">
+      <Panel title="Sales · last 30 days" icon={ChartNoAxesCombined} aside={<span className="text-sm text-parchment-muted tabular-nums">{orders30} orders · <span className="text-gold-light">{mdl(last30)}</span></span>} className="mt-6">
         {orders30 === 0 ? (
           <EmptyState icon={ChartNoAxesColumn} title="No sales in the last 30 days" text="Orders placed at checkout appear here." />
         ) : (
@@ -53,9 +53,9 @@ export default async function DashboardPage() {
       </Panel>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Panel title="Latest orders" aside={<PanelLink href="/admin/orders">All orders</PanelLink>}>
+        <Panel title="Latest orders" icon={ShoppingBag} aside={<PanelLink href="/admin/orders">All orders</PanelLink>}>
           {d.recentOrders.length === 0 ? (
-            <EmptyState icon={Receipt} title="No orders yet" text="Orders are saved here from now on, as customers send them from the cart." />
+            <EmptyState icon={ShoppingBag} title="No orders yet" text="Orders are saved here from now on, as customers send them from the cart." />
           ) : (
             <ul>
               {d.recentOrders.map((o) => (
@@ -78,9 +78,9 @@ export default async function DashboardPage() {
           )}
         </Panel>
 
-        <Panel title="Best sellers">
+        <Panel title="Best sellers" icon={Trophy}>
           {d.topSellers.length === 0 ? (
-            <EmptyState icon={Trophy} title="No sales yet" text="The most ordered games appear here once orders come in." />
+            <EmptyState icon={ShoppingBag} title="No sales yet" text="The most ordered games appear here once orders come in." />
           ) : (
             <ol>
               {d.topSellers.map((s, i) => (
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
         </Panel>
       </div>
 
-      <Panel title="Recently added games" aside={<PanelLink href="/admin/games/new">Add a game</PanelLink>} className="mt-6">
+      <Panel title="Recently added games" icon={Star} aside={<PanelLink href="/admin/games/new">Add a game</PanelLink>} className="mt-6">
         {d.recentGames.length === 0 ? (
           <EmptyState icon={PackageOpen} title="No games yet" />
         ) : (

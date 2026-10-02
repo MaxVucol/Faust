@@ -21,7 +21,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
   return (
     <>
       <PageHeader
-        eyebrow="Catalogue"
+       
         title="Games"
         description={`${all} games in the catalogue. Prices are in MDL; the price shown is the version the shop's cards show.`}
         actions={

@@ -37,7 +37,7 @@ export default async function SettingsPage() {
   const secretSource = sessionSecretSource();
   return (
     <>
-      <PageHeader eyebrow="System" title="Settings" description="How the shop is configured right now." />
+      <PageHeader title="Settings" description="How the shop is configured right now." />
       <div className="mb-6">
         <Notice tone="info">These settings are part of the code and the hosting environment, so a change goes live with the next deploy. Nothing here is edited from the panel.</Notice>
       </div>

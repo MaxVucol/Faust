@@ -18,7 +18,7 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
     <>
       <BackLink href="/admin/orders">All orders</BackLink>
       <PageHeader
-        eyebrow="Trade · Order"
+       
         title={order.number}
         description={<>Placed {adminDateTime(order.createdAt)} · last changed {adminDateTime(order.updatedAt)}</>}
         actions={
