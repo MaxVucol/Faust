@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GenreReassign } from "@/components/admin/GenreReassign";
-import { Notice, PageHeader, Panel, Pill, Table, td, th } from "@/components/admin/ui";
+import { Notice, PageHeader, Panel, Pill, Table, td, th, tr } from "@/components/admin/ui";
 import { getGenreStats } from "@/lib/admin/data";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 
@@ -12,6 +12,7 @@ export default async function CategoriesPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Catalogue"
         title="Categories"
         description="The shop's genres. They are fixed keys with names in three languages (the catalogue filters, home tiles and translations rely on them), so a new genre is added in code; here you see their use and can move games between them."
       />
@@ -34,9 +35,9 @@ export default async function CategoriesPage() {
             </thead>
             <tbody>
               {genres.map((g) => (
-                <tr key={g.name} className="hover:bg-white/[0.02]">
+                <tr key={g.name} className={tr}>
                   <td className={td}>
-                    <span className="block">{g.name}</span>
+                    <span className="block text-parchment">{g.name}</span>
                     <span className="block text-xs text-parchment-muted">/produse?genre={g.name}</span>
                   </td>
                   <td className={td}>{dictionaries.ro.genres[g.name] ?? g.name}</td>
@@ -44,7 +45,7 @@ export default async function CategoriesPage() {
                   <td className={`${td} hidden md:table-cell`}>{dictionaries.en.genres[g.name] ?? g.name}</td>
                   <td className={td}>
                     {g.games > 0 ? (
-                      <Link href={`/admin/games?genre=${encodeURIComponent(g.name)}`} className="tabular-nums hover:text-gold-light">{g.games} games</Link>
+                      <Link href={`/admin/games?genre=${encodeURIComponent(g.name)}`} className="whitespace-nowrap text-gold-light tabular-nums underline-offset-4 hover:text-[#e0c487] hover:underline">{g.games} games</Link>
                     ) : (
                       <Pill>empty</Pill>
                     )}

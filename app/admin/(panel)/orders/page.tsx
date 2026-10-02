@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { adminDateTime, EmptyState, FilterBar, filterField, filterLabel, mdl, ORDER_TONE, PageHeader, Pagination, PAYMENT_TONE, Panel, Pill, Table, td, th } from "@/components/admin/ui";
+import { Receipt, SearchX } from "lucide-react";
+import { adminDateTime, EmptyState, FilterBar, filterField, filterLabel, mdl, ORDER_TONE, PageHeader, Pagination, PAYMENT_TONE, Panel, Pill, Table, td, th, tr } from "@/components/admin/ui";
 import { listOrders, ORDER_STATUSES, PAYMENT_STATUSES } from "@/lib/admin/data";
 
 export const metadata: Metadata = { title: "Orders" };
@@ -12,7 +13,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
   const filtered = ["q", "status", "payment"].some((k) => v(k));
   return (
     <>
-      <PageHeader title="Orders" description="Orders sent from the cart. Amounts are charged in MDL; the currency column is what the customer was viewing." />
+      <PageHeader eyebrow="Trade" title="Orders" description="Orders sent from the cart. Amounts are charged in MDL; the currency column is what the customer was viewing." />
       <Panel>
         <FilterBar basePath="/admin/orders" active={filtered}>
           <div className="md:min-w-56 md:flex-1">
@@ -36,6 +37,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
         </FilterBar>
         {rows.length === 0 ? (
           <EmptyState
+            icon={all === 0 ? Receipt : SearchX}
             title={all === 0 ? "No orders yet" : "No orders match these filters"}
             text={all === 0 ? "Orders are saved here from now on, as customers send them from the cart (earlier ones went to Telegram only)." : "Try another search or reset the filters."}
           />
@@ -55,7 +57,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
             </thead>
             <tbody>
               {rows.map((o) => (
-                <tr key={o.id} className="hover:bg-white/[0.02]">
+                <tr key={o.id} className={tr}>
                   <td className={td}>
                     <Link href={`/admin/orders/${o.id}`} className="font-display tracking-[0.05em] whitespace-nowrap text-parchment hover:text-gold-light">{o.number}</Link>
                   </td>
@@ -67,7 +69,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
                   <td className={`${td} hidden max-w-[16rem] text-sm text-parchment-muted lg:table-cell`}>
                     <span className="line-clamp-2">{o.items.map((i) => `${i.title} × ${i.quantity}`).join(", ")}</span>
                   </td>
-                  <td className={`${td} whitespace-nowrap tabular-nums`}>{mdl(o.totalMdl)}</td>
+                  <td className={`${td} whitespace-nowrap text-gold-light tabular-nums`}>{mdl(o.totalMdl)}</td>
                   <td className={`${td} hidden text-sm text-parchment-muted sm:table-cell`}>{o.currency}</td>
                   <td className={td}><Pill tone={PAYMENT_TONE[o.paymentStatus]}>{o.paymentStatus}</Pill></td>
                   <td className={td}><Pill tone={ORDER_TONE[o.status]}>{o.status}</Pill></td>

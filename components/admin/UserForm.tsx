@@ -3,11 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createUser, updateUser } from "@/app/admin/actions";
-import { Button } from "@/components/ui/Button";
 import { FieldError, Input, Label } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { createUserSchema, issuesByPath, updateUserSchema } from "@/lib/admin/schemas";
-import { Notice } from "./ui";
+import { btn, Notice } from "./ui";
 
 type Values = { name: string; email: string; role: string; status: string; password: string };
 
@@ -91,9 +90,11 @@ export function UserForm({ id, initial }: { id: string | null; initial: Values }
           {!errors.password && <p className="mt-1.5 text-sm text-parchment-muted">At least 10 characters.{id ? " Leave empty to keep the current one." : ""}</p>}
         </div>
       </fieldset>
-      <Button type="submit" variant="gold" size="sm" disabled={pending} className="min-h-11 min-w-40">
-        {pending ? "Saving…" : id ? "Save changes" : "Create user"}
-      </Button>
+      <div className="border-t border-iron/70 pt-5">
+        <button type="submit" disabled={pending} className={btn("primary", "md", "min-w-40")}>
+          {pending ? "Saving…" : id ? "Save changes" : "Create user"}
+        </button>
+      </div>
     </form>
   );
 }

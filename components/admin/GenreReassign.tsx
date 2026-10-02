@@ -3,10 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { reassignGenre } from "@/app/admin/actions";
-import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { Notice } from "./ui";
+import { btn, dialogActions, dialogBody, dialogFrame, DialogTitle, Notice } from "./ui";
 
 /** Moves every game of one genre to another, after a confirmation that names how many games change. */
 export function GenreReassign({ from: fromOptions, to: toOptions }: { from: { name: string; games: number }[]; to: string[] }) {
@@ -51,17 +50,17 @@ export function GenreReassign({ from: fromOptions, to: toOptions }: { from: { na
         </div>
       </div>
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
-      <Button type="button" variant="outline" size="sm" disabled={!ready || pending} onClick={() => dialog.current?.showModal()} className="min-h-11">
+      <button type="button" disabled={!ready || pending} onClick={() => dialog.current?.showModal()} className={btn("secondary", "md")}>
         Move games
-      </Button>
-      <dialog ref={dialog} aria-labelledby="move-title" className="m-auto w-[min(28rem,calc(100vw-2rem))] border border-gold-dark/70 bg-[#100d0a] p-0 text-parchment backdrop:bg-black/70" onCancel={(e) => pending && e.preventDefault()}>
-        <div className="px-6 py-6">
-          <h2 id="move-title" className="font-display text-xl">Move {count} game{count === 1 ? "" : "s"}?</h2>
-          <p className="mt-2 text-parchment-muted">Every game in <span className="text-parchment">{from}</span> will be listed under <span className="text-parchment">{to}</span> instead. The shop&apos;s filters update at once.</p>
+      </button>
+      <dialog ref={dialog} aria-labelledby="move-title" className={dialogFrame} onCancel={(e) => pending && e.preventDefault()}>
+        <div className={dialogBody}>
+          <DialogTitle id="move-title">Move {count} game{count === 1 ? "" : "s"}?</DialogTitle>
+          <p className="mt-3 text-parchment-muted">Every game in <span className="text-parchment">{from}</span> will be listed under <span className="text-parchment">{to}</span> instead. The shop&apos;s filters update at once.</p>
         </div>
-        <div className="flex flex-col-reverse gap-3 border-t border-iron px-6 py-4 sm:flex-row sm:justify-end">
-          <button type="button" disabled={pending} onClick={() => dialog.current?.close()} className="min-h-11 border border-iron px-5 font-display-ui text-[0.68rem] hover:border-aged-gold">Cancel</button>
-          <button type="button" disabled={pending} onClick={run} className="min-h-11 bg-gold-light px-5 font-display-ui text-[0.68rem] text-ink hover:bg-[#cfab68] disabled:opacity-60">{pending ? "Moving…" : "Move games"}</button>
+        <div className={dialogActions}>
+          <button type="button" disabled={pending} onClick={() => dialog.current?.close()} className={btn("ghost", "md")}>Cancel</button>
+          <button type="button" disabled={pending} onClick={run} className={btn("primary", "md")}>{pending ? "Moving…" : "Move games"}</button>
         </div>
       </dialog>
     </div>

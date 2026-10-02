@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus } from "lucide-react";
-import { adminDate, EmptyState, FilterBar, filterField, filterLabel, mdl, PageHeader, Pagination, Panel, Pill, Table, td, th, UrlNotice } from "@/components/admin/ui";
-import { ButtonLink } from "@/components/ui/Button";
+import { Plus, SearchX, Users } from "lucide-react";
+import { adminDate, btn, EmptyState, FilterBar, filterField, filterLabel, mdl, PageHeader, Pagination, Panel, Pill, Table, td, th, tr, UrlNotice } from "@/components/admin/ui";
 import { listUsers } from "@/lib/admin/data";
 
 export const metadata: Metadata = { title: "Users" };
@@ -15,9 +14,10 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
   return (
     <>
       <PageHeader
+        eyebrow="Trade"
         title="Users"
         description="Accounts that can sign in here. Customers order without an account; their orders are matched to an account by email."
-        actions={<ButtonLink href="/admin/users/new" variant="gold" size="sm"><Plus aria-hidden className="size-4" /> Add user</ButtonLink>}
+        actions={<Link href="/admin/users/new" className={btn("primary", "md")}><Plus aria-hidden className="size-4" /> Add user</Link>}
       />
       <UrlNotice code={sp.notice} />
       <Panel>
@@ -44,7 +44,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
           </div>
         </FilterBar>
         {rows.length === 0 ? (
-          <EmptyState title={all === 0 ? "No users yet" : "No users match these filters"} text={all === 0 ? undefined : "Try another search or reset the filters."} />
+          <EmptyState icon={all === 0 ? Users : SearchX} title={all === 0 ? "No users yet" : "No users match these filters"} text={all === 0 ? undefined : "Try another search or reset the filters."} />
         ) : (
           <Table>
             <thead>
@@ -60,8 +60,8 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
             </thead>
             <tbody>
               {rows.map((u) => (
-                <tr key={u.id} className="hover:bg-white/[0.02]">
-                  <td className={td}><Link href={`/admin/users/${u.id}`} className="hover:text-gold-light">{u.name}</Link></td>
+                <tr key={u.id} className={tr}>
+                  <td className={td}><Link href={`/admin/users/${u.id}`} className="text-parchment transition-colors hover:text-gold-light">{u.name}</Link></td>
                   <td className={`${td} max-w-[14rem] truncate text-sm text-parchment-muted`}>{u.email}</td>
                   <td className={td}><Pill tone={u.role === "admin" ? "gold" : "muted"}>{u.role}</Pill></td>
                   <td className={`${td} hidden text-sm whitespace-nowrap text-parchment-muted md:table-cell`}>{adminDate(u.createdAt)}</td>

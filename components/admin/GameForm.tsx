@@ -5,16 +5,16 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { Plus, X } from "lucide-react";
 import { saveGame } from "@/app/admin/actions";
-import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input, Label, Textarea } from "@/components/ui/Input";
+import { Diamond } from "@/components/ui/Ornaments";
 import { Select } from "@/components/ui/Select";
 import { GENRES, PLATFORMS } from "@/lib/catalog";
 import { emptyVariant, formToInput, slugify, type GameFormValues, type VariantValues } from "@/lib/admin/game-form";
 import { gameSchema, IMAGE_PATH, issuesByPath } from "@/lib/admin/schemas";
 import { SHOP_TIME_ZONE } from "@/lib/admin/time";
 import { cn } from "@/lib/utils";
-import { Notice } from "./ui";
+import { btn, Notice } from "./ui";
 
 function Field({ id, label, error, hint, children, className }: { id: string; label: string; error?: string; hint?: ReactNode; children: ReactNode; className?: string }) {
   return (
@@ -34,9 +34,12 @@ function Field({ id, label, error, hint, children, className }: { id: string; la
 
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <fieldset className="min-w-0 border border-gold-dark/50 bg-[#100d0a] px-5 pt-4 pb-6 sm:px-6">
-      <legend className="px-2 font-display-ui text-[0.72rem] text-gold-light">{title}</legend>
-      {description && <p className="mb-5 text-sm text-parchment-muted">{description}</p>}
+    <fieldset className="min-w-0 border border-gold-dark/45 bg-panel px-5 pt-3 pb-6 shadow-[inset_0_1px_0_rgb(224_196_135/0.05)] sm:px-6">
+      <legend className="flex items-center gap-2.5 bg-base px-2.5 font-display-ui text-[0.7rem] text-gold-light">
+        <Diamond className="size-1.5 bg-gold-dark" />
+        {title}
+      </legend>
+      {description && <p className="mb-5 max-w-3xl text-sm text-parchment-muted">{description}</p>}
       {children}
     </fieldset>
   );
@@ -45,7 +48,7 @@ function Section({ title, description, children }: { title: string; description?
 function Preview({ src, label, ratio }: { src: string; label: string; ratio: string }) {
   const ok = IMAGE_PATH.test(src.trim());
   return (
-    <div className={cn("relative w-full overflow-hidden border border-iron bg-base", ratio)}>
+    <div className={cn("relative w-full overflow-hidden border border-gold-dark/50 bg-panel-deep", ratio)}>
       {ok ? <Image key={src} src={src.trim()} alt={label} fill unoptimized className="object-cover" /> : <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-xs text-parchment-muted">No image</span>}
     </div>
   );
@@ -156,7 +159,7 @@ export function GameForm({ id, initial }: { id: string | null; initial: GameForm
                 role="tab"
                 aria-selected={lang === l.key}
                 onClick={() => setLang(l.key)}
-                className={cn("min-h-10 border px-4 font-display-ui text-[0.66rem] transition-colors", lang === l.key ? "border-gold-light text-gold-light" : "border-iron text-parchment-muted hover:text-parchment", err(`description.${l.key}`) && "border-blood-text")}
+                className={cn("min-h-10 border px-4 font-display-ui text-[0.64rem] transition-colors", lang === l.key ? "border-gold-light bg-gold-light/[0.07] text-gold-light" : "border-iron text-parchment-muted hover:border-aged-gold hover:text-parchment", err(`description.${l.key}`) && "border-blood-text")}
               >
                 {l.label}
                 {f.description[l.key].trim() ? "" : " · empty"}
@@ -219,10 +222,10 @@ export function GameForm({ id, initial }: { id: string | null; initial: GameForm
               const vid = (k: string) => `v${i}-${k}`;
               const pct = salePercent(v.price, v.discountPrice);
               return (
-                <li key={i} className="border border-iron px-4 pt-3 pb-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="font-display-ui text-[0.66rem] text-parchment-muted">Version {i + 1}</p>
-                    <button type="button" onClick={() => setF((x) => ({ ...x, variants: x.variants.filter((_, j) => j !== i) }))} className="flex min-h-10 items-center gap-1.5 px-2 text-sm text-parchment-muted hover:text-blood-text">
+                <li key={i} className="border border-iron bg-panel-deep/50 px-4 pt-2 pb-4">
+                  <div className="mb-3 flex items-center justify-between border-b border-iron/60 pb-2">
+                    <p className="font-display-ui text-[0.64rem] text-gold-light/90">Version {i + 1}</p>
+                    <button type="button" onClick={() => setF((x) => ({ ...x, variants: x.variants.filter((_, j) => j !== i) }))} className="flex min-h-10 items-center gap-1.5 px-2 text-sm text-parchment-muted transition-colors hover:text-blood-text">
                       <X aria-hidden className="size-4" /> Remove
                     </button>
                   </div>
@@ -265,7 +268,7 @@ export function GameForm({ id, initial }: { id: string | null; initial: GameForm
             })}
           </ol>
           {err("variants") && <p className="mt-2 text-sm text-blood-text">{err("variants")}</p>}
-          <button type="button" onClick={() => setF((x) => ({ ...x, variants: [...x.variants, emptyVariant(x.platforms[0] ?? "")] }))} className="mt-4 flex min-h-11 items-center gap-2 border border-gold-dark/80 px-4 font-display-ui text-[0.66rem] text-gold-light hover:border-gold-light">
+          <button type="button" onClick={() => setF((x) => ({ ...x, variants: [...x.variants, emptyVariant(x.platforms[0] ?? "")] }))} className={btn("secondary", "md", "mt-4")}>
             <Plus aria-hidden className="size-4" /> Add version
           </button>
         </Section>
@@ -299,14 +302,15 @@ export function GameForm({ id, initial }: { id: string | null; initial: GameForm
         </Section>
       </fieldset>
 
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t border-iron bg-[#0e0d0b]/95 px-4 py-3 backdrop-blur sm:mx-0 sm:px-0">
+      {/* The save bar stays in reach while the long form scrolls. */}
+      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t border-gold-dark/50 bg-[#0a0907]/95 px-4 py-3 shadow-[0_-10px_24px_rgb(0_0_0/0.45)] backdrop-blur sm:mx-0 sm:px-4">
         {message?.tone === "error" && <p className="w-full text-sm text-blood-text sm:mr-auto sm:w-auto">{message.text}</p>}
-        <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => router.push("/admin/games")}>
+        <button type="button" disabled={pending} onClick={() => router.push("/admin/games")} className={btn("ghost", "md")}>
           Cancel
-        </Button>
-        <Button type="submit" variant="gold" size="sm" disabled={pending} className="min-h-11 min-w-40">
+        </button>
+        <button type="submit" disabled={pending} className={btn("primary", "md", "min-w-40")}>
           {pending ? "Saving…" : id ? "Save changes" : "Create game"}
-        </Button>
+        </button>
       </div>
     </form>
   );

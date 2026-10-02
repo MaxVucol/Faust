@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Pencil, Plus } from "lucide-react";
+import { Gamepad2, Pencil, Plus, SearchX } from "lucide-react";
 import { deleteGame } from "@/app/admin/actions";
 import { ConfirmDelete } from "@/components/admin/ConfirmDelete";
-import { adminDate, EmptyState, FilterBar, filterField, filterLabel, mdl, PageHeader, Pagination, Panel, Pill, Table, td, th, UrlNotice } from "@/components/admin/ui";
-import { ButtonLink } from "@/components/ui/Button";
+import { adminDate, btn, EmptyState, FilterBar, filterField, filterLabel, mdl, PageHeader, Pagination, Panel, Pill, Table, td, th, tr, UrlNotice } from "@/components/admin/ui";
 import { platformShort } from "@/lib/catalog";
 import { GAME_SORTS, GAME_STATUS_FILTERS, GENRE_NAMES, listGames, PLATFORM_NAMES } from "@/lib/admin/data";
 
@@ -22,12 +21,13 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
   return (
     <>
       <PageHeader
+        eyebrow="Catalogue"
         title="Games"
         description={`${all} games in the catalogue. Prices are in MDL; the price shown is the version the shop's cards show.`}
         actions={
-          <ButtonLink href="/admin/games/new" variant="gold" size="sm">
+          <Link href="/admin/games/new" className={btn("primary", "md")}>
             <Plus aria-hidden className="size-4" /> Add game
-          </ButtonLink>
+          </Link>
         }
       />
       <UrlNotice code={sp.notice} />
@@ -68,9 +68,10 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
 
         {rows.length === 0 ? (
           <EmptyState
+            icon={filtered ? SearchX : Gamepad2}
             title={filtered ? "No games match these filters" : "No games yet"}
             text={filtered ? "Try another search or reset the filters." : "Add the first game to the catalogue."}
-            action={filtered ? <ButtonLink href="/admin/games" variant="ghost" size="sm">Reset filters</ButtonLink> : <ButtonLink href="/admin/games/new" variant="gold" size="sm">Add game</ButtonLink>}
+            action={filtered ? <Link href="/admin/games" className={btn("ghost")}>Reset filters</Link> : <Link href="/admin/games/new" className={btn("primary")}>Add game</Link>}
           />
         ) : (
           <Table>
@@ -80,23 +81,23 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
                 <th className={th}>Price</th>
                 <th className={th}>Discount</th>
                 <th className={th}>Final</th>
-                <th className={`${th} hidden lg:table-cell`}>Genre</th>
+                <th className={`${th} hidden 2xl:table-cell`}>Genre</th>
                 <th className={`${th} hidden md:table-cell`}>Platform</th>
                 <th className={th}>Status</th>
-                <th className={`${th} hidden xl:table-cell`}>Added</th>
+                <th className={`${th} hidden 2xl:table-cell`}>Added</th>
                 <th className={th}><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody>
               {rows.map((g) => (
-                <tr key={g.id} className="hover:bg-white/[0.02]">
+                <tr key={g.id} className={tr}>
                   <td className={td}>
-                    <Link href={`/admin/games/${g.id}`} className="flex items-center gap-3">
-                      <span className="relative block aspect-[3/4] w-10 shrink-0 overflow-hidden border border-iron">
+                    <Link href={`/admin/games/${g.id}`} className="group flex items-center gap-3">
+                      <span className="relative block aspect-[3/4] w-10 shrink-0 overflow-hidden border border-gold-dark/50 bg-panel-deep transition-colors group-hover:border-gold-light">
                         <Image src={g.coverImage} alt="" fill sizes="40px" className="object-cover" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block max-w-[14rem] truncate text-parchment hover:text-gold-light">{g.title}</span>
+                        <span className="block max-w-[14rem] truncate text-parchment transition-colors group-hover:text-gold-light">{g.title}</span>
                         <span className="block max-w-[14rem] truncate text-xs text-parchment-muted">{g.slug}</span>
                       </span>
                     </Link>
@@ -104,8 +105,8 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
                   <td className={`${td} tabular-nums whitespace-nowrap`}>{mdl(g.price)}</td>
                   <td className={`${td} tabular-nums`}>{g.discount > 0 ? <span className="text-blood-text">−{g.discount}%</span> : <span className="text-parchment-muted">—</span>}</td>
                   <td className={`${td} tabular-nums whitespace-nowrap text-gold-light`}>{mdl(g.finalPrice)}</td>
-                  <td className={`${td} hidden text-sm text-parchment-muted lg:table-cell`}>{g.genres.join(", ")}</td>
-                  <td className={`${td} hidden text-sm text-parchment-muted md:table-cell`}>{g.platforms.map(platformShort).join(" · ")}</td>
+                  <td className={`${td} hidden text-sm text-parchment-muted 2xl:table-cell`}>{g.genres.join(", ")}</td>
+                  <td className={`${td} hidden max-w-[9rem] text-sm text-parchment-muted md:table-cell`}>{g.platforms.map(platformShort).join(" · ")}</td>
                   <td className={td}>
                     <span className="flex flex-wrap gap-1">
                       <Pill tone={g.inStock ? "green" : "red"}>{g.inStock ? "In stock" : "Out of stock"}</Pill>
@@ -114,10 +115,10 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
                       {g.featured && <Pill tone="gold">Featured</Pill>}
                     </span>
                   </td>
-                  <td className={`${td} hidden text-sm whitespace-nowrap text-parchment-muted xl:table-cell`}>{adminDate(g.createdAt)}</td>
+                  <td className={`${td} hidden text-sm whitespace-nowrap text-parchment-muted 2xl:table-cell`}>{adminDate(g.createdAt)}</td>
                   <td className={td}>
                     <span className="flex justify-end gap-2">
-                      <Link href={`/admin/games/${g.id}`} aria-label={`Edit ${g.title}`} className="flex size-10 items-center justify-center border border-iron text-parchment-muted transition-colors hover:border-aged-gold hover:text-gold-light">
+                      <Link href={`/admin/games/${g.id}`} aria-label={`Edit ${g.title}`} className={btn("ghost", "icon")}>
                         <Pencil aria-hidden className="size-4" strokeWidth={1.75} />
                       </Link>
                       <ConfirmDelete action={deleteGame.bind(null, g.id)} name={g.title} compact />

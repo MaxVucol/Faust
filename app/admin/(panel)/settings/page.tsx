@@ -13,11 +13,11 @@ export const metadata: Metadata = { title: "Settings" };
 
 function Row({ label, value, where }: { label: string; value: ReactNode; where: string }) {
   return (
-    <div className="grid gap-1 border-b border-iron/60 px-5 py-3.5 last:border-b-0 sm:grid-cols-[14rem_minmax(0,1fr)] sm:gap-4">
-      <dt className="text-sm text-parchment-muted">{label}</dt>
+    <div className="grid gap-1 border-b border-iron/55 px-5 py-3.5 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-4">
+      <dt className="pt-1 font-display-ui text-[0.58rem] tracking-[0.18em] text-parchment-muted">{label}</dt>
       <dd className="min-w-0">
-        <div className="break-words">{value}</div>
-        <p className="mt-0.5 text-xs text-parchment-muted">{where}</p>
+        <div className="break-words text-parchment">{value}</div>
+        <p className="mt-1 text-xs break-words text-parchment-muted/80">{where}</p>
       </dd>
     </div>
   );
@@ -37,7 +37,7 @@ export default async function SettingsPage() {
   const secretSource = sessionSecretSource();
   return (
     <>
-      <PageHeader title="Settings" description="How the shop is configured right now." />
+      <PageHeader eyebrow="System" title="Settings" description="How the shop is configured right now." />
       <div className="mb-6">
         <Notice tone="info">These settings are part of the code and the hosting environment, so a change goes live with the next deploy. Nothing here is edited from the panel.</Notice>
       </div>

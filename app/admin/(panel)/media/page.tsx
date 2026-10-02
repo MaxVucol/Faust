@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Images } from "lucide-react";
 import { MediaGrid } from "@/components/admin/MediaGrid";
 import { EmptyState, FilterBar, filterField, filterLabel, PageHeader, Panel } from "@/components/admin/ui";
 import { listMedia } from "@/lib/admin/data";
@@ -20,6 +21,7 @@ export default async function MediaPage({ searchParams }: PageProps<"/admin/medi
   return (
     <>
       <PageHeader
+        eyebrow="Catalogue"
         title="Media"
         description={`${total} images used by the catalogue. The files ship with the site (public/images) and are served by the CDN; to add one, add the file to the project and deploy, then use its path in a game.`}
       />
@@ -37,7 +39,7 @@ export default async function MediaPage({ searchParams }: PageProps<"/admin/medi
             </select>
           </div>
         </FilterBar>
-        {items.length === 0 ? <EmptyState title="No images match" text="Try another search." /> : <MediaGrid items={items} />}
+        {items.length === 0 ? <EmptyState icon={Images} title="No images match" text="Try another search." /> : <MediaGrid items={items} />}
         <p className="px-5 pb-4 text-sm text-parchment-muted">{items.length} of {total} shown</p>
       </Panel>
     </>

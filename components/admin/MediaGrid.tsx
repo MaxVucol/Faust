@@ -12,8 +12,8 @@ function MediaCard({ item }: { item: MediaItem }) {
   const [broken, setBroken] = useState(false);
   const [copied, setCopied] = useState(false);
   return (
-    <li className="flex min-w-0 flex-col border border-iron bg-[#100d0a]">
-      <span className="relative block aspect-[4/3] overflow-hidden bg-base">
+    <li className="group flex min-w-0 flex-col border border-gold-dark/40 bg-panel transition-colors hover:border-gold-dark/80">
+      <span className="relative block aspect-[4/3] overflow-hidden border-b border-iron bg-panel-deep bg-[repeating-conic-gradient(rgb(255_255_255/0.025)_0_25%,transparent_0_50%)] bg-[length:16px_16px]">
         {broken ? (
           <span className="absolute inset-0 flex items-center justify-center text-sm text-blood-text">File not found</span>
         ) : (
@@ -45,8 +45,8 @@ function MediaCard({ item }: { item: MediaItem }) {
           {dims && ` · ${dims}`}
           {size && ` · ${size}`}
         </p>
-        <p className="truncate font-mono text-xs text-parchment-muted" title={item.url}>{item.url}</p>
-        <ul className="mt-1 space-y-0.5">
+        <p className="truncate font-mono text-xs text-parchment-muted/80" title={item.url}>{item.url}</p>
+        <ul className="mt-1 space-y-0.5 border-t border-iron/60 pt-1.5">
           {item.usedBy.slice(0, 3).map((u, i) => (
             <li key={i} className="truncate">
               <Link href={`/admin/games/${u.id}`} className="text-parchment-muted hover:text-gold-light">{u.field}: {u.title}</Link>
@@ -57,7 +57,7 @@ function MediaCard({ item }: { item: MediaItem }) {
         <button
           type="button"
           onClick={() => navigator.clipboard?.writeText(item.url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }).catch(() => {})}
-          className="mt-auto flex min-h-10 items-center gap-2 self-start pt-1 font-display-ui text-[0.62rem] text-gold-light hover:text-[#e0c487]"
+          className="mt-auto flex min-h-10 items-center gap-2 self-start pt-1 font-display-ui text-[0.62rem] text-gold-light transition-colors hover:text-[#e0c487]"
         >
           {copied ? <Check aria-hidden className="size-3.5" /> : <Copy aria-hidden className="size-3.5" />}
           <span aria-live="polite">{copied ? "Copied" : "Copy path"}</span>

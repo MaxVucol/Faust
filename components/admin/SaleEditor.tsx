@@ -7,7 +7,7 @@ import { saveSale } from "@/app/admin/actions";
 import { FieldError, Input, Label } from "@/components/ui/Input";
 import { issuesByPath, saleSchema } from "@/lib/admin/schemas";
 import { fromShopInput, toShopInput } from "@/lib/admin/time";
-import { mdl, Notice } from "./ui";
+import { btn, dialogActions, dialogFrame, DialogTitle, mdl, Notice } from "./ui";
 
 type Sale = { gameId: string; variant: number | null; title: string; label: string; price: number; discountPrice: number | null; startsAt: string | null; endsAt: string | null };
 
@@ -61,11 +61,11 @@ export function SaleEditor({ sale }: { sale: Sale }) {
           setError(null);
           ref.current?.showModal();
         }}
-        className="flex size-10 items-center justify-center border border-iron text-parchment-muted transition-colors hover:border-aged-gold hover:text-gold-light"
+        className={btn("ghost", "icon")}
       >
         <Pencil aria-hidden className="size-4" strokeWidth={1.75} />
       </button>
-      <dialog ref={ref} aria-labelledby={`${id}-title`} className="m-auto w-[min(30rem,calc(100vw-2rem))] border border-gold-dark/70 bg-[#100d0a] p-0 text-parchment backdrop:bg-black/70" onCancel={(e) => pending && e.preventDefault()}>
+      <dialog ref={ref} aria-labelledby={`${id}-title`} className={dialogFrame} onCancel={(e) => pending && e.preventDefault()}>
         <form
           noValidate
           onSubmit={(e) => {
@@ -75,8 +75,8 @@ export function SaleEditor({ sale }: { sale: Sale }) {
         >
           <div className="space-y-4 px-6 py-6">
             <div>
-              <h2 id={`${id}-title`} className="font-display text-xl">{sale.title}</h2>
-              <p className="text-sm text-parchment-muted">{sale.label} · price {mdl(sale.price)}</p>
+              <DialogTitle id={`${id}-title`}>{sale.title}</DialogTitle>
+              <p className="mt-2 text-sm text-parchment-muted">{sale.label} · price <span className="text-parchment tabular-nums">{mdl(sale.price)}</span></p>
             </div>
             {error && <Notice tone="error">{error}</Notice>}
             <fieldset disabled={pending} className="space-y-4">
@@ -100,16 +100,16 @@ export function SaleEditor({ sale }: { sale: Sale }) {
               </div>
             </fieldset>
           </div>
-          <div className="flex flex-col-reverse gap-3 border-t border-iron px-6 py-4 sm:flex-row sm:items-center">
+          <div className={`${dialogActions} sm:items-center`}>
             {sale.discountPrice != null && (
-              <button type="button" disabled={pending} onClick={() => submit(true)} className="min-h-11 px-2 text-left font-display-ui text-[0.66rem] text-blood-text hover:underline sm:mr-auto">
+              <button type="button" disabled={pending} onClick={() => submit(true)} className={btn("quiet-danger", "md", "sm:mr-auto")}>
                 Remove sale
               </button>
             )}
-            <button type="button" disabled={pending} onClick={() => ref.current?.close()} className="min-h-11 border border-iron px-5 font-display-ui text-[0.68rem] hover:border-aged-gold sm:ml-auto">
+            <button type="button" disabled={pending} onClick={() => ref.current?.close()} className={btn("ghost", "md")}>
               Cancel
             </button>
-            <button type="submit" disabled={pending} className="min-h-11 bg-gold-light px-5 font-display-ui text-[0.68rem] text-ink hover:bg-[#cfab68] disabled:opacity-60">
+            <button type="submit" disabled={pending} className={btn("primary", "md")}>
               {pending ? "Saving…" : "Save sale"}
             </button>
           </div>

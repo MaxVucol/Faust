@@ -3,10 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { updateOrderStatus } from "@/app/admin/actions";
-import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { Notice } from "./ui";
+import { btn, Notice } from "./ui";
 
 const STATUSES = ["new", "processing", "completed", "cancelled"];
 const PAYMENTS = ["unpaid", "paid", "refunded"];
@@ -42,9 +41,9 @@ export function OrderStatusForm({ id, status, paymentStatus }: { id: string; sta
         </Select>
       </div>
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
-      <Button type="submit" variant="gold" size="sm" disabled={pending || !changed} className="min-h-11 w-full">
+      <button type="submit" disabled={pending || !changed} className={btn("primary", "md", "w-full")}>
         {pending ? "Saving…" : "Update status"}
-      </Button>
+      </button>
     </form>
   );
 }

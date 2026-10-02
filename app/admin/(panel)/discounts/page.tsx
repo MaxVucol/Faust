@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { SaleEditor } from "@/components/admin/SaleEditor";
-import { adminDateTime, EmptyState, FilterBar, filterField, filterLabel, mdl, PageHeader, Pagination, Panel, Pill, Table, td, th } from "@/components/admin/ui";
+import { BadgePercent } from "lucide-react";
+import { adminDateTime, EmptyState, FilterBar, filterField, filterLabel, mdl, PageHeader, Pagination, Panel, Pill, Table, td, th, tr } from "@/components/admin/ui";
 import { DISCOUNT_FILTERS, listDiscounts, type SaleState } from "@/lib/admin/data";
 
 export const metadata: Metadata = { title: "Discounts" };
@@ -21,13 +22,14 @@ export default async function DiscountsPage({ searchParams }: PageProps<"/admin/
   return (
     <>
       <PageHeader
+        eyebrow="Catalogue"
         title="Discounts"
         description="Sales on games and on versions with their own price: a sale price with an end date (and an optional start). The shop shows a sale only while it runs, so expired ones change nothing. There are no promo codes."
       />
       <div className="mb-6 flex flex-wrap gap-2">
         {DISCOUNT_FILTERS.map((s) => (
-          <Link key={s} href={`/admin/discounts?state=${s}`} aria-current={v("state") === s ? "page" : undefined} className="flex min-h-10 items-center gap-2 border border-iron px-3 text-sm hover:border-aged-gold aria-[current=page]:border-gold-light aria-[current=page]:text-gold-light">
-            {STATE[s].label} <span className="text-parchment-muted tabular-nums">{tally[s]}</span>
+          <Link key={s} href={`/admin/discounts?state=${s}`} aria-current={v("state") === s ? "page" : undefined} className="flex min-h-10 items-center gap-2.5 border border-iron bg-panel px-3.5 font-display-ui text-[0.62rem] text-parchment-muted transition-colors hover:border-aged-gold hover:text-parchment aria-[current=page]:border-gold-light aria-[current=page]:bg-gold-light/[0.07] aria-[current=page]:text-gold-light">
+            {STATE[s].label} <span className="border-l border-iron pl-2.5 font-body text-sm tracking-normal text-parchment normal-case tabular-nums">{tally[s]}</span>
           </Link>
         ))}
       </div>
@@ -46,7 +48,7 @@ export default async function DiscountsPage({ searchParams }: PageProps<"/admin/
           </div>
         </FilterBar>
         {rows.length === 0 ? (
-          <EmptyState title="Nothing here" text={v("state") === "none" ? "Every game has a sale set." : "No sales match. Pick “No sale” to start one on a game."} />
+          <EmptyState icon={BadgePercent} title="Nothing here" text={v("state") === "none" ? "Every game has a sale set." : "No sales match. Pick “No sale” to start one on a game."} />
         ) : (
           <Table>
             <thead>
@@ -62,14 +64,14 @@ export default async function DiscountsPage({ searchParams }: PageProps<"/admin/
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={`${r.gameId}-${r.variant ?? "g"}`} className="hover:bg-white/[0.02]">
+                <tr key={`${r.gameId}-${r.variant ?? "g"}`} className={tr}>
                   <td className={td}>
-                    <Link href={`/admin/games/${r.gameId}`} className="flex items-center gap-3">
-                      <span className="relative block aspect-[3/4] w-9 shrink-0 overflow-hidden border border-iron">
+                    <Link href={`/admin/games/${r.gameId}`} className="group flex items-center gap-3">
+                      <span className="relative block aspect-[3/4] w-9 shrink-0 overflow-hidden border border-gold-dark/50 bg-panel-deep transition-colors group-hover:border-gold-light">
                         <Image src={r.coverImage} alt="" fill sizes="36px" className="object-cover" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block max-w-[14rem] truncate hover:text-gold-light">{r.title}</span>
+                        <span className="block max-w-[14rem] truncate text-parchment transition-colors group-hover:text-gold-light">{r.title}</span>
                         <span className="block max-w-[14rem] truncate text-xs text-parchment-muted">{r.label}</span>
                       </span>
                     </Link>
@@ -78,7 +80,7 @@ export default async function DiscountsPage({ searchParams }: PageProps<"/admin/
                   <td className={`${td} whitespace-nowrap tabular-nums`}>
                     {r.discountPrice != null ? (
                       <>
-                        {mdl(r.discountPrice)} <span className="text-blood-text">−{r.percent}%</span>
+                        <span className="text-gold-light">{mdl(r.discountPrice)}</span> <span className="text-blood-text">−{r.percent}%</span>
                       </>
                     ) : (
                       <span className="text-parchment-muted">—</span>

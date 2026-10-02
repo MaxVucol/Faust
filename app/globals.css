@@ -32,6 +32,10 @@
   --color-gold-light: #c09a55;
   --color-crimson: #751f1c;
 
+  /* Blackened-metal panel fills: the cards' face (as on the home cards) and the deeper frame behind it. */
+  --color-panel: #100d0a;
+  --color-panel-deep: #0b0907;
+
   /* Content width shared by the navbar, every page and the footer. */
   --container-page: 150rem;
   /* Extra breakpoint for 2K screens (2000px), declared in rem so it sorts after 2xl. */
