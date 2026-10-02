@@ -126,7 +126,14 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
           </header>
           <div className="relative col-start-1 row-start-2 aspect-[3/4] w-full border border-iron shadow-lg shadow-black/50 md:row-span-3 md:row-start-1">
             <Image src={game.pageCoverImage ?? game.coverImage} alt={g.coverAlt(game.title)} fill sizes="(min-width: 768px) 260px, (min-width: 640px) 160px, 128px" className="object-cover saturate-[0.85]" />
-            <FavoriteButton slug={game.slug} title={game.title} />
+            {/* Below md the cover is only 128-160px wide and official covers put the title at the top, so the
+                star shrinks (26px disc, 18px star) into the very corner; the 44px hit area stays and reaches
+                6px past the corner into the gap around the cover. Unchanged from md up. */}
+            <FavoriteButton
+              slug={game.slug}
+              title={game.title}
+              className="max-md:-top-1.5 max-md:-right-1.5 max-md:before:size-[26px] max-md:[&>svg]:size-[18px]"
+            />
           </div>
           <dl className="col-start-2 row-start-2 flex flex-col gap-4 self-center md:row-start-2 md:-mt-2 md:flex-row md:flex-wrap md:gap-x-10 md:gap-y-3 md:self-start">
             {game.rating !== null && (

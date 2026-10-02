@@ -58,7 +58,15 @@ export async function GameCard({
         <Link prefetch={false} href={href} className="relative block aspect-[3/4] overflow-hidden">
           <GameImage src={game.coverImage} alt={t.game.coverAlt(game.title)} sizes={sizes} priority={priority} />
         </Link>
-        <FavoriteButton slug={game.slug} title={game.title} />
+        {/* Below md the cover is 170-350px wide and official covers put the title at the top, so the star
+            shrinks (28px disc, 18px star) into the very corner, 2px in. Unlike on the game page the 44px hit
+            area stays inside the cover (the similar-games carousel would clip anything past its edge): the
+            button sits in the corner and pins its disc and star to its top-right. Unchanged from md up. */}
+        <FavoriteButton
+          slug={game.slug}
+          title={game.title}
+          className="max-md:top-0 max-md:right-0 max-md:items-start max-md:justify-end max-md:p-0.5 max-md:before:size-7 max-md:[&>svg]:mt-[5px] max-md:[&>svg]:mr-[5px] max-md:[&>svg]:size-[18px]"
+        />
         <div className="pointer-events-none absolute top-3 left-3 flex flex-col items-start gap-1.5">
           <DiscountBadge game={game} inline />
           {isNewRelease(game) && <Badge variant="gold">{t.game.newBadge}</Badge>}
