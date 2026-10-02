@@ -24,15 +24,27 @@ function SubmitButton() {
 
 /**
  * The order details, the last step of the cart ledger. Only each line's game, platform, edition and
- * quantity are sent; the server prices the order from the catalogue. `onPlaced` runs after a
- * successful submission.
+ * quantity are sent, with the total shown (MDL); the server prices the order from the catalogue and
+ * refuses it when that total differs. `onPlaced` runs after a successful submission, `onCartChanged`
+ * when prices or availability changed since the cart was priced.
  */
-export function CheckoutForm({ items, onPlaced }: { items: CartItem[]; onPlaced: (message: string) => void }) {
+export function CheckoutForm({
+  items,
+  total,
+  onPlaced,
+  onCartChanged,
+}: {
+  items: CartItem[];
+  total: number;
+  onPlaced: (message: string) => void;
+  onCartChanged: () => void;
+}) {
   const { t } = useI18n();
   const o = t.cart.order;
   const [state, action] = useActionState(async (prev: FormState, formData: FormData) => {
     const result = await placeOrder(prev, formData);
     if (result.status === "success") onPlaced(result.message ?? "");
+    else if (result.code === "cart-changed") onCartChanged();
     return result;
   }, initial);
   // Controlled fields, so what was typed survives a failed submission (React resets uncontrolled ones).
@@ -64,6 +76,7 @@ export function CheckoutForm({ items, onPlaced }: { items: CartItem[]; onPlaced:
     <form ref={formRef} action={action} noValidate aria-labelledby="order-title" className="space-y-5">
       <Honeypot />
       <input type="hidden" name="items" value={JSON.stringify(lines)} />
+      <input type="hidden" name="total" value={total.toFixed(2)} />
       <div className="border-b border-gold-dark/50 pb-3">
         <h2 id="order-title" className="flex items-center gap-2.5 font-display-ui text-[0.72rem] text-gold-light">
           <Diamond className="size-1.5 bg-gold-dark" />

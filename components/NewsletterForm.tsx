@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { subscribeToNewsletter } from "@/app/actions";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,8 @@ const initial: FormState = { status: "idle" };
 export function NewsletterForm() {
   const { t } = useI18n();
   const [state, action, pending] = useActionState(subscribeToNewsletter, initial);
+  // Controlled, so the address survives a rejected submission (React resets uncontrolled fields).
+  const [email, setEmail] = useState("");
 
   if (state.status === "success") {
     return (
@@ -33,6 +35,8 @@ export function NewsletterForm() {
         <input
           id="newsletter-email"
           name="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           type="email"
           required
           autoComplete="email"

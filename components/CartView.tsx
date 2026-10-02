@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { getCartPrices } from "@/app/actions";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { PriceBlock } from "@/components/games/PriceBlock";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { ButtonLink } from "@/components/ui/Button";
 import { Diamond } from "@/components/ui/Ornaments";
-import { lineKey } from "@/lib/cart-store";
+import { cartStore, lineKey, type FreshLine } from "@/lib/cart-store";
 import { convert, formatAmount, formatMoney } from "@/lib/currency";
 import { discountPercent } from "@/lib/format";
 import { useCart } from "@/lib/use-cart";
@@ -19,6 +20,41 @@ const noop = () => () => {};
 /** False during server render and hydration, true once the browser (and the saved cart) is available. */
 function useIsClient() {
   return useSyncExternalStore(noop, () => true, () => false);
+}
+
+/**
+ * Prices the saved lines from the catalogue once the cart is read, again whenever a line is added or
+ * removed, and on `refresh`: the saved prices are replaced with the current ones (cartStore.reprice), so
+ * the page shows what the order is charged. Lines that can't be bought any more come back in
+ * `unavailable`; `updated` is set once a saved price turned out to differ. If the request fails, the
+ * saved prices stay and the server still checks the total when the order is sent.
+ */
+function useFreshPrices(lineKeys: string) {
+  const [round, setRound] = useState(0);
+  const [state, setState] = useState<{ unavailable: ReadonlySet<string>; updated: boolean }>({ unavailable: new Set(), updated: false });
+  useEffect(() => {
+    const lines = cartStore.getSnapshot();
+    if (lines.length === 0) return;
+    let cancelled = false;
+    getCartPrices(lines.map(({ slug, platform, edition }) => ({ slug, platform, edition })))
+      .then((prices) => {
+        if (cancelled || !prices) return;
+        const fresh = new Map<string, FreshLine>();
+        const unavailable = new Set<string>();
+        lines.forEach((line, i) => {
+          const p = prices[i];
+          if (p) fresh.set(lineKey(line), { title: p.title, coverImage: p.coverImage, price: p.price, oldPrice: p.oldPrice });
+          else unavailable.add(lineKey(line));
+        });
+        const changed = cartStore.reprice(fresh);
+        setState((s) => ({ unavailable, updated: s.updated || changed }));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [lineKeys, round]);
+  return { ...state, refresh: () => setRound((r) => r + 1) };
 }
 
 /** Small gold section title with a rule under it, shared by the ledger's three sections. */
@@ -56,7 +92,14 @@ function LedgerMessage({ title, text, action, status = false }: { title: string;
 export function CartView() {
   const { t, currency } = useI18n();
   const c = t.cart;
-  const { items, count, subtotal, total, setQuantity, clear } = useCart();
+  const { items, setQuantity, clear } = useCart();
+  const { unavailable, updated, refresh } = useFreshPrices(items.map(lineKey).join("\n"));
+  // Only lines that can still be bought go into the order and its totals.
+  const orderable = items.filter((i) => !unavailable.has(lineKey(i)));
+  const count = orderable.reduce((sum, i) => sum + i.quantity, 0);
+  const total = orderable.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  // What the lines would cost without their sales.
+  const subtotal = orderable.reduce((sum, i) => sum + (i.oldPrice ?? i.price) * i.quantity, 0);
   // Totals are converted and rounded first; the discount is their difference, so the summary
   // always adds up in every currency.
   const shownSubtotal = convert(subtotal, currency);
@@ -119,7 +162,7 @@ export function CartView() {
   return (
     <div className="grid border-t border-iron/80 lg:grid-cols-[minmax(0,1fr)_minmax(340px,38%)]">
       <section aria-labelledby="cos-jocuri" className="px-4 py-6 sm:px-8 sm:py-8">
-        <SectionTitle id="cos-jocuri" aside={<span className="text-sm text-parchment-muted">{c.items(count)}</span>}>
+        <SectionTitle id="cos-jocuri" aside={<span className="text-sm text-parchment-muted">{c.items(items.reduce((sum, i) => sum + i.quantity, 0))}</span>}>
           {c.itemsTitle}
         </SectionTitle>
         <ul>
@@ -146,6 +189,7 @@ export function CartView() {
                         c.platformUnknown
                       )}
                     </p>
+                    {unavailable.has(key) && <p className="mt-2 text-sm text-stock-out">{c.lineUnavailable}</p>}
                     <PriceBlock price={item.price} oldPrice={item.oldPrice ?? null} percent={percent} currency={currency} labels={t.game} className="mt-3 text-xl" />
                     {item.quantity > 1 && (
                       <p className="mt-1.5 text-sm text-parchment-muted tabular-nums">
@@ -221,16 +265,25 @@ export function CartView() {
           </div>
         </dl>
         {currency !== "MDL" && <p className="mt-2 text-sm text-parchment-muted">{t.game.currencyNote}</p>}
+        {updated && (
+          <p role="status" className="mt-2 text-sm text-parchment-muted">
+            {c.pricesUpdated}
+          </p>
+        )}
 
-        <div className="mt-9">
-          <CheckoutForm
-            items={items}
-            onPlaced={(message) => {
-              setPlaced(message);
-              clear();
-            }}
-          />
-        </div>
+        {orderable.length > 0 && (
+          <div className="mt-9">
+            <CheckoutForm
+              items={orderable}
+              total={Math.round(total * 100) / 100}
+              onPlaced={(message) => {
+                setPlaced(message);
+                clear();
+              }}
+              onCartChanged={refresh}
+            />
+          </div>
+        )}
       </aside>
     </div>
   );

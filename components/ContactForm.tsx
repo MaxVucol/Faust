@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { sendContactMessage } from "@/app/actions";
 import { useI18n } from "@/components/i18n/I18nProvider";
@@ -27,10 +27,14 @@ export function ContactForm() {
   const { t } = useI18n();
   const c = t.contact;
   const [state, action] = useActionState(sendContactMessage, initial);
+  // Controlled fields, so what was typed survives a rejected submission (React resets uncontrolled ones).
+  const [values, setValues] = useState({ name: "", email: "", subject: "", message: "" });
   const errors = state.fieldErrors ?? {};
-  const field = (name: string) => ({
+  const field = (name: keyof typeof values) => ({
     id: name,
     name,
+    value: values[name],
+    onChange: (e: { target: { value: string } }) => setValues((v) => ({ ...v, [name]: e.target.value })),
     "aria-invalid": errors[name] ? true : undefined,
     "aria-describedby": errors[name] ? `${name}-error` : undefined,
   });
@@ -61,7 +65,7 @@ export function ContactForm() {
       </div>
       <div>
         <Label htmlFor="subject">{c.subject}</Label>
-        <Select {...field("subject")} defaultValue="" required>
+        <Select {...field("subject")} required>
           <option value="" disabled>
             {c.chooseSubject}
           </option>

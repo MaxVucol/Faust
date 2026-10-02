@@ -225,6 +225,8 @@ export const en: Dictionary = {
     checkoutUnavailable: "Online payment is not available yet",
     checkoutSoon: "Online payment is coming soon.",
     clear: "Empty cart",
+    pricesUpdated: "Cart prices were updated from the catalogue.",
+    lineUnavailable: "Unavailable now: it won't be included in the order.",
     order: {
       title: "Order details",
       note: "Nothing to pay now: after you send the order, we'll contact you to confirm it and arrange payment.",
@@ -241,6 +243,7 @@ export const en: Dictionary = {
         commentMax: "The comment can be at most 500 characters.",
         cart: "Your cart couldn't be read. Reload the page and try again.",
         unavailable: "A game in your cart is no longer available or has changed. Reload the page and check your cart.",
+        pricesChanged: "Prices have changed. We updated your cart: check the total and send the order again.",
         failed: "The order couldn't be sent. Please try again in a few minutes.",
         tooMany: "Too many orders in a row. Please try again in a few minutes.",
       },

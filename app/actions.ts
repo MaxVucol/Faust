@@ -3,16 +3,25 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { priceLines, type PricedLine } from "@/lib/cart-pricing";
 import { convert, formatAmount } from "@/lib/currency";
-import { effectivePrice } from "@/lib/format";
 import { getCurrency, getDictionary, getLocale } from "@/lib/i18n/server";
-import { bestOffer, gameOffers } from "@/lib/offers";
 import { allowAttempt, clientIp, isBot } from "@/lib/rate-limit";
-import { contactSchema, newsletterSchema, orderSchema } from "@/lib/schemas";
+import { cartLineSchema, contactSchema, newsletterSchema, orderSchema } from "@/lib/schemas";
 import { escapeTelegramHtml, sendTelegramMessage } from "@/lib/telegram";
 import type { FormState } from "@/types";
 
 const TEN_MINUTES = 10 * 60 * 1000;
+
+/**
+ * The cart page's prices: each line priced from the catalogue now, by the same rule the order uses
+ * (null for a line that can't be bought any more). Read-only. Null when the list itself is invalid.
+ */
+export async function getCartPrices(lines: unknown): Promise<(PricedLine | null)[] | null> {
+  const parsed = z.array(cartLineSchema).max(100).safeParse(lines);
+  if (!parsed.success) return null;
+  return priceLines(parsed.data);
+}
 
 /**
  * Checkout: validates the customer's details and the cart, prices every line again from the database
@@ -42,22 +51,20 @@ export async function placeOrder(_prev: FormState, formData: FormData): Promise<
   }
   const order = parsed.data;
 
-  // Current prices and stock, straight from the catalogue.
+  // Current prices and stock, straight from the catalogue (the same pricing the cart page shows).
   const now = new Date();
-  const games = await prisma.game.findMany({
-    where: { slug: { in: [...new Set(order.items.map((i) => i.slug))] } },
-    select: { slug: true, title: true, price: true, discountPrice: true, discountStartsAt: true, discountEndsAt: true, platforms: true, variants: true, stock: true },
-  });
+  const priced = await priceLines(order.items, now);
   const lines = [];
-  for (const item of order.items) {
-    const game = games.find((g) => g.slug === item.slug);
-    const offers = game ? gameOffers(game) : [];
-    const offer = item.platform
-      ? offers.find((of) => of.platform === item.platform && (of.edition ?? null) === (item.edition ?? null))
-      : bestOffer(offers, now);
-    if (!game || !offer || offer.stock <= 0) return { status: "error", message: o.errors.unavailable };
-    const unit = effectivePrice(offer, now);
-    lines.push({ title: game.title, platform: offer.platform, edition: offer.edition, quantity: item.quantity, unit, sum: unit * item.quantity });
+  for (const [i, item] of order.items.entries()) {
+    const line = priced[i];
+    if (!line) return { status: "error", message: o.errors.unavailable, code: "cart-changed" };
+    lines.push({ title: line.title, platform: line.platform, edition: line.edition, quantity: item.quantity, sum: line.price * item.quantity });
+  }
+  const totalMdl = Math.round(lines.reduce((s, l) => s + l.sum, 0) * 100) / 100;
+  // The total the visitor saw (MDL). It never sets the price; a different one means prices changed
+  // since the cart was shown, so the order waits until the visitor has seen the new total.
+  if (!(Math.abs(Number(formData.get("total")) - totalMdl) < 0.005)) {
+    return { status: "error", message: o.errors.pricesChanged, code: "cart-changed" };
   }
 
   // Counted only once everything checks out, so fixing a typo never locks anyone out.
@@ -66,7 +73,6 @@ export async function placeOrder(_prev: FormState, formData: FormData): Promise<
   }
 
   const [locale, currency] = await Promise.all([getLocale(), getCurrency()]);
-  const totalMdl = Math.round(lines.reduce((s, l) => s + l.sum, 0) * 100) / 100;
   const number = `IV-${now.getTime().toString(36).toUpperCase()}`;
   const mdl = (v: number) => formatAmount(Math.round(v * 100) / 100, "MDL");
   const e = escapeTelegramHtml;

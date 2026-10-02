@@ -230,6 +230,8 @@ export const ro = {
     checkoutUnavailable: "Plata online nu este încă disponibilă",
     checkoutSoon: "Plata online va fi disponibilă în curând.",
     clear: "Golește coșul",
+    pricesUpdated: "Prețurile din coș au fost actualizate după catalog.",
+    lineUnavailable: "Indisponibil acum: nu va fi inclus în comandă.",
     order: {
       title: "Datele comenzii",
       note: "Nu plătești nimic acum: după ce trimiți comanda, te contactăm pentru confirmare și plată.",
@@ -246,6 +248,7 @@ export const ro = {
         commentMax: "Comentariul poate avea cel mult 500 de caractere.",
         cart: "Coșul nu a putut fi citit. Reîncarcă pagina și încearcă din nou.",
         unavailable: "Un joc din coș nu mai este disponibil sau s-a schimbat. Reîncarcă pagina și verifică coșul.",
+        pricesChanged: "Prețurile s-au schimbat între timp. Am actualizat coșul: verifică totalul și trimite din nou.",
         failed: "Comanda nu a putut fi trimisă. Încearcă din nou peste câteva minute.",
         tooMany: "Ai trimis prea multe comenzi. Încearcă din nou peste câteva minute.",
       },

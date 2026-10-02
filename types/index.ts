@@ -21,8 +21,9 @@ export type GameCardData = Pick<
 >;
 
 /**
- * One line in the cart: a game on one platform. Prices are the ones shown when it was added (MDL);
- * `oldPrice` is set when it was added on sale. Lines saved before platforms existed have no platform.
+ * One line in the cart: a game on one platform. Prices are saved when it is added (MDL) and replaced with
+ * the catalogue's current ones when the cart page opens; `oldPrice` is set while a sale runs. Lines saved
+ * before platforms existed have no platform.
  */
 export type CartItem = {
   slug: string;
@@ -39,4 +40,6 @@ export type FormState = {
   status: "idle" | "success" | "error";
   message?: string;
   fieldErrors?: Partial<Record<string, string[]>>;
+  /** "cart-changed": prices or availability changed since the cart was shown, so it must be priced again. */
+  code?: "cart-changed";
 };

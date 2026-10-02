@@ -21,11 +21,15 @@ export function contactSchema(t: Dictionary) {
   });
 }
 
-/** One cart line as the checkout form sends it; prices are never taken from the browser. */
-const orderLineSchema = z.object({
+/** Which version of a game a cart line is; prices are never taken from the browser. */
+export const cartLineSchema = z.object({
   slug: z.string().trim().min(1).max(120),
   platform: z.string().trim().max(60).optional(),
   edition: z.string().trim().max(80).nullish(),
+});
+
+/** One cart line as the checkout form sends it. */
+const orderLineSchema = cartLineSchema.extend({
   quantity: z.number().int().min(1).max(99),
 });
 
