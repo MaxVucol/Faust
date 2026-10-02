@@ -96,3 +96,53 @@ model NewsletterSubscriber {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+
+/// An account that can sign in to /admin. Only role "admin" may use the admin panel; any other role
+/// (or a blocked account) signs in but is refused. Created with `npm run admin:create`; never seeded.
+model User {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  email        String    @unique
+  name         String
+  /// scrypt hash (lib/admin/password.ts); the password itself is never stored.
+  passwordHash String
+  /// "admin" or "user".
+  role         String    @default("user")
+  /// "active" or "blocked".
+  status       String    @default("active")
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+/// One line of a placed order, priced by the server when the order was sent (MDL).
+type OrderItem {
+  slug      String
+  title     String
+  platform  String
+  edition   String?
+  quantity  Int
+  unitPrice Float
+  sum       Float
+}
+
+/// An order from the checkout, saved once the shop has been notified (app/actions.ts placeOrder).
+model Order {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  /// "IV-…", the number the customer sees.
+  number        String      @unique
+  name          String
+  email         String
+  phone         String
+  comment       String?
+  items         OrderItem[]
+  totalMdl      Float
+  /// The display currency the customer had chosen (prices are charged in MDL).
+  currency      String
+  locale        String
+  /// "new", "processing", "completed" or "cancelled".
+  status        String      @default("new")
+  /// "unpaid", "paid" or "refunded".
+  paymentStatus String      @default("unpaid")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}

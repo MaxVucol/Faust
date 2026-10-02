@@ -3,6 +3,7 @@ import { Cinzel, Cormorant_Garamond, EB_Garamond, Forum } from "next/font/google
 import { FavoritesProvider } from "@/components/favorites/FavoritesProvider";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { Footer } from "@/components/layout/Footer";
+import { HideOnAdmin } from "@/components/layout/HideOnAdmin";
 import { Navbar } from "@/components/layout/Navbar";
 import { SITE_NAME } from "@/lib/catalog";
 import { getFavorites } from "@/lib/favorites-server";
@@ -61,11 +62,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             >
               {t.common.skipToContent}
             </a>
-            <Navbar />
+            <HideOnAdmin>
+              <Navbar />
+            </HideOnAdmin>
             <main id="continut" className="relative z-10 flex-1">
               {children}
             </main>
-            <Footer />
+            <HideOnAdmin>
+              <Footer />
+            </HideOnAdmin>
           </FavoritesProvider>
         </I18nProvider>
       </body>

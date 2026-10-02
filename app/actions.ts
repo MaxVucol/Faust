@@ -58,7 +58,7 @@ export async function placeOrder(_prev: FormState, formData: FormData): Promise<
   for (const [i, item] of order.items.entries()) {
     const line = priced[i];
     if (!line) return { status: "error", message: o.errors.unavailable, code: "cart-changed" };
-    lines.push({ title: line.title, platform: line.platform, edition: line.edition, quantity: item.quantity, sum: line.price * item.quantity });
+    lines.push({ slug: item.slug, title: line.title, platform: line.platform, edition: line.edition, quantity: item.quantity, unitPrice: line.price, sum: line.price * item.quantity });
   }
   const totalMdl = Math.round(lines.reduce((s, l) => s + l.sum, 0) * 100) / 100;
   // The total the visitor saw (MDL). It never sets the price; a different one means prices changed
@@ -97,6 +97,25 @@ export async function placeOrder(_prev: FormState, formData: FormData): Promise<
   } catch (error) {
     console.error("order notification failed", error instanceof Error ? error.message : error);
     return { status: "error", message: o.errors.failed };
+  }
+  // Kept for the admin panel once the shop has it. The customer's order is already placed at this
+  // point, so a failed save is only logged.
+  try {
+    await prisma.order.create({
+      data: {
+        number,
+        name: order.name,
+        email: order.email,
+        phone: order.phone,
+        comment: order.comment || null,
+        items: lines.map((l) => ({ ...l, unitPrice: Math.round(l.unitPrice * 100) / 100, sum: Math.round(l.sum * 100) / 100 })),
+        totalMdl,
+        currency,
+        locale,
+      },
+    });
+  } catch (error) {
+    console.error("order save failed", number, error instanceof Error ? error.message : error);
   }
   return { status: "success", message: o.success(number) };
 }
