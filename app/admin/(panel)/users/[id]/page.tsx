@@ -9,38 +9,42 @@ import { adminDate, adminDateTime, BackLink, EmptyState, mdl, ORDER_TONE, PageHe
 import { cn } from "@/lib/utils";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getUser } from "@/lib/admin/data";
+import { getAdminI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "User" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getAdminI18n()).t.meta.user };
+}
 
 export default async function UserPage({ params, searchParams }: PageProps<"/admin/users/[id]">) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
-  const [me, data] = await Promise.all([requireAdmin(), getUser(id)]);
+  const [me, data, { t, locale }] = await Promise.all([requireAdmin(), getUser(id), getAdminI18n()]);
+  const T = t.user;
   if (!data) notFound();
   const { user, orders, spent } = data;
   return (
     <>
-      <BackLink href="/admin/users">All users</BackLink>
+      <BackLink href="/admin/users">{t.common.allUsers}</BackLink>
       <PageHeader
        
         title={user.name}
-        description={<>Registered {adminDate(user.createdAt)} · {user.lastLoginAt ? `last sign-in ${adminDateTime(user.lastLoginAt)}` : "never signed in"}</>}
-        actions={me.id === user.id ? <Pill tone="gold">This is you</Pill> : <ConfirmDelete action={deleteUser.bind(null, user.id)} name={user.email} redirectTo="/admin/users" />}
+        description={T.meta(adminDate(user.createdAt, locale), user.lastLoginAt ? adminDateTime(user.lastLoginAt, locale) : null)}
+        actions={me.id === user.id ? <Pill tone="gold">{t.common.thisIsYou}</Pill> : <ConfirmDelete action={deleteUser.bind(null, user.id)} name={user.email} redirectTo="/admin/users" />}
       />
-      <UrlNotice code={sp.notice} />
+      <UrlNotice code={sp.notice} t={t} />
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard label="Orders" value={orders.length} />
-        <StatCard label="Total spent" value={mdl(spent)} note="Cancelled orders not counted" />
-        <StatCard label="Status" value={<span className={user.status === "active" ? "text-stock-in" : "text-stock-out"}>{user.status}</span>} note={`Role: ${user.role}`} />
+        <StatCard label={T.orders} value={orders.length} />
+        <StatCard label={T.spent} value={mdl(spent)} note={T.spentNote} />
+        <StatCard label={T.status} value={<span className={user.status === "active" ? "text-stock-in" : "text-stock-out"}>{t.status.account[user.status] ?? user.status}</span>} note={T.roleNote(t.status.role[user.role] ?? user.role)} />
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title="Account" className="px-5 pb-6 sm:px-6">
+        <Panel title={T.account} className="px-5 pb-6 sm:px-6">
           <div className="pt-5">
             <UserForm id={user.id} initial={{ name: user.name, email: user.email, role: user.role, status: user.status, password: "" }} />
           </div>
         </Panel>
-        <Panel title="Orders with this email">
+        <Panel title={T.ordersWithEmail}>
           {orders.length === 0 ? (
-            <EmptyState icon={Receipt} title="No orders" />
+            <EmptyState icon={Receipt} title={T.noOrders} />
           ) : (
             <ul>
               {orders.map((o) => (
@@ -48,11 +52,11 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
                   <Link href={`/admin/orders/${o.id}`} className={cn("flex flex-wrap items-center justify-between gap-3 px-5 py-3", tr)}>
                     <span>
                       <span className="font-display tracking-[0.05em]">{o.number}</span>
-                      <span className="block text-sm text-parchment-muted">{adminDateTime(o.createdAt)}</span>
+                      <span className="block text-sm text-parchment-muted">{adminDateTime(o.createdAt, locale)}</span>
                     </span>
                     <span className="flex items-center gap-3">
                       <span className="text-gold-light tabular-nums">{mdl(o.totalMdl)}</span>
-                      <Pill tone={ORDER_TONE[o.status]}>{o.status}</Pill>
+                      <Pill tone={ORDER_TONE[o.status]}>{t.status.order[o.status] ?? o.status}</Pill>
                     </span>
                   </Link>
                 </li>

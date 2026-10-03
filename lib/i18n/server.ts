@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { CURRENCY_COOKIE, DEFAULT_CURRENCY, isCurrency, type Currency } from "../currency";
 import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, type Locale } from "./config";
+import { adminDictionary, type AdminDictionary } from "./admin";
 import { dictionaries, type Dictionary } from "./dictionaries";
 
 /** The visitor's chosen language, from the cookie set by the language selector. */
@@ -25,4 +26,10 @@ export async function getDictionary(): Promise<Dictionary> {
 export async function getI18n(): Promise<{ locale: Locale; t: Dictionary }> {
   const locale = await getLocale();
   return { locale, t: dictionaries[locale] };
+}
+
+/** The admin panel's texts in the same chosen language (the `lang` cookie the whole site uses). */
+export async function getAdminI18n(): Promise<{ locale: Locale; t: AdminDictionary }> {
+  const locale = await getLocale();
+  return { locale, t: adminDictionary(locale) };
 }

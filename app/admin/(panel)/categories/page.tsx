@@ -3,34 +3,39 @@ import Link from "next/link";
 import { GenreReassign } from "@/components/admin/GenreReassign";
 import { Notice, PageHeader, Panel, Pill, Table, td, th, tr } from "@/components/admin/ui";
 import { getGenreStats } from "@/lib/admin/data";
+import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/config";
 import { dictionaries } from "@/lib/i18n/dictionaries";
+import { getAdminI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Categories" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getAdminI18n()).t.meta.categories };
+}
 
 export default async function CategoriesPage() {
-  const { genres, unknown, total } = await getGenreStats();
+  const [{ genres, unknown, total }, { t }] = await Promise.all([getGenreStats(), getAdminI18n()]);
+  const C = t.categories;
   return (
     <>
       <PageHeader
        
-        title="Categories"
-        description="The shop's genres. They are fixed keys with names in three languages (the catalogue filters, home tiles and translations rely on them), so a new genre is added in code; here you see their use and can move games between them."
+        title={C.title}
+        description={C.description}
       />
       {unknown.length > 0 && (
         <div className="mb-6">
-          <Notice tone="error">Some games use genres the shop doesn&apos;t know ({unknown.map((u) => `${u.name}: ${u.games}`).join(", ")}). They don&apos;t appear in the filters; move them to a known genre below.</Notice>
+          <Notice tone="error">{C.unknown(unknown.map((u) => `${u.name}: ${u.games}`).join(", "))}</Notice>
         </div>
       )}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <Panel title={`Genres · ${total} games`}>
+        <Panel title={C.genresPanel(total)}>
           <Table>
             <thead>
               <tr>
-                <th className={th}>Genre</th>
-                <th className={th}>Romanian</th>
-                <th className={`${th} hidden sm:table-cell`}>Russian</th>
-                <th className={`${th} hidden md:table-cell`}>English</th>
-                <th className={th}>Games</th>
+                <th className={th}>{C.genre}</th>
+                {LOCALES.map((l, i) => (
+                  <th key={l} lang={l} className={`${th} ${i === 1 ? "hidden sm:table-cell" : i > 1 ? "hidden md:table-cell" : ""}`}>{LOCALE_NAMES[l]}</th>
+                ))}
+                <th className={th}>{C.games}</th>
               </tr>
             </thead>
             <tbody>
@@ -40,14 +45,14 @@ export default async function CategoriesPage() {
                     <span className="block text-parchment">{g.name}</span>
                     <span className="block text-xs text-parchment-muted">/produse?genre={g.name}</span>
                   </td>
-                  <td className={td}>{dictionaries.ro.genres[g.name] ?? g.name}</td>
-                  <td className={`${td} hidden sm:table-cell`}>{dictionaries.ru.genres[g.name] ?? g.name}</td>
-                  <td className={`${td} hidden md:table-cell`}>{dictionaries.en.genres[g.name] ?? g.name}</td>
+                  {LOCALES.map((l, i) => (
+                    <td key={l} lang={l} className={`${td} ${i === 1 ? "hidden sm:table-cell" : i > 1 ? "hidden md:table-cell" : ""}`}>{dictionaries[l].genres[g.name] ?? g.name}</td>
+                  ))}
                   <td className={td}>
                     {g.games > 0 ? (
-                      <Link href={`/admin/games?genre=${encodeURIComponent(g.name)}`} className="whitespace-nowrap text-gold-light tabular-nums underline-offset-4 hover:text-[#e0c487] hover:underline">{g.games} games</Link>
+                      <Link href={`/admin/games?genre=${encodeURIComponent(g.name)}`} className="whitespace-nowrap text-gold-light tabular-nums underline-offset-4 hover:text-[#e0c487] hover:underline">{C.gamesCount(g.games)}</Link>
                     ) : (
-                      <Pill>empty</Pill>
+                      <Pill>{C.emptyGenre}</Pill>
                     )}
                   </td>
                 </tr>
@@ -55,7 +60,7 @@ export default async function CategoriesPage() {
             </tbody>
           </Table>
         </Panel>
-        <Panel title="Move games between genres">
+        <Panel title={C.movePanel}>
           <GenreReassign from={[...genres, ...unknown].map((g) => ({ name: g.name, games: g.games }))} to={genres.map((g) => g.name)} />
         </Panel>
       </div>

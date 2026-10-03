@@ -4,28 +4,32 @@ import Link from "next/link";
 import { ChartNoAxesColumn, ChartNoAxesCombined, Coins, Gamepad2, PackageOpen, Receipt, ShoppingBag, Star, Trophy, Users } from "lucide-react";
 import { adminDate, adminDateTime, EmptyState, mdl, ORDER_TONE, PageHeader, Panel, PanelLink, Pill, StatCard, tr } from "@/components/admin/ui";
 import { getDashboard } from "@/lib/admin/data";
+import { getAdminI18n } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getAdminI18n()).t.meta.dashboard };
+}
 
 export default async function DashboardPage() {
-  const d = await getDashboard();
+  const [d, { t, locale }] = await Promise.all([getDashboard(), getAdminI18n()]);
+  const T = t.dashboard;
   const max = Math.max(1, ...d.days.map((x) => x.revenue));
   const last30 = d.days.reduce((s, x) => s + x.revenue, 0);
   const orders30 = d.days.reduce((s, x) => s + x.orders, 0);
   return (
     <>
-      <PageHeader title="Dashboard" description="The shop at a glance. Revenue counts every order except cancelled ones, in MDL." />
+      <PageHeader title={T.title} description={T.description} />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Gamepad2} emblem="games" label="Games" value={d.gameCount} note={`${d.onSale} on sale · ${d.outOfStock} out of stock`} href="/admin/games" />
-        <StatCard icon={Users} emblem="users" label="Users" value={d.userCount} note="Admin panel accounts" href="/admin/users" />
-        <StatCard icon={Receipt} emblem="orders" label="Orders" value={d.orderCount} note={`${d.openOrders} awaiting processing`} href="/admin/orders" />
-        <StatCard icon={Coins} emblem="revenue" label="Revenue" value={mdl(d.revenue)} note={`${d.subscribers} newsletter subscribers · ${d.messages} messages`} />
+        <StatCard icon={Gamepad2} emblem="games" label={T.games} value={d.gameCount} note={T.gamesNote(d.onSale, d.outOfStock)} href="/admin/games" />
+        <StatCard icon={Users} emblem="users" label={T.users} value={d.userCount} note={T.usersNote} href="/admin/users" />
+        <StatCard icon={Receipt} emblem="orders" label={T.orders} value={d.orderCount} note={T.ordersNote(d.openOrders)} href="/admin/orders" />
+        <StatCard icon={Coins} emblem="revenue" label={T.revenue} value={mdl(d.revenue)} note={T.revenueNote(d.subscribers, d.messages)} />
       </div>
 
-      <Panel title="Sales · last 30 days" icon={ChartNoAxesCombined} aside={<span className="text-sm text-parchment-muted tabular-nums">{orders30} orders · <span className="text-gold-light">{mdl(last30)}</span></span>} className="mt-6">
+      <Panel title={T.sales} icon={ChartNoAxesCombined} aside={<span className="text-sm text-parchment-muted tabular-nums">{T.salesAside(orders30)} · <span className="text-gold-light">{mdl(last30)}</span></span>} className="mt-6">
         {orders30 === 0 ? (
-          <EmptyState icon={ChartNoAxesColumn} title="No sales in the last 30 days" text="Orders placed at checkout appear here." />
+          <EmptyState icon={ChartNoAxesColumn} title={T.noSales} text={T.noSalesText} />
         ) : (
           <div className="px-5 pt-6 pb-4">
             <div className="relative">
@@ -33,9 +37,9 @@ export default async function DashboardPage() {
               <div aria-hidden className="pointer-events-none absolute inset-0 flex flex-col justify-between">
                 {[0, 1, 2, 3].map((i) => <span key={i} className="h-px bg-iron/50" />)}
               </div>
-              <div role="img" aria-label={`Daily revenue for the last 30 days, ${mdl(last30)} in total`} className="relative flex h-44 items-end gap-[3px] border-b border-gold-dark/60">
+              <div role="img" aria-label={T.chartLabel(mdl(last30))} className="relative flex h-44 items-end gap-[3px] border-b border-gold-dark/60">
                 {d.days.map((day) => (
-                  <div key={day.date.toISOString()} title={`${adminDate(day.date)}: ${day.orders} orders, ${mdl(day.revenue)}`} className="group flex h-full flex-1 items-end">
+                  <div key={day.date.toISOString()} title={T.dayTitle(adminDate(day.date, locale), day.orders, mdl(day.revenue))} className="group flex h-full flex-1 items-end">
                     <div
                       className={cn("w-full transition-colors", day.revenue > 0 ? "bg-[linear-gradient(180deg,#c09a55,#8c682f)] group-hover:bg-[linear-gradient(180deg,#e0c487,#a68a4b)]" : "bg-iron/60")}
                       style={{ height: `${Math.max(day.revenue > 0 ? 4 : 1, (day.revenue / max) * 100)}%` }}
@@ -45,17 +49,17 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="mt-2 flex justify-between text-xs text-parchment-muted">
-              <span>{adminDate(d.days[0].date)}</span>
-              <span>{adminDate(d.days[d.days.length - 1].date)}</span>
+              <span>{adminDate(d.days[0].date, locale)}</span>
+              <span>{adminDate(d.days[d.days.length - 1].date, locale)}</span>
             </div>
           </div>
         )}
       </Panel>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Panel title="Latest orders" icon={ShoppingBag} aside={<PanelLink href="/admin/orders">All orders</PanelLink>}>
+        <Panel title={T.latestOrders} icon={ShoppingBag} aside={<PanelLink href="/admin/orders">{t.common.allOrders}</PanelLink>}>
           {d.recentOrders.length === 0 ? (
-            <EmptyState icon={ShoppingBag} title="No orders yet" text="Orders are saved here from now on, as customers send them from the cart." />
+            <EmptyState icon={ShoppingBag} title={T.noOrders} text={T.noOrdersText} />
           ) : (
             <ul>
               {d.recentOrders.map((o) => (
@@ -64,12 +68,12 @@ export default async function DashboardPage() {
                     <span className="min-w-0">
                       <span className="font-display tracking-[0.06em] text-parchment">{o.number}</span>
                       <span className="block truncate text-sm text-parchment-muted">
-                        {o.name} · {adminDateTime(o.createdAt)}
+                        {o.name} · {adminDateTime(o.createdAt, locale)}
                       </span>
                     </span>
                     <span className="flex items-center gap-3">
                       <span className="text-gold-light tabular-nums">{mdl(o.totalMdl)}</span>
-                      <Pill tone={ORDER_TONE[o.status]}>{o.status}</Pill>
+                      <Pill tone={ORDER_TONE[o.status]}>{t.status.order[o.status] ?? o.status}</Pill>
                     </span>
                   </Link>
                 </li>
@@ -78,9 +82,9 @@ export default async function DashboardPage() {
           )}
         </Panel>
 
-        <Panel title="Best sellers" icon={Trophy}>
+        <Panel title={T.bestSellers} icon={Trophy}>
           {d.topSellers.length === 0 ? (
-            <EmptyState icon={ShoppingBag} title="No sales yet" text="The most ordered games appear here once orders come in." />
+            <EmptyState icon={ShoppingBag} title={T.noBest} text={T.noBestText} />
           ) : (
             <ol>
               {d.topSellers.map((s, i) => (
@@ -90,7 +94,7 @@ export default async function DashboardPage() {
                     <span className="truncate">{s.title}</span>
                   </span>
                   <span className="shrink-0 text-sm text-parchment-muted tabular-nums">
-                    {s.quantity} sold · {mdl(s.revenue)}
+                    {T.sold(s.quantity, mdl(s.revenue))}
                   </span>
                 </li>
               ))}
@@ -99,9 +103,9 @@ export default async function DashboardPage() {
         </Panel>
       </div>
 
-      <Panel title="Recently added games" icon={Star} aside={<PanelLink href="/admin/games/new">Add a game</PanelLink>} className="mt-6">
+      <Panel title={T.recentGames} icon={Star} aside={<PanelLink href="/admin/games/new">{T.addAGame}</PanelLink>} className="mt-6">
         {d.recentGames.length === 0 ? (
-          <EmptyState icon={PackageOpen} title="No games yet" />
+          <EmptyState icon={PackageOpen} title={T.noGames} />
         ) : (
           <ul className="grid grid-cols-2 gap-4 p-5 sm:grid-cols-3 lg:grid-cols-5">
             {d.recentGames.map((g) => (
@@ -111,7 +115,7 @@ export default async function DashboardPage() {
                     <Image src={g.coverImage} alt="" fill sizes="(min-width: 1024px) 12vw, 40vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                   </span>
                   <span className="mt-2 block truncate text-parchment transition-colors group-hover:text-gold-light">{g.title}</span>
-                  <span className="block text-sm text-parchment-muted">Added {adminDate(g.createdAt)}</span>
+                  <span className="block text-sm text-parchment-muted">{T.added(adminDate(g.createdAt, locale))}</span>
                 </Link>
               </li>
             ))}

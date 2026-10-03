@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import type { ActionResult } from "@/app/admin/actions";
+import { useAdminI18n } from "./AdminI18n";
 import { btn, dialogActions, dialogBody, dialogFrame, DialogTitle } from "./ui";
 
 /**
@@ -15,7 +16,7 @@ export function ConfirmDelete({
   action,
   name,
   redirectTo,
-  label = "Delete",
+  label,
   compact = false,
 }: {
   action: () => Promise<ActionResult>;
@@ -24,6 +25,8 @@ export function ConfirmDelete({
   label?: string;
   compact?: boolean;
 }) {
+  const { t } = useAdminI18n();
+  const text = label ?? t.common.delete;
   const router = useRouter();
   const ref = useRef<HTMLDialogElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,11 +58,11 @@ export function ConfirmDelete({
       <button
         type="button"
         onClick={() => ref.current?.showModal()}
-        aria-label={compact ? `${label} ${name}` : undefined}
+        aria-label={compact ? `${text}: ${name}` : undefined}
         className={btn("danger", compact ? "icon" : "sm")}
       >
         <Trash2 aria-hidden className="size-4" strokeWidth={1.75} />
-        {!compact && label}
+        {!compact && text}
       </button>
       <dialog
         ref={ref}
@@ -68,10 +71,8 @@ export function ConfirmDelete({
         onCancel={(e) => pending && e.preventDefault()}
       >
         <div className={dialogBody}>
-          <DialogTitle id="confirm-title">Are you sure you want to delete this?</DialogTitle>
-          <p className="mt-3 text-parchment-muted">
-            <span className="text-parchment">{name}</span> will be removed permanently. This can&apos;t be undone.
-          </p>
+          <DialogTitle id="confirm-title">{t.confirmDelete.title}</DialogTitle>
+          <p className="mt-3 text-parchment-muted">{t.confirmDelete.text(name)}</p>
           {error && (
             <p role="alert" className="mt-4 border-l-2 border-blood-text pl-3 text-blood-text">
               {error}
@@ -80,10 +81,10 @@ export function ConfirmDelete({
         </div>
         <div className={dialogActions}>
           <button type="button" disabled={pending} onClick={() => ref.current?.close()} className={btn("ghost", "md")}>
-            Cancel
+            {t.common.cancel}
           </button>
           <button type="button" disabled={pending} onClick={confirm} className={btn("danger-solid", "md")}>
-            {pending ? "Deleting…" : "Delete"}
+            {pending ? t.common.deleting : t.common.delete}
           </button>
         </div>
       </dialog>

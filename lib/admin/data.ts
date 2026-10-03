@@ -282,7 +282,8 @@ export type DiscountRow = {
   coverImage: string;
   /** null for the game's own price; otherwise the variant's index in `variants`. */
   variant: number | null;
-  label: string;
+  /** The version (platform · edition), the platforms, or null for a game's base price shared by versions without their own. */
+  label: string | null;
   price: number;
   discountPrice: number | null;
   startsAt: Date | null;
@@ -309,7 +310,7 @@ export async function listDiscounts(sp: SP) {
   const rows: DiscountRow[] = [];
   for (const g of games) {
     const own = { price: g.price, discountPrice: g.discountPrice, discountStartsAt: g.discountStartsAt, discountEndsAt: g.discountEndsAt };
-    rows.push({ gameId: g.id, title: g.title, slug: g.slug, coverImage: g.coverImage, variant: null, label: g.variants.length ? "Base price (versions without their own price)" : g.platforms.join(", "), ...pick(own), percent: discountPercent(own), state: saleState(own, now) });
+    rows.push({ gameId: g.id, title: g.title, slug: g.slug, coverImage: g.coverImage, variant: null, label: g.variants.length ? null : g.platforms.join(", "), ...pick(own), percent: discountPercent(own), state: saleState(own, now) });
     g.variants.forEach((v, i) => {
       if (v.price == null) return; // inherits the game's price and sale
       const s = { price: v.price, discountPrice: v.discountPrice, discountStartsAt: v.discountStartsAt, discountEndsAt: v.discountEndsAt };
@@ -330,7 +331,12 @@ function pick(s: { price: number; discountPrice: number | null; discountStartsAt
 
 // ---------- Media ----------
 
-export type MediaItem = { url: string; name: string; type: string; folder: string; usedBy: { title: string; id: string; field: string }[] };
+/** How a game uses an image; the panel shows it in its own language. `n`: a screenshot's position. */
+export type MediaField = "cover" | "card" | "pageCover" | "keyArt" | "screenshot";
+export type MediaItem = { url: string; name: string; type: string; folder: string; usedBy: { title: string; id: string; field: MediaField; n: number }[] };
+
+/** The "Used as" filter's values (kept as they were, so saved links still work) and the fields they match. */
+export const MEDIA_KINDS = { cover: "cover", home: "card", page: "pageCover", key: "keyArt", screenshot: "screenshot" } as const satisfies Record<string, MediaField>;
 
 /**
  * Every image the catalogue uses, from the database (the files themselves ship with the site in
@@ -342,20 +348,21 @@ export async function listMedia(sp: SP) {
   const kind = first(sp.kind);
   const games = await prisma.game.findMany({ select: { id: true, title: true, coverImage: true, cardImage: true, pageCoverImage: true, screenshots: true }, orderBy: { title: "asc" } });
   const map = new Map<string, MediaItem>();
-  const add = (url: string | null, field: string, g: { id: string; title: string }) => {
+  const add = (url: string | null, field: MediaField, g: { id: string; title: string }, n = 0) => {
     if (!url) return;
     const item = map.get(url) ?? { url, name: url.split("/").pop() ?? url, type: (url.split(".").pop() ?? "").toUpperCase(), folder: url.split("/").slice(0, -1).join("/"), usedBy: [] };
-    item.usedBy.push({ title: g.title, id: g.id, field });
+    item.usedBy.push({ title: g.title, id: g.id, field, n });
     map.set(url, item);
   };
   for (const g of games) {
-    add(g.coverImage, "Cover", g);
-    add(g.cardImage, "Home card", g);
-    add(g.pageCoverImage, "Page cover", g);
-    g.screenshots.forEach((s, i) => add(s, i === 0 ? "Key art" : `Screenshot ${i + 1}`, g));
+    add(g.coverImage, "cover", g);
+    add(g.cardImage, "card", g);
+    add(g.pageCoverImage, "pageCover", g);
+    g.screenshots.forEach((s, i) => add(s, i === 0 ? "keyArt" : "screenshot", g, i + 1));
   }
   const all = [...map.values()];
-  const filtered = all.filter((m) => (!q || searchKey(m.url).includes(q) || m.usedBy.some((u) => searchKey(u.title).includes(q))) && (!kind || m.usedBy.some((u) => u.field.toLowerCase().startsWith(kind))));
+  const field = Object.hasOwn(MEDIA_KINDS, kind) ? MEDIA_KINDS[kind as keyof typeof MEDIA_KINDS] : null;
+  const filtered = all.filter((m) => (!q || searchKey(m.url).includes(q) || m.usedBy.some((u) => searchKey(u.title).includes(q))) && (!field || m.usedBy.some((u) => u.field === field)));
   return { items: filtered, total: all.length };
 }
 

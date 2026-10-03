@@ -1,17 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { createUser, updateUser } from "@/app/admin/actions";
 import { FieldError, Input, Label } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { createUserSchema, issuesByPath, updateUserSchema } from "@/lib/admin/schemas";
+import { PASSWORD_MIN } from "@/lib/auth/schemas";
+import { useAdminI18n } from "./AdminI18n";
 import { btn, Notice } from "./ui";
 
 type Values = { name: string; email: string; role: string; status: string; password: string };
 
 /** Create an account (`id` null) or edit one; a new password is optional when editing. */
 export function UserForm({ id, initial }: { id: string | null; initial: Values }) {
+  const { t } = useAdminI18n();
+  const U = t.userForm;
+  const schema = useMemo(() => (id ? updateUserSchema(t.validation) : createUserSchema(t.validation)), [id, t]);
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -33,10 +38,10 @@ export function UserForm({ id, initial }: { id: string | null; initial: Values }
       onSubmit={(e) => {
         e.preventDefault();
         const input = id ? { id, name: v.name, role: v.role, status: v.status, password: v.password } : v;
-        const local = (id ? updateUserSchema : createUserSchema).safeParse(input);
+        const local = schema.safeParse(input);
         if (!local.success) {
           setErrors(issuesByPath(local.error));
-          setMessage({ tone: "error", text: "Check the highlighted fields." });
+          setMessage({ tone: "error", text: t.gameForm.checkFields });
           return;
         }
         start(async () => {
@@ -52,7 +57,7 @@ export function UserForm({ id, initial }: { id: string | null; initial: Values }
             return;
           }
           setV((x) => ({ ...x, password: "" }));
-          setMessage({ tone: "success", text: r.message ?? "Saved." });
+          setMessage({ tone: "success", text: r.message ?? t.common.notices.saved });
           router.refresh();
         });
       }}
@@ -60,39 +65,39 @@ export function UserForm({ id, initial }: { id: string | null; initial: Values }
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
       <fieldset disabled={pending} className="grid min-w-0 gap-5 sm:grid-cols-2">
         <div>
-          <Label htmlFor="user-name">Name</Label>
+          <Label htmlFor="user-name">{U.name}</Label>
           <Input {...field("name")} autoComplete="off" />
           <FieldError id="user-name-error" errors={err("name")} />
         </div>
         <div>
-          <Label htmlFor="user-email">Email</Label>
+          <Label htmlFor="user-email">{U.email}</Label>
           <Input {...field("email")} type="email" autoComplete="off" readOnly={id !== null} className={id ? "opacity-70" : undefined} />
           <FieldError id="user-email-error" errors={err("email")} />
         </div>
         <div>
-          <Label htmlFor="user-role">Role</Label>
+          <Label htmlFor="user-role">{U.role}</Label>
           <Select {...field("role")}>
-            <option value="admin">admin — full access to this panel</option>
-            <option value="user">user — no admin access</option>
+            <option value="admin">{U.roleAdmin}</option>
+            <option value="user">{U.roleUser}</option>
           </Select>
         </div>
         <div>
-          <Label htmlFor="user-status">Account status</Label>
+          <Label htmlFor="user-status">{U.status}</Label>
           <Select {...field("status")}>
-            <option value="active">active</option>
-            <option value="blocked">blocked — can&apos;t use the panel</option>
+            <option value="active">{U.statusActive}</option>
+            <option value="blocked">{U.statusBlocked}</option>
           </Select>
         </div>
         <div className="sm:col-span-2">
-          <Label htmlFor="user-password">{id ? "New password (optional)" : "Password"}</Label>
+          <Label htmlFor="user-password">{id ? U.newPassword : U.password}</Label>
           <Input {...field("password")} type="password" autoComplete="new-password" />
           <FieldError id="user-password-error" errors={err("password")} />
-          {!errors.password && <p className="mt-1.5 text-sm text-parchment-muted">At least 10 characters.{id ? " Leave empty to keep the current one." : ""}</p>}
+          {!errors.password && <p className="mt-1.5 text-sm text-parchment-muted">{U.passwordHint(PASSWORD_MIN, id !== null)}</p>}
         </div>
       </fieldset>
       <div className="border-t border-iron/70 pt-5">
         <button type="submit" disabled={pending} className={btn("primary", "md", "min-w-40")}>
-          {pending ? "Saving…" : id ? "Save changes" : "Create user"}
+          {pending ? t.common.saving : id ? t.common.saveChanges : U.create}
         </button>
       </div>
     </form>

@@ -3,15 +3,18 @@ import { GameForm } from "@/components/admin/GameForm";
 import { BackLink, PageHeader } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/admin/auth";
 import { gameToForm } from "@/lib/admin/game-form";
+import { getAdminI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Add game" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getAdminI18n()).t.meta.addGame };
+}
 
 export default async function NewGamePage() {
-  await requireAdmin();
+  const [, { t }] = await Promise.all([requireAdmin(), getAdminI18n()]);
   return (
     <>
-      <BackLink href="/admin/games">All games</BackLink>
-      <PageHeader title="Add game" description="The game appears in the shop as soon as it is created." />
+      <BackLink href="/admin/games">{t.common.allGames}</BackLink>
+      <PageHeader title={t.meta.addGame} description={t.gameEdit.newDescription} />
       <GameForm id={null} initial={gameToForm(null)} />
     </>
   );

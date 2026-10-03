@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import type { MediaItem } from "@/lib/admin/data";
+import { useAdminI18n } from "./AdminI18n";
 
 function MediaCard({ item }: { item: MediaItem }) {
+  const { t } = useAdminI18n();
+  const M = t.media;
   const [dims, setDims] = useState<string | null>(null);
   const [size, setSize] = useState<string | null>(null);
   const [broken, setBroken] = useState(false);
@@ -15,7 +18,7 @@ function MediaCard({ item }: { item: MediaItem }) {
     <li className="group flex min-w-0 flex-col border border-gold-dark/40 bg-[#0d0b08]/90 transition-colors hover:border-gold-dark/80">
       <span className="relative block aspect-[4/3] overflow-hidden border-b border-iron bg-panel-deep bg-[repeating-conic-gradient(rgb(255_255_255/0.025)_0_25%,transparent_0_50%)] bg-[length:16px_16px]">
         {broken ? (
-          <span className="absolute inset-0 flex items-center justify-center text-sm text-blood-text">File not found</span>
+          <span className="absolute inset-0 flex items-center justify-center text-sm text-blood-text">{M.notFound}</span>
         ) : (
           <Image
             src={item.url}
@@ -49,10 +52,10 @@ function MediaCard({ item }: { item: MediaItem }) {
         <ul className="mt-1 space-y-0.5 border-t border-iron/60 pt-1.5">
           {item.usedBy.slice(0, 3).map((u, i) => (
             <li key={i} className="truncate">
-              <Link href={`/admin/games/${u.id}`} className="text-parchment-muted hover:text-gold-light">{u.field}: {u.title}</Link>
+              <Link href={`/admin/games/${u.id}`} className="text-parchment-muted hover:text-gold-light">{u.field === "screenshot" ? M.fields.screenshot(u.n) : M.fields[u.field]}: {u.title}</Link>
             </li>
           ))}
-          {item.usedBy.length > 3 && <li className="text-parchment-muted">+{item.usedBy.length - 3} more</li>}
+          {item.usedBy.length > 3 && <li className="text-parchment-muted">{M.more(item.usedBy.length - 3)}</li>}
         </ul>
         <button
           type="button"
@@ -60,7 +63,7 @@ function MediaCard({ item }: { item: MediaItem }) {
           className="mt-auto flex min-h-10 items-center gap-2 self-start pt-1 font-display-ui text-[0.62rem] text-gold-light transition-colors hover:text-[#e0c487]"
         >
           {copied ? <Check aria-hidden className="size-3.5" /> : <Copy aria-hidden className="size-3.5" />}
-          <span aria-live="polite">{copied ? "Copied" : "Copy path"}</span>
+          <span aria-live="polite">{copied ? M.copied : M.copy}</span>
         </button>
       </div>
     </li>

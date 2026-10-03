@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import { ArrowLeft, ArrowRight, CircleAlert, CircleCheck, Info, type LucideIcon } from "lucide-react";
 import { Diamond } from "@/components/ui/Ornaments";
 import { formatAmount } from "@/lib/currency";
+import type { AdminDictionary } from "@/lib/i18n/admin";
+import { INTL_LOCALES, type Locale } from "@/lib/i18n/config";
+import { SHOP_TIME_ZONE } from "@/lib/admin/time";
 import { Emblem, type EmblemKind } from "./Emblem";
 import { cn } from "@/lib/utils";
 
@@ -12,9 +15,9 @@ import { cn } from "@/lib/utils";
  * set denser and quieter for daily work: gold marks what matters, everything else stays iron and parchment.
  */
 
-/** Admin dates: day, month and year (and time) in one fixed format, whatever the shop's language. */
-export const adminDate = (d: Date) => new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Europe/Chisinau" }).format(d);
-export const adminDateTime = (d: Date) => new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Chisinau" }).format(d);
+/** Admin dates: day, short month and year (and time), in the panel's language and the shop's time zone. */
+export const adminDate = (d: Date, locale: Locale) => new Intl.DateTimeFormat(INTL_LOCALES[locale], { day: "2-digit", month: "short", year: "numeric", timeZone: SHOP_TIME_ZONE }).format(d);
+export const adminDateTime = (d: Date, locale: Locale) => new Intl.DateTimeFormat(INTL_LOCALES[locale], { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: SHOP_TIME_ZONE }).format(d);
 export const mdl = (v: number) => formatAmount(Math.round(v * 100) / 100, "MDL");
 
 /* ── Buttons ─────────────────────────────────────────────────────────────────────────────────────── */
@@ -153,7 +156,8 @@ export function StatCard({ label, value, note, href, icon: Icon, emblem }: { lab
         {label}
       </p>
       <p className="relative mt-2.5 font-display text-[2.1rem] leading-none font-semibold whitespace-nowrap text-[#e2cf9f] tabular-nums [text-shadow:0_0_10px_#0a0907,0_0_20px_#0a0907]">{value}</p>
-      {note && <p className="relative mt-2.5 text-sm text-parchment-muted">{note}</p>}
+      {/* Beside an emblem the note wraps before it, so longer languages never run under the medallion. */}
+      {note && <p className={cn("relative mt-2.5 text-sm text-parchment-muted", emblem && "max-w-[calc(100%-7rem)]")}>{note}</p>}
     </>
   );
   const cls = cn(surface, "group block overflow-hidden px-5 pt-5 pb-4");
@@ -201,10 +205,9 @@ export function Notice({ tone, children }: { tone: "success" | "error" | "info";
 }
 
 /** Success messages after a redirect, by code (never text from the URL). */
-const NOTICES: Record<string, string> = { deleted: "Deleted.", created: "Created.", saved: "Saved." };
-
-export function UrlNotice({ code }: { code: string | string[] | undefined }) {
-  const text = typeof code === "string" ? NOTICES[code] : undefined;
+export function UrlNotice({ code, t }: { code: string | string[] | undefined; t: AdminDictionary }) {
+  const notices: Record<string, string> = t.common.notices;
+  const text = typeof code === "string" && Object.hasOwn(notices, code) ? notices[code] : undefined;
   return text ? (
     <div className="mb-6">
       <Notice tone="success">{text}</Notice>
@@ -251,8 +254,8 @@ export const td = "border-b border-iron/55 px-3.5 py-3 align-middle";
 export const tr = "transition-colors duration-150 hover:bg-gold-light/[0.035]";
 
 /** Links that keep the current filters. */
-export function Pagination({ page, pages, total, params, basePath }: { page: number; pages: number; total: number; params: Record<string, string | string[] | undefined>; basePath: string }) {
-  if (pages <= 1) return <p className="px-5 py-3 text-sm text-parchment-muted">{total} total</p>;
+export function Pagination({ page, pages, total, params, basePath, t }: { page: number; pages: number; total: number; params: Record<string, string | string[] | undefined>; basePath: string; t: AdminDictionary }) {
+  if (pages <= 1) return <p className="px-5 py-3 text-sm text-parchment-muted">{t.common.total(total)}</p>;
   const href = (p: number) => {
     const sp = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) if (k !== "page" && k !== "notice" && typeof v === "string" && v) sp.set(k, v);
@@ -261,30 +264,28 @@ export function Pagination({ page, pages, total, params, basePath }: { page: num
     return q ? `${basePath}?${q}` : basePath;
   };
   return (
-    <nav aria-label="Pages" className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-      <p className="text-sm text-parchment-muted">
-        {total} total · page <span className="text-parchment tabular-nums">{page}</span> of <span className="tabular-nums">{pages}</span>
-      </p>
+    <nav aria-label={t.common.pagesAria} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+      <p className="text-sm text-parchment-muted tabular-nums">{t.common.pagination(total, page, pages)}</p>
       <div className="flex gap-2">
-        {page > 1 ? <Link className={btn("ghost")} href={href(page - 1)}>Previous</Link> : <span aria-disabled="true" className={btn("ghost")}>Previous</span>}
-        {page < pages ? <Link className={btn("ghost")} href={href(page + 1)}>Next</Link> : <span aria-disabled="true" className={btn("ghost")}>Next</span>}
+        {page > 1 ? <Link className={btn("ghost")} href={href(page - 1)}>{t.common.previous}</Link> : <span aria-disabled="true" className={btn("ghost")}>{t.common.previous}</span>}
+        {page < pages ? <Link className={btn("ghost")} href={href(page + 1)}>{t.common.next}</Link> : <span aria-disabled="true" className={btn("ghost")}>{t.common.next}</span>}
       </div>
     </nav>
   );
 }
 
 /** Search and filters as a plain GET form, so every view is a shareable URL and works without JS. */
-export function FilterBar({ children, basePath, active }: { children: ReactNode; basePath: string; active: boolean }) {
+export function FilterBar({ children, basePath, active, t }: { children: ReactNode; basePath: string; active: boolean; t: AdminDictionary }) {
   return (
     <form method="get" action={basePath} className="flex flex-col gap-3 border-b border-iron bg-panel-deep/40 px-5 py-4 md:flex-row md:flex-wrap md:items-end">
       {children}
       <div className="flex gap-2">
         <button type="submit" className={btn("secondary", "md")}>
-          Apply
+          {t.common.apply}
         </button>
         {active && (
           <Link href={basePath} className={btn("quiet", "md")}>
-            Reset
+            {t.common.reset}
           </Link>
         )}
       </div>

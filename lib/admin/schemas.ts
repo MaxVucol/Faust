@@ -1,117 +1,143 @@
 import { z } from "zod";
-import { emailSchema as email, passwordSchema as password } from "@/lib/auth/schemas";
+import { PASSWORD_MAX, PASSWORD_MIN } from "@/lib/auth/schemas";
+import type { AdminDictionary } from "@/lib/i18n/admin";
 import { GENRES, PLATFORMS } from "@/lib/catalog";
 
 /**
- * Validation for the admin panel's forms. Used by the Server Actions (the trust boundary) and by the
+ * Validation for the admin panel's forms, with messages in the panel's language (each schema is built from
+ * the admin dictionary's `validation` texts). Used by the Server Actions (the trust boundary) and by the
  * forms themselves for the same messages before sending. Images are paths of files that ship with the
  * site (public/images): next/image only serves local files here, so an outside URL would break pages.
  */
 export const IMAGE_PATH = /^\/images\/(?!.*\.\.)[^\s?#\\]+\.(jpe?g|png|webp|avif|gif)$/i;
-const imagePath = z.string().trim().regex(IMAGE_PATH, "Use a site image path such as /images/games/<slug>/cover.jpg");
-const optionalImage = z.union([z.literal(""), imagePath]).transform((v) => v || null);
-
 const genreNames = GENRES.map((g) => g.name) as [string, ...string[]];
 const platformNames = PLATFORMS.map((p) => p.name) as [string, ...string[]];
+const objectId = z.string().regex(/^[a-f0-9]{24}$/);
 
-const money = z.number({ error: "Enter a number" }).finite().min(0, "Must be 0 or more").max(1_000_000, "Too large");
-/** An ISO date-time from the form (the browser converts local time), or null. */
-const dateTime = z.union([z.null(), z.iso.datetime({ offset: true, error: "Invalid date" })]).transform((v) => (v ? new Date(v) : null));
-const text = (max: number) => z.string().trim().max(max, `At most ${max} characters`);
+/** The messages the schemas show: the admin dictionary's `validation` texts in the panel's language. */
+type V = AdminDictionary["validation"];
+
+/** Field rules shared by the schemas below. */
+function fields(v: V) {
+  const imagePath = z.string().trim().regex(IMAGE_PATH, v.imagePath);
+  const money = z.number({ error: v.number }).finite().min(0, v.nonNegative).max(1_000_000, v.tooLarge);
+  return {
+    imagePath,
+    optionalImage: z.union([z.literal(""), imagePath]).transform((x) => x || null),
+    money,
+    /** An ISO date-time from the form (the browser converts local time), or null. */
+    dateTime: z.union([z.null(), z.iso.datetime({ offset: true, error: v.invalidDate })]).transform((x) => (x ? new Date(x) : null)),
+    text: (max: number) => z.string().trim().max(max, v.maxChars(max)),
+  };
+}
 
 /** Sale fields shared by a game and its versions; a sale needs an end date or the shop never shows it. */
 function checkSale(
+  v: V,
   s: { price: number | null; discountPrice: number | null; discountStartsAt: Date | null; discountEndsAt: Date | null },
   ctx: z.RefinementCtx,
   path: (string | number)[] = [],
 ) {
   if (s.discountPrice == null) return;
-  if (s.price != null && s.discountPrice >= s.price) ctx.addIssue({ code: "custom", path: [...path, "discountPrice"], message: "Sale price must be lower than the price" });
-  if (!s.discountEndsAt) ctx.addIssue({ code: "custom", path: [...path, "discountEndsAt"], message: "A sale needs an end date" });
-  if (s.discountStartsAt && s.discountEndsAt && s.discountEndsAt <= s.discountStartsAt) ctx.addIssue({ code: "custom", path: [...path, "discountEndsAt"], message: "End must be after start" });
+  if (s.price != null && s.discountPrice >= s.price) ctx.addIssue({ code: "custom", path: [...path, "discountPrice"], message: v.saleBelowPrice });
+  if (!s.discountEndsAt) ctx.addIssue({ code: "custom", path: [...path, "discountEndsAt"], message: v.saleNeedsEnd });
+  if (s.discountStartsAt && s.discountEndsAt && s.discountEndsAt <= s.discountStartsAt) ctx.addIssue({ code: "custom", path: [...path, "discountEndsAt"], message: v.endAfterStart });
 }
 
-const variantSchema = z
-  .object({
-    platform: z.enum(platformNames, "Choose a platform"),
-    edition: text(80).transform((v) => v || null),
-    activation: text(80).transform((v) => v || null),
-    region: text(80).transform((v) => v || null),
-    price: money.nullable(),
-    discountPrice: money.nullable(),
-    discountStartsAt: dateTime,
-    discountEndsAt: dateTime,
-    stock: z.number().int("Whole number").min(0, "Must be 0 or more").max(1_000_000).nullable(),
-  })
-  .superRefine((v, ctx) => {
-    if (v.discountPrice != null && v.price == null) ctx.addIssue({ code: "custom", path: ["discountPrice"], message: "Set the version's own price first, or leave the sale empty to use the game's" });
-    checkSale(v, ctx);
-  });
-
-export const gameSchema = z
-  .object({
-    title: z.string().trim().min(1, "Required").max(120, "At most 120 characters"),
-    slug: z.string().trim().min(1, "Required").max(120).regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Lower-case letters, digits and single hyphens"),
-    description: z.object({ ro: text(10_000), ru: text(10_000), en: text(10_000) }),
-    developer: z.string().trim().min(1, "Required").max(120),
-    publisher: z.string().trim().min(1, "Required").max(120),
-    releaseDate: z.iso.date("Invalid date").transform((v) => new Date(`${v}T00:00:00.000Z`)),
-    genres: z.array(z.enum(genreNames)).min(1, "Choose at least one genre"),
-    platforms: z.array(z.enum(platformNames)).min(1, "Choose at least one platform"),
-    price: money.refine((v) => v > 0, "Must be more than 0"),
-    discountPrice: money.nullable(),
-    discountStartsAt: dateTime,
-    discountEndsAt: dateTime,
-    stock: z.number({ error: "Enter a number" }).int("Whole number").min(0, "Must be 0 or more").max(1_000_000),
-    rating: z.number().finite().min(0, "0 to 10").max(10, "0 to 10").nullable(),
-    coverImage: imagePath,
-    cardImage: optionalImage,
-    pageCoverImage: optionalImage,
-    screenshots: z.array(imagePath).max(40, "At most 40 images"),
-    featured: z.boolean(),
-    variants: z.array(variantSchema).max(20, "At most 20 versions"),
-  })
-  .superRefine((g, ctx) => {
-    if (!g.description.ro && !g.description.ru && !g.description.en) ctx.addIssue({ code: "custom", path: ["description", "ro"], message: "Write the description in at least one language" });
-    checkSale(g, ctx);
-    g.variants.forEach((v, i) => {
-      if (!g.platforms.includes(v.platform)) ctx.addIssue({ code: "custom", path: ["variants", i, "platform"], message: "Also tick this platform above" });
+export function gameSchema(v: V) {
+  const f = fields(v);
+  const variant = z
+    .object({
+      platform: z.enum(platformNames, v.choosePlatform),
+      edition: f.text(80).transform((x) => x || null),
+      activation: f.text(80).transform((x) => x || null),
+      region: f.text(80).transform((x) => x || null),
+      price: f.money.nullable(),
+      discountPrice: f.money.nullable(),
+      discountStartsAt: f.dateTime,
+      discountEndsAt: f.dateTime,
+      stock: z.number().int(v.wholeNumber).min(0, v.nonNegative).max(1_000_000).nullable(),
+    })
+    .superRefine((x, ctx) => {
+      if (x.discountPrice != null && x.price == null) ctx.addIssue({ code: "custom", path: ["discountPrice"], message: v.versionPriceFirst });
+      checkSale(v, x, ctx);
     });
-    const keys = g.variants.map((v) => `${v.platform}|${v.edition ?? ""}`);
-    keys.forEach((k, i) => {
-      if (keys.indexOf(k) !== i) ctx.addIssue({ code: "custom", path: ["variants", i, "edition"], message: "Same platform and edition as another version" });
+  return z
+    .object({
+      title: z.string().trim().min(1, v.required).max(120, v.maxChars(120)),
+      slug: z.string().trim().min(1, v.required).max(120, v.maxChars(120)).regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, v.slugFormat),
+      description: z.object({ ro: f.text(10_000), ru: f.text(10_000), en: f.text(10_000) }),
+      developer: z.string().trim().min(1, v.required).max(120, v.maxChars(120)),
+      publisher: z.string().trim().min(1, v.required).max(120, v.maxChars(120)),
+      releaseDate: z.iso.date(v.invalidDate).transform((x) => new Date(`${x}T00:00:00.000Z`)),
+      genres: z.array(z.enum(genreNames)).min(1, v.chooseGenres),
+      platforms: z.array(z.enum(platformNames)).min(1, v.choosePlatforms),
+      price: f.money.refine((x) => x > 0, v.positive),
+      discountPrice: f.money.nullable(),
+      discountStartsAt: f.dateTime,
+      discountEndsAt: f.dateTime,
+      stock: z.number({ error: v.number }).int(v.wholeNumber).min(0, v.nonNegative).max(1_000_000, v.tooLarge),
+      rating: z.number().finite().min(0, v.rating).max(10, v.rating).nullable(),
+      coverImage: f.imagePath,
+      cardImage: f.optionalImage,
+      pageCoverImage: f.optionalImage,
+      screenshots: z.array(f.imagePath).max(40, v.maxImages(40)),
+      featured: z.boolean(),
+      variants: z.array(variant).max(20, v.maxVersions(20)),
+    })
+    .superRefine((g, ctx) => {
+      if (!g.description.ro && !g.description.ru && !g.description.en) ctx.addIssue({ code: "custom", path: ["description", "ro"], message: v.descriptionOne });
+      checkSale(v, g, ctx);
+      g.variants.forEach((x, i) => {
+        if (!g.platforms.includes(x.platform)) ctx.addIssue({ code: "custom", path: ["variants", i, "platform"], message: v.tickPlatform });
+      });
+      const keys = g.variants.map((x) => `${x.platform}|${x.edition ?? ""}`);
+      keys.forEach((k, i) => {
+        if (keys.indexOf(k) !== i) ctx.addIssue({ code: "custom", path: ["variants", i, "edition"], message: v.duplicateVersion });
+      });
     });
-  });
+}
 
-export type GameInput = z.input<typeof gameSchema>;
-export type GameData = z.output<typeof gameSchema>;
+export type GameInput = z.input<ReturnType<typeof gameSchema>>;
+export type GameData = z.output<ReturnType<typeof gameSchema>>;
 
-export const saleSchema = z
-  .object({
-    gameId: z.string().regex(/^[a-f0-9]{24}$/),
-    variant: z.number().int().min(0).max(50).nullable(),
-    price: z.number(),
-    discountPrice: money.nullable(),
-    discountStartsAt: dateTime,
-    discountEndsAt: dateTime,
-  })
-  .superRefine((s, ctx) => checkSale(s, ctx));
+export function saleSchema(v: V) {
+  const f = fields(v);
+  return z
+    .object({
+      gameId: objectId,
+      variant: z.number().int().min(0).max(50).nullable(),
+      price: z.number(),
+      discountPrice: f.money.nullable(),
+      discountStartsAt: f.dateTime,
+      discountEndsAt: f.dateTime,
+    })
+    .superRefine((s, ctx) => checkSale(v, s, ctx));
+}
 
-const name = z.string().trim().min(2, "At least 2 characters").max(80, "At most 80 characters");
-const role = z.enum(["admin", "user"], "Choose a role");
-const status = z.enum(["active", "blocked"], "Choose a status");
+/** Account fields (the rules themselves, PASSWORD_MIN/MAX and email, are the site's: lib/auth/schemas.ts). */
+function account(v: V) {
+  return {
+    name: z.string().trim().min(2, v.minChars(2)).max(80, v.maxChars(80)),
+    email: z.string().trim().toLowerCase().pipe(z.email(v.email)),
+    password: z.string().min(PASSWORD_MIN, v.minChars(PASSWORD_MIN)).max(PASSWORD_MAX, v.maxChars(PASSWORD_MAX)),
+    role: z.enum(["admin", "user"], v.chooseRole),
+    status: z.enum(["active", "blocked"], v.chooseStatus),
+  };
+}
 
-export const createUserSchema = z.object({ name, email, password, role, status });
-export const updateUserSchema = z.object({
-  id: z.string().regex(/^[a-f0-9]{24}$/),
-  name,
-  role,
-  status,
-  password: z.union([z.literal(""), password]),
-});
+export function createUserSchema(v: V) {
+  const a = account(v);
+  return z.object({ name: a.name, email: a.email, password: a.password, role: a.role, status: a.status });
+}
+
+export function updateUserSchema(v: V) {
+  const a = account(v);
+  return z.object({ id: objectId, name: a.name, role: a.role, status: a.status, password: z.union([z.literal(""), a.password]) });
+}
 
 export const orderStatusSchema = z.object({
-  id: z.string().regex(/^[a-f0-9]{24}$/),
+  id: objectId,
   status: z.enum(["new", "processing", "completed", "cancelled"]),
   paymentStatus: z.enum(["unpaid", "paid", "refunded"]),
 });

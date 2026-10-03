@@ -9,10 +9,12 @@
  */
 import { hashPassword } from "../lib/auth/password";
 import { createUserSchema } from "../lib/admin/schemas";
+import { adminDictionaries } from "../lib/i18n/admin";
 import { prisma } from "../lib/prisma";
 
 async function main() {
-  const parsed = createUserSchema.safeParse({
+  // A terminal command: its messages are in English.
+  const parsed = createUserSchema(adminDictionaries.en.validation).safeParse({
     email: process.env.ADMIN_EMAIL ?? "",
     name: process.env.ADMIN_NAME ?? "",
     password: process.env.ADMIN_PASSWORD ?? "",

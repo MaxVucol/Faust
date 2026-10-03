@@ -5,63 +5,64 @@ import { Gamepad2, Pencil, Plus, SearchX } from "lucide-react";
 import { deleteGame } from "@/app/admin/actions";
 import { ConfirmDelete } from "@/components/admin/ConfirmDelete";
 import { adminDate, btn, EmptyState, FilterBar, filterField, filterLabel, mdl, PageHeader, Pagination, Panel, Pill, Table, td, th, tr, UrlNotice } from "@/components/admin/ui";
-import { platformShort } from "@/lib/catalog";
+import { genreLabel, platformShort } from "@/lib/catalog";
 import { GAME_SORTS, GAME_STATUS_FILTERS, GENRE_NAMES, listGames, PLATFORM_NAMES } from "@/lib/admin/data";
+import { getAdminI18n, getDictionary } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Games" };
-
-const STATUS_LABELS: Record<(typeof GAME_STATUS_FILTERS)[number], string> = { "in-stock": "In stock", "out-of-stock": "Out of stock", "on-sale": "On sale", featured: "Featured", new: "New release" };
-const SORT_LABELS: Record<(typeof GAME_SORTS)[number], string> = { "added-desc": "Newest added", "added-asc": "Oldest added", title: "Title A–Z", "price-asc": "Price: low to high", "price-desc": "Price: high to low", discount: "Biggest discount" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getAdminI18n()).t.meta.games };
+}
 
 export default async function GamesPage({ searchParams }: PageProps<"/admin/games">) {
   const sp = await searchParams;
-  const { rows, total, page, pages, all } = await listGames(sp);
+  // Genre names come from the shop's own dictionary (they are fixed keys translated there).
+  const [{ rows, total, page, pages, all }, { t, locale }, shop] = await Promise.all([listGames(sp), getAdminI18n(), getDictionary()]);
+  const T = t.games;
   const v = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : "");
   const filtered = ["q", "genre", "platform", "status"].some((k) => v(k));
   return (
     <>
       <PageHeader
-       
-        title="Games"
-        description={`${all} games in the catalogue. Prices are in MDL; the price shown is the version the shop's cards show.`}
+        title={T.title}
+        description={T.description(all)}
         actions={
           <Link href="/admin/games/new" className={btn("primary", "md")}>
-            <Plus aria-hidden className="size-4" /> Add game
+            <Plus aria-hidden className="size-4" /> {T.add}
           </Link>
         }
       />
-      <UrlNotice code={sp.notice} />
+      <UrlNotice code={sp.notice} t={t} />
       <Panel>
-        <FilterBar basePath="/admin/games" active={filtered || !!v("sort")}>
+        <FilterBar basePath="/admin/games" active={filtered || !!v("sort")} t={t}>
           <div className="md:min-w-56 md:flex-1">
-            <label htmlFor="q" className={filterLabel}>Search</label>
-            <input id="q" name="q" type="search" defaultValue={v("q")} placeholder="Title or slug" className={filterField + " md:w-full"} />
+            <label htmlFor="q" className={filterLabel}>{T.filters.search}</label>
+            <input id="q" name="q" type="search" defaultValue={v("q")} placeholder={T.filters.searchPlaceholder} className={filterField + " md:w-full"} />
           </div>
           <div>
-            <label htmlFor="genre" className={filterLabel}>Genre</label>
+            <label htmlFor="genre" className={filterLabel}>{T.filters.genre}</label>
             <select id="genre" name="genre" defaultValue={v("genre")} className={filterField}>
-              <option value="">All genres</option>
-              {GENRE_NAMES.map((g) => <option key={g} value={g}>{g}</option>)}
+              <option value="">{T.filters.allGenres}</option>
+              {GENRE_NAMES.map((g) => <option key={g} value={g}>{genreLabel(shop.genres, g)}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="platform" className={filterLabel}>Platform</label>
+            <label htmlFor="platform" className={filterLabel}>{T.filters.platform}</label>
             <select id="platform" name="platform" defaultValue={v("platform")} className={filterField}>
-              <option value="">All platforms</option>
+              <option value="">{T.filters.allPlatforms}</option>
               {PLATFORM_NAMES.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="status" className={filterLabel}>Status</label>
+            <label htmlFor="status" className={filterLabel}>{T.filters.status}</label>
             <select id="status" name="status" defaultValue={v("status")} className={filterField}>
-              <option value="">Any status</option>
-              {GAME_STATUS_FILTERS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+              <option value="">{T.filters.anyStatus}</option>
+              {GAME_STATUS_FILTERS.map((s) => <option key={s} value={s}>{T.statusFilters[s]}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="sort" className={filterLabel}>Sort</label>
+            <label htmlFor="sort" className={filterLabel}>{T.filters.sort}</label>
             <select id="sort" name="sort" defaultValue={v("sort") || "added-desc"} className={filterField}>
-              {GAME_SORTS.map((s) => <option key={s} value={s}>{SORT_LABELS[s]}</option>)}
+              {GAME_SORTS.map((s) => <option key={s} value={s}>{T.sorts[s]}</option>)}
             </select>
           </div>
         </FilterBar>
@@ -69,23 +70,23 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
         {rows.length === 0 ? (
           <EmptyState
             icon={filtered ? SearchX : Gamepad2}
-            title={filtered ? "No games match these filters" : "No games yet"}
-            text={filtered ? "Try another search or reset the filters." : "Add the first game to the catalogue."}
-            action={filtered ? <Link href="/admin/games" className={btn("ghost")}>Reset filters</Link> : <Link href="/admin/games/new" className={btn("primary")}>Add game</Link>}
+            title={filtered ? T.empty.filteredTitle : T.empty.title}
+            text={filtered ? T.empty.filteredText : T.empty.text}
+            action={filtered ? <Link href="/admin/games" className={btn("ghost")}>{T.empty.resetFilters}</Link> : <Link href="/admin/games/new" className={btn("primary")}>{T.add}</Link>}
           />
         ) : (
           <Table>
             <thead>
               <tr>
-                <th className={th}>Game</th>
-                <th className={th}>Price</th>
-                <th className={th}>Discount</th>
-                <th className={th}>Final</th>
-                <th className={`${th} hidden 2xl:table-cell`}>Genre</th>
-                <th className={`${th} hidden md:table-cell`}>Platform</th>
-                <th className={th}>Status</th>
-                <th className={`${th} hidden 2xl:table-cell`}>Added</th>
-                <th className={th}><span className="sr-only">Actions</span></th>
+                <th className={th}>{T.columns.game}</th>
+                <th className={th}>{T.columns.price}</th>
+                <th className={th}>{T.columns.discount}</th>
+                <th className={th}>{T.columns.final}</th>
+                <th className={`${th} hidden 2xl:table-cell`}>{T.columns.genre}</th>
+                <th className={`${th} hidden md:table-cell`}>{T.columns.platform}</th>
+                <th className={th}>{T.columns.status}</th>
+                <th className={`${th} hidden 2xl:table-cell`}>{T.columns.added}</th>
+                <th className={th}><span className="sr-only">{T.columns.actions}</span></th>
               </tr>
             </thead>
             <tbody>
@@ -105,20 +106,20 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
                   <td className={`${td} tabular-nums whitespace-nowrap`}>{mdl(g.price)}</td>
                   <td className={`${td} tabular-nums`}>{g.discount > 0 ? <span className="text-blood-text">−{g.discount}%</span> : <span className="text-parchment-muted">—</span>}</td>
                   <td className={`${td} tabular-nums whitespace-nowrap text-gold-light`}>{mdl(g.finalPrice)}</td>
-                  <td className={`${td} hidden text-sm text-parchment-muted 2xl:table-cell`}>{g.genres.join(", ")}</td>
+                  <td className={`${td} hidden text-sm text-parchment-muted 2xl:table-cell`}>{g.genres.map((x) => genreLabel(shop.genres, x)).join(", ")}</td>
                   <td className={`${td} hidden max-w-[9rem] text-sm text-parchment-muted md:table-cell`}>{g.platforms.map(platformShort).join(" · ")}</td>
                   <td className={td}>
                     <span className="flex flex-wrap gap-1">
-                      <Pill tone={g.inStock ? "green" : "red"}>{g.inStock ? "In stock" : "Out of stock"}</Pill>
-                      {g.onSale && <Pill tone="red">Sale</Pill>}
-                      {g.isNew && <Pill tone="gold">New</Pill>}
-                      {g.featured && <Pill tone="gold">Featured</Pill>}
+                      <Pill tone={g.inStock ? "green" : "red"}>{g.inStock ? T.pills.inStock : T.pills.outOfStock}</Pill>
+                      {g.onSale && <Pill tone="red">{T.pills.sale}</Pill>}
+                      {g.isNew && <Pill tone="gold">{T.pills.new}</Pill>}
+                      {g.featured && <Pill tone="gold">{T.pills.featured}</Pill>}
                     </span>
                   </td>
-                  <td className={`${td} hidden text-sm whitespace-nowrap text-parchment-muted 2xl:table-cell`}>{adminDate(g.createdAt)}</td>
+                  <td className={`${td} hidden text-sm whitespace-nowrap text-parchment-muted 2xl:table-cell`}>{adminDate(g.createdAt, locale)}</td>
                   <td className={td}>
                     <span className="flex justify-end gap-2">
-                      <Link href={`/admin/games/${g.id}`} aria-label={`Edit ${g.title}`} className={btn("ghost", "icon")}>
+                      <Link href={`/admin/games/${g.id}`} aria-label={T.editAria(g.title)} className={btn("ghost", "icon")}>
                         <Pencil aria-hidden className="size-4" strokeWidth={1.75} />
                       </Link>
                       <ConfirmDelete action={deleteGame.bind(null, g.id)} name={g.title} compact />
@@ -129,7 +130,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/admin/game
             </tbody>
           </Table>
         )}
-        <Pagination page={page} pages={pages} total={total} params={sp} basePath="/admin/games" />
+        <Pagination page={page} pages={pages} total={total} params={sp} basePath="/admin/games" t={t} />
       </Panel>
     </>
   );
