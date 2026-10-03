@@ -9,6 +9,7 @@ import { BadgePercent, ChevronDown, ExternalLink, FolderTree, Gamepad2, ImageIco
 import { logout } from "@/app/admin/actions";
 import { Diamond } from "@/components/ui/Ornaments";
 import { cn } from "@/lib/utils";
+import { AvatarPicture } from "@/components/auth/AvatarPicture";
 import { useAdminI18n } from "./AdminI18n";
 import { LanguageMenu } from "./LanguageMenu";
 
@@ -95,17 +96,26 @@ function Nav({ pathname }: { pathname: string }) {
   );
 }
 
-function Profile({ name, email }: { name: string; email: string }) {
+/** The signed-in admin as the layout passes them: `avatarVersion` is when their picture last changed (ms), or null. */
+type ShellUser = { name: string; email: string; avatarVersion: number | null };
+
+function Profile({ name, email, avatarVersion }: ShellUser) {
   const { t } = useAdminI18n();
   const link = "flex min-h-9 items-center gap-2 text-sm text-parchment-muted transition-colors hover:text-gold-light";
   return (
     <div className="border-t border-gold-dark/30 bg-panel-deep/70 px-4 pt-4 pb-3">
       <div className="flex items-center gap-3">
-        {/* The initial on a small diamond plate. */}
-        <span aria-hidden className="relative flex size-10 shrink-0 items-center justify-center">
-          <span className="absolute inset-1 rotate-45 border border-gold-dark bg-panel" />
-          <span className="relative font-display text-base text-gold-light uppercase">{name.trim().charAt(0) || "A"}</span>
-        </span>
+        {/* Their picture in a round frame, or the initial on a small diamond plate. */}
+        {avatarVersion ? (
+          <span aria-hidden className="relative size-10 shrink-0 overflow-hidden rounded-full border border-gold-dark/80 bg-[#0b0907]">
+            <AvatarPicture name={name} version={avatarVersion} alt="" sizes="40px" initialClassName="text-base" />
+          </span>
+        ) : (
+          <span aria-hidden className="relative flex size-10 shrink-0 items-center justify-center">
+            <span className="absolute inset-1 rotate-45 border border-gold-dark bg-panel" />
+            <span className="relative font-display text-base text-gold-light uppercase">{name.trim().charAt(0) || "A"}</span>
+          </span>
+        )}
         <div className="min-w-0">
           <p className="truncate text-[0.95rem] leading-tight text-parchment">{name}</p>
           <p className="truncate text-xs text-parchment-muted">{email}</p>
@@ -134,8 +144,8 @@ function Profile({ name, email }: { name: string; email: string }) {
   );
 }
 
-/** The signed-in admin, top right: name and role; opens a small menu (account, the shop, logout). */
-function ProfileMenu({ name }: { name: string }) {
+/** The signed-in admin, top right: picture (or initial), name and role; opens a small menu (account, the shop, logout). */
+function ProfileMenu({ name, avatarVersion }: Pick<ShellUser, "name" | "avatarVersion">) {
   const { t } = useAdminI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -161,8 +171,8 @@ function ProfileMenu({ name }: { name: string }) {
         onClick={() => setOpen((v) => !v)}
         className="flex min-h-12 items-center gap-3 px-2 text-left transition-colors hover:text-gold-light"
       >
-        <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full border border-gold-dark/80 bg-black/50">
-          <UserRound className="size-[18px] text-parchment" strokeWidth={1.5} />
+        <span aria-hidden className="relative size-9 shrink-0 overflow-hidden rounded-full border border-gold-dark/80 bg-black/50">
+          <AvatarPicture name={name} version={avatarVersion} alt="" sizes="36px" initialClassName="text-base" />
         </span>
         <span className="hidden min-w-0 sm:block">
           <span className="block max-w-40 truncate font-display text-[0.95rem] leading-tight font-semibold text-gold-light">{name}</span>
@@ -191,12 +201,12 @@ function ProfileMenu({ name }: { name: string }) {
 }
 
 /** The work area's top bar (from lg up), in the sidebar's colour: the language and the profile menu on the right. */
-function TopBar({ name }: { name: string }) {
+function TopBar(user: Pick<ShellUser, "name" | "avatarVersion">) {
   return (
     <div className="relative z-20 hidden h-[3.75rem] items-center justify-end gap-3 border-b border-gold-dark/40 bg-[#0a0907] px-6 shadow-[0_8px_24px_rgb(0_0_0/0.35)] lg:flex">
       <LanguageMenu />
       <span aria-hidden className="h-6 w-px bg-iron" />
-      <ProfileMenu name={name} />
+      <ProfileMenu {...user} />
     </div>
   );
 }
@@ -206,7 +216,7 @@ function TopBar({ name }: { name: string }) {
  * navigation as a drawer (a modal: Escape or the backdrop closes it, the page behind doesn't scroll,
  * and it closes on navigation).
  */
-export function AdminShell({ user, children }: { user: { name: string; email: string }; children: ReactNode }) {
+export function AdminShell({ user, children }: { user: ShellUser; children: ReactNode }) {
   const { t } = useAdminI18n();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -292,7 +302,7 @@ export function AdminShell({ user, children }: { user: { name: string; email: st
         )}
 
       <div className="min-w-0">
-        <TopBar name={user.name} />
+        <TopBar name={user.name} avatarVersion={user.avatarVersion} />
         <div className="px-4 py-6 sm:px-6 lg:px-10 lg:py-8 2xl:px-14">
           <div className="mx-auto max-w-[110rem]">{children}</div>
         </div>
