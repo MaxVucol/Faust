@@ -154,3 +154,15 @@ model Order {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
+
+/// A customer's profile picture (lib/auth/avatar.ts): a small square image, re-encoded in the browser to
+/// 256×256 and checked on the server (real JPEG/PNG/WebP, size, dimensions). Its id IS the owner's user
+/// id, so an account has at most one and a request can only ever reach its own (no extra index needed).
+/// Kept out of the User document so the session's user query never loads image bytes.
+model Avatar {
+  id        String   @id @map("_id") @db.ObjectId
+  data      Bytes
+  /// MIME type of `data`: image/jpeg, image/png or image/webp.
+  type      String
+  updatedAt DateTime @updatedAt
+}

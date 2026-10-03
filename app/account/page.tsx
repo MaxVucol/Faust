@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { ArrowRight, LogOut } from "lucide-react";
 import { signOutAction, signOutEverywhereAction } from "@/app/auth/actions";
 import { AuthFrame } from "@/components/auth/AuthFrame";
+import { ProfileDetails } from "@/components/auth/ProfileDetails";
 import { ButtonLink } from "@/components/ui/Button";
 import { Diamond } from "@/components/ui/Ornaments";
 import { isAdmin } from "@/lib/admin/auth";
@@ -38,8 +39,10 @@ export default async function AccountPage() {
   const session = await requireUser("/account");
   const { locale, t } = await getI18n();
   const a = t.account;
-  const [account, orders] = await Promise.all([
+  const [account, avatar, orders] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.id }, select: { createdAt: true } }),
+    // Only whether there is a picture and when it changed: the image itself is served by app/account/avatar.
+    prisma.avatar.findUnique({ where: { id: session.id }, select: { updatedAt: true } }),
     prisma.order.findMany({
       where: { userId: session.id },
       orderBy: { createdAt: "desc" },
@@ -47,31 +50,17 @@ export default async function AccountPage() {
     }),
   ]);
   const admin = isAdmin(session);
-  const row = "grid grid-cols-[9rem_1fr] items-baseline gap-4 border-b border-iron/60 py-3 last:border-b-0 sm:grid-cols-[12rem_1fr]";
 
   return (
     <AuthFrame title={a.title} subtitle={a.subtitle} wide>
       <Section title={a.details}>
-        <dl className="mt-2">
-          <div className={row}>
-            <dt className="text-parchment-muted">{a.name}</dt>
-            <dd className="min-w-0 break-words">{session.name}</dd>
-          </div>
-          <div className={row}>
-            <dt className="text-parchment-muted">{a.email}</dt>
-            <dd className="min-w-0 break-all">{session.email}</dd>
-          </div>
-          <div className={row}>
-            <dt className="text-parchment-muted">{a.status}</dt>
-            <dd className="text-stock-in">{a.statusActive}</dd>
-          </div>
-          {account && (
-            <div className={row}>
-              <dt className="text-parchment-muted">{a.memberSince}</dt>
-              <dd className="tabular-nums">{formatDate(account.createdAt, locale)}</dd>
-            </div>
-          )}
-        </dl>
+        <ProfileDetails
+          name={session.name}
+          email={session.email}
+          statusText={a.statusActive}
+          memberSince={account ? formatDate(account.createdAt, locale) : null}
+          avatarVersion={avatar ? avatar.updatedAt.getTime() : null}
+        />
       </Section>
 
       {admin && (

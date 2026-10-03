@@ -206,6 +206,7 @@ export async function deleteUser(id: string): Promise<ActionResult> {
     if (user.role === "admin" && user.status === "active" && !(await anotherAdmin(id))) return { ok: false, error: a.lastAdmin };
     // Deleting the account also ends its sessions (the account no longer exists), and its picture goes with it.
     await prisma.user.delete({ where: { id } });
+    await prisma.avatar.deleteMany({ where: { id } });
     revalidatePath("/admin", "layout");
     return { ok: true, message: a.userDeleted };
   });

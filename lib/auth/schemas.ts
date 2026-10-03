@@ -34,3 +34,8 @@ export function registerSchema(t: Dictionary) {
     })
     .refine((v) => v.password === v.confirm, { path: ["confirm"], message: e.passwordMismatch });
 }
+
+/** The account page's profile form: only the name (the email is the sign-in identifier and stays as it is). */
+export function profileSchema(t: Dictionary) {
+  return z.object({ name: z.string().trim().min(2, t.contact.errors.nameMin).max(80, t.contact.errors.nameMax) });
+}
