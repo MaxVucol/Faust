@@ -451,7 +451,6 @@ export const ro = {
       blocked: "Acest cont este blocat.",
       rateLimited: "Prea multe încercări. Așteaptă câteva minute și încearcă din nou.",
       unavailable: "Autentificarea nu este disponibilă acum. Încearcă din nou peste câteva minute.",
-      notConfigured: "Autentificarea nu este configurată pe acest server.",
       taken: "Există deja un cont cu acest email.",
     },
   },

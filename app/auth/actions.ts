@@ -21,7 +21,7 @@ export async function signInAction(_prev: AuthFormState, formData: FormData): Pr
   const t = await getDictionary();
   const e = t.auth.errors;
   const email = String(formData.get("email") ?? "").slice(0, 200);
-  if (!sessionsConfigured()) return { error: e.notConfigured, values: { email } };
+  if (!sessionsConfigured()) return { error: e.unavailable, values: { email } };
   const parsed = signInSchema(t).safeParse({ email, password: String(formData.get("password") ?? "") });
   if (!parsed.success) return { error: e.checkFields, fieldErrors: z.flattenError(parsed.error).fieldErrors, values: { email } };
   const result = await signIn(parsed.data.email, parsed.data.password, await clientIp());
@@ -38,7 +38,7 @@ export async function registerAction(_prev: AuthFormState, formData: FormData): 
   const values = { name: String(formData.get("name") ?? "").slice(0, 100), email: String(formData.get("email") ?? "").slice(0, 200) };
   // A filled honeypot is a bot: nothing is created.
   if (isBot(formData)) redirect("/");
-  if (!sessionsConfigured()) return { error: e.notConfigured, values };
+  if (!sessionsConfigured()) return { error: e.unavailable, values };
   const parsed = registerSchema(t).safeParse({ ...values, password: String(formData.get("password") ?? ""), confirm: String(formData.get("confirm") ?? "") });
   if (!parsed.success) return { error: e.checkFields, fieldErrors: z.flattenError(parsed.error).fieldErrors, values };
   const { name, email, password } = parsed.data;

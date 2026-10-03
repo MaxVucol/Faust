@@ -20,9 +20,9 @@ export function LoginForm({ next, configured, reauthEmail }: { next: string; con
   const errors = state.fieldErrors ?? {};
   return (
     <form action={action} noValidate className="space-y-5">
-      {!configured && (
+      {!configured && !state.error && (
         <p role="alert" className="border-l-2 border-blood-text pl-3 text-blood-text">
-          {a.errors.notConfigured}
+          {a.errors.unavailable}
         </p>
       )}
       {reauthEmail && !state.error && <p className="border-l-2 border-aged-gold pl-3 text-parchment">{a.reauthText}</p>}

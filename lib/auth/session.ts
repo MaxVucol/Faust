@@ -21,10 +21,18 @@ export const ADMIN_FRESHNESS = 60 * 60 * 8; // 8 hours
 
 export type SecretSource = "AUTH_SECRET" | "ADMIN_SESSION_SECRET";
 
+let reported = false;
+
 function secret(): { key: string; source: SecretSource } | null {
   for (const source of ["AUTH_SECRET", "ADMIN_SESSION_SECRET"] as const) {
     const key = process.env[source]?.trim();
     if (key && key.length >= 32) return { key, source };
+  }
+  // A deployment problem, not the visitor's: they see a generic "unavailable"; the server log says what to fix
+  // (the variable's name only, never a value). Once per process.
+  if (!reported) {
+    reported = true;
+    console.error("[auth] Sign-in is closed: AUTH_SECRET is missing or shorter than 32 characters. Set it in this environment's variables (.env.local for local development, the hosting's settings in production) and restart.");
   }
   return null;
 }

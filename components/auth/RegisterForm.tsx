@@ -23,9 +23,9 @@ export function RegisterForm({ next, configured }: { next: string; configured: b
   return (
     <form action={action} noValidate className="space-y-5">
       <Honeypot />
-      {!configured && (
+      {!configured && !state.error && (
         <p role="alert" className="border-l-2 border-blood-text pl-3 text-blood-text">
-          {a.errors.notConfigured}
+          {a.errors.unavailable}
         </p>
       )}
       <input type="hidden" name="next" value={next} />

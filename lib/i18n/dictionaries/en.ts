@@ -446,7 +446,6 @@ export const en: Dictionary = {
       blocked: "This account is blocked.",
       rateLimited: "Too many attempts. Wait a few minutes and try again.",
       unavailable: "Signing in is unavailable right now. Try again in a few minutes.",
-      notConfigured: "Signing in is not configured on this server.",
       taken: "An account with this email already exists.",
     },
   },
