@@ -27,10 +27,17 @@ export function allowAttempt(key: string, limit: number, windowMs: number): bool
   return true;
 }
 
-/** The visitor's IP as reported by the hosting proxy (Vercel sets x-forwarded-for). */
+/**
+ * The visitor's IP, for rate limits. On Vercel (VERCEL is set) the platform's own headers, which it
+ * writes itself and doesn't take from the visitor: x-real-ip (what @vercel/functions ipAddress() reads),
+ * then x-vercel-forwarded-for. Elsewhere (local development, another proxy) the first x-forwarded-for
+ * entry, which is only trustworthy behind a proxy that sets it.
+ */
 export async function clientIp(): Promise<string> {
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip")?.trim() || "unknown";
+  const forwarded = h.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (process.env.VERCEL) return h.get("x-real-ip")?.trim() || h.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() || forwarded || "unknown";
+  return forwarded || h.get("x-real-ip")?.trim() || "unknown";
 }
 
 /** Honeypot check (see HONEYPOT_FIELD): anything in the hidden field means an automated submission. */

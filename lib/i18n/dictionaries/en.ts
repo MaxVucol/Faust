@@ -250,6 +250,7 @@ export const en: Dictionary = {
         cart: "Your cart couldn't be read. Reload the page and try again.",
         unavailable: "A game in your cart is no longer available or has changed. Reload the page and check your cart.",
         pricesChanged: "Prices have changed. We updated your cart: check the total and send the order again.",
+        stock: "We don't have enough copies of a game in your cart. Lower the quantity and try again.",
         failed: "The order couldn't be sent. Please try again in a few minutes.",
         tooMany: "Too many orders in a row. Please try again in a few minutes.",
       },

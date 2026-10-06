@@ -155,6 +155,11 @@ model Order {
   status        String      @default("new")
   /// "unpaid", "paid" or "refunded".
   paymentStatus String      @default("unpaid")
+  /// The shop's Telegram notification (lib/orders.ts): when it was delivered, and how many times it was
+  /// tried. The order exists without it; one not delivered can be sent again (npm run orders:notify).
+  /// Both missing on orders from before notifications were tracked (those were sent before saving).
+  notifiedAt     DateTime?
+  notifyAttempts Int?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }

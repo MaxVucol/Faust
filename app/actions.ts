@@ -1,15 +1,16 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+import { after } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { priceLines, type PricedLine } from "@/lib/cart-pricing";
-import { convert, formatAmount } from "@/lib/currency";
 import { getSessionUser } from "@/lib/auth/user";
 import { getCurrency, getDictionary, getLocale } from "@/lib/i18n/server";
 import { allowAttempt, clientIp, isBot } from "@/lib/rate-limit";
 import { cartLineSchema, contactSchema, newsletterSchema, orderSchema } from "@/lib/schemas";
-import { escapeTelegramHtml, sendTelegramMessage } from "@/lib/telegram";
+import { notifyOrder, submitOrder } from "@/lib/orders";
 import type { FormState } from "@/types";
 
 const TEN_MINUTES = 10 * 60 * 1000;
@@ -25,8 +26,9 @@ export async function getCartPrices(lines: unknown): Promise<(PricedLine | null)
 }
 
 /**
- * Checkout: validates the customer's details and the cart, prices every line again from the database
- * (the browser's prices are ignored), and sends the order to the shop's Telegram chat.
+ * Checkout: validates the customer's details and the cart, then lib/orders.ts prices it again from the
+ * database (the browser's prices are ignored), saves it, and returns its number. The shop's Telegram
+ * message is sent after the response (after()); if Telegram fails the order still stands.
  */
 export async function placeOrder(_prev: FormState, formData: FormData): Promise<FormState> {
   const t = await getDictionary();
@@ -45,83 +47,32 @@ export async function placeOrder(_prev: FormState, formData: FormData): Promise<
     email: formData.get("email"),
     comment: formData.get("comment") ?? "",
     items,
+    idempotencyKey: formData.get("idempotencyKey") || undefined,
   });
   if (!parsed.success) {
     const fieldErrors = z.flattenError(parsed.error).fieldErrors;
-    return { status: "error", message: fieldErrors.items ? o.errors.cart : t.contact.errors.checkFields, fieldErrors };
+    return { status: "error", message: fieldErrors.items || fieldErrors.idempotencyKey ? o.errors.cart : t.contact.errors.checkFields, fieldErrors };
   }
-  const order = parsed.data;
+  const { idempotencyKey, ...order } = parsed.data;
 
-  // Current prices and stock, straight from the catalogue (the same pricing the cart page shows).
-  const now = new Date();
-  const priced = await priceLines(order.items, now);
-  const lines = [];
-  for (const [i, item] of order.items.entries()) {
-    const line = priced[i];
-    if (!line) return { status: "error", message: o.errors.unavailable, code: "cart-changed" };
-    lines.push({ slug: item.slug, title: line.title, platform: line.platform, edition: line.edition, quantity: item.quantity, unitPrice: line.price, sum: line.price * item.quantity });
+  // The account comes from the session only; an inactive one orders as a guest.
+  const [user, ip, locale, currency] = await Promise.all([getSessionUser(), clientIp(), getLocale(), getCurrency()]);
+  const result = await submitOrder(
+    // A form loaded before attempt keys existed: a fresh key (that attempt just isn't protected against repeats).
+    { ...order, shownTotal: Number(formData.get("total")), key: idempotencyKey ?? randomUUID() },
+    { ip, userId: user && user.status === "active" ? user.id : null, locale, currency },
+  );
+  if (!result.ok) {
+    const messages = { unavailable: o.errors.unavailable, stock: o.errors.stock, pricesChanged: o.errors.pricesChanged, tooMany: o.errors.tooMany, failed: o.errors.failed } as const;
+    const cartChanged = result.reason === "unavailable" || result.reason === "pricesChanged";
+    return { status: "error", message: messages[result.reason], ...(cartChanged ? { code: "cart-changed" as const } : {}) };
   }
-  const totalMdl = Math.round(lines.reduce((s, l) => s + l.sum, 0) * 100) / 100;
-  // The total the visitor saw (MDL). It never sets the price; a different one means prices changed
-  // since the cart was shown, so the order waits until the visitor has seen the new total.
-  if (!(Math.abs(Number(formData.get("total")) - totalMdl) < 0.005)) {
-    return { status: "error", message: o.errors.pricesChanged, code: "cart-changed" };
+  // Only a newly saved order is announced (a repeat of it was announced already, or is pending).
+  if (result.created) {
+    const id = result.id;
+    after(() => notifyOrder(id));
   }
-
-  // Counted only once everything checks out, so fixing a typo never locks anyone out.
-  if (!allowAttempt(`order:${await clientIp()}`, 3, TEN_MINUTES)) {
-    return { status: "error", message: o.errors.tooMany };
-  }
-
-  const [locale, currency] = await Promise.all([getLocale(), getCurrency()]);
-  const number = `IV-${now.getTime().toString(36).toUpperCase()}`;
-  const mdl = (v: number) => formatAmount(Math.round(v * 100) / 100, "MDL");
-  const e = escapeTelegramHtml;
-  const text = [
-    `🛒 <b>Comandă nouă ${number}</b>`,
-    "",
-    ...lines.map((l) => `• ${e(l.title)} — ${e([l.platform, l.edition].filter(Boolean).join(" · "))} × ${l.quantity} = ${mdl(l.sum)}`),
-    "",
-    `<b>Total: ${mdl(totalMdl)}</b>${currency !== "MDL" ? ` (≈ ${formatAmount(convert(totalMdl, currency), currency)})` : ""}`,
-    "",
-    `👤 ${e(order.name)}`,
-    `📞 ${e(order.phone)}`,
-    `✉️ ${e(order.email)}`,
-    ...(order.comment ? [`💬 ${e(order.comment)}`] : []),
-    "",
-    `Limba: ${locale.toUpperCase()} · Valuta: ${currency}`,
-    new Intl.DateTimeFormat("ro-RO", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Chisinau" }).format(now),
-  ].join("\n");
-
-  try {
-    await sendTelegramMessage(text);
-  } catch (error) {
-    console.error("order notification failed", error instanceof Error ? error.message : error);
-    return { status: "error", message: o.errors.failed };
-  }
-  // Kept for the admin panel once the shop has it. The customer's order is already placed at this
-  // point, so a failed save is only logged. Signed in: the order belongs to the account (its id, from the
-  // session, never from the form); a guest order has no account.
-  try {
-    const user = await getSessionUser();
-    await prisma.order.create({
-      data: {
-        number,
-        userId: user && user.status === "active" ? user.id : null,
-        name: order.name,
-        email: order.email,
-        phone: order.phone,
-        comment: order.comment || null,
-        items: lines.map((l) => ({ ...l, unitPrice: Math.round(l.unitPrice * 100) / 100, sum: Math.round(l.sum * 100) / 100 })),
-        totalMdl,
-        currency,
-        locale,
-      },
-    });
-  } catch (error) {
-    console.error("order save failed", number, error instanceof Error ? error.message : error);
-  }
-  return { status: "success", message: o.success(number) };
+  return { status: "success", message: o.success(result.number) };
 }
 
 export async function sendContactMessage(_prev: FormState, formData: FormData): Promise<FormState> {

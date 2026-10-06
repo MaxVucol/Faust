@@ -255,6 +255,7 @@ export const ro = {
         cart: "Coșul nu a putut fi citit. Reîncarcă pagina și încearcă din nou.",
         unavailable: "Un joc din coș nu mai este disponibil sau s-a schimbat. Reîncarcă pagina și verifică coșul.",
         pricesChanged: "Prețurile s-au schimbat între timp. Am actualizat coșul: verifică totalul și trimite din nou.",
+        stock: "Nu avem destule bucăți dintr-un joc din coș. Micșorează cantitatea și încearcă din nou.",
         failed: "Comanda nu a putut fi trimisă. Încearcă din nou peste câteva minute.",
         tooMany: "Ai trimis prea multe comenzi. Încearcă din nou peste câteva minute.",
       },

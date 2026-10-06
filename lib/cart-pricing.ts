@@ -17,6 +17,9 @@ export type PricedLine = {
   oldPrice: number | null;
 };
 
+/** A priced line plus how many copies of that version are in stock (server only: never sent to the browser). */
+export type StockedLine = PricedLine & { stock: number };
+
 /**
  * Prices cart lines from the database, the one place a price comes from: the cart page shows these and
  * the order is charged these. A line is null when it can't be bought any more (the game or version is
@@ -24,6 +27,11 @@ export type PricedLine = {
  * version, as its card showed.
  */
 export async function priceLines(lines: CartLineRef[], now: Date = new Date()): Promise<(PricedLine | null)[]> {
+  return (await priceLinesWithStock(lines, now)).map((l) => (l ? { title: l.title, coverImage: l.coverImage, platform: l.platform, edition: l.edition, price: l.price, oldPrice: l.oldPrice } : null));
+}
+
+/** The same pricing with each version's stock, for checking an order's quantities (lib/orders.ts). */
+export async function priceLinesWithStock(lines: CartLineRef[], now: Date = new Date()): Promise<(StockedLine | null)[]> {
   const games = await prisma.game.findMany({
     where: { slug: { in: [...new Set(lines.map((l) => l.slug))] } },
     select: { slug: true, title: true, coverImage: true, price: true, discountPrice: true, discountStartsAt: true, discountEndsAt: true, platforms: true, variants: true, stock: true },
@@ -42,6 +50,7 @@ export async function priceLines(lines: CartLineRef[], now: Date = new Date()): 
       edition: offer.edition,
       price: effectivePrice(offer, now),
       oldPrice: isOnSale(offer, now) ? offer.price : null,
+      stock: offer.stock,
     };
   });
 }

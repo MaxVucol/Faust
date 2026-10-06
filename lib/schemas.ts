@@ -42,6 +42,8 @@ export function orderSchema(t: Dictionary) {
     email: z.string().trim().pipe(z.email(e.email)),
     comment: z.string().trim().max(500, o.commentMax),
     items: z.array(orderLineSchema, o.cart).min(1, o.cart).max(30, o.cart),
+    /** The checkout attempt's random key (lib/orders.ts); a form from before keys existed sends none. */
+    idempotencyKey: z.string().regex(/^[A-Za-z0-9-]{16,64}$/, o.cart).optional(),
   });
 }
 

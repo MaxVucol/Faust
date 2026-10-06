@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * A rate limit shared by every server instance, kept in MongoDB (collection AuthRateLimit), for
- * sign-in and, later, registration. Fixed windows: each window of each key is one document whose _id
+ * sign-in, registration, Google sign-in and orders. Fixed windows: each window of each key is one document whose _id
  * is the key plus the window start, counted with one atomic findAndModify (upsert + $inc); _id is
  * always unique and indexed, so no Prisma model, index or schema push is needed. Emails are stored
  * only as SHA-256 hashes.
@@ -90,4 +90,52 @@ export function signInRules(ip: string, email: string): LimitRule[] {
  */
 export function googleRules(ip: string): LimitRule[] {
   return [{ key: `google:ip:${ip}`, limit: 20, windowMs: FIFTEEN_MINUTES }];
+}
+
+const ONE_DAY = 24 * ONE_HOUR;
+
+/**
+ * The part of an IP address a limit is kept for: an IPv4 address as is, an IPv6 address by its /64
+ * network (one connection usually has a whole /64, so rotating addresses inside it doesn't help).
+ */
+export function ipKey(ip: string): string {
+  const v4 = /^(?:::ffff:)?(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(ip.trim());
+  if (v4) return v4[1];
+  if (!ip.includes(":")) return ip.trim().slice(0, 64) || "unknown";
+  const [head, tail = ""] = ip.trim().toLowerCase().split("::");
+  const left = head ? head.split(":") : [];
+  const right = tail ? tail.split(":") : [];
+  const groups = [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill("0"), ...right];
+  return `${groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, "")).join(":")}::/64`;
+}
+
+/**
+ * Orders (app/actions.ts placeOrder → lib/orders.ts), counted once an order has passed every check and
+ * is about to be created; a repeat of an order already placed is not counted. Each of these is enough to
+ * stop an order, so rotating IPs alone doesn't help (the email and the phone are counted too), while a
+ * real customer stays far below them: per IP 5 per 15 minutes and 20 a day; per email and per phone
+ * number 3 per 15 minutes and 10 a day; per signed-in account 5 per 15 minutes.
+ * `scope` only separates the security tests' counters from the shop's.
+ */
+export function orderRules(who: { ip: string; email: string; phone: string; userId: string | null }, scope = "order"): LimitRule[] {
+  const phone = createHash("sha256").update(who.phone.replace(/\D/g, "")).digest("hex");
+  const ip = ipKey(who.ip);
+  return [
+    { key: `${scope}:ip:${ip}`, limit: 5, windowMs: FIFTEEN_MINUTES },
+    { key: `${scope}:ip-day:${ip}`, limit: 20, windowMs: ONE_DAY },
+    { key: `${scope}:email:${emailKey(who.email)}`, limit: 3, windowMs: FIFTEEN_MINUTES },
+    { key: `${scope}:email-day:${emailKey(who.email)}`, limit: 10, windowMs: ONE_DAY },
+    { key: `${scope}:phone:${phone}`, limit: 3, windowMs: FIFTEEN_MINUTES },
+    { key: `${scope}:phone-day:${phone}`, limit: 10, windowMs: ONE_DAY },
+    ...(who.userId ? [{ key: `${scope}:user:${who.userId}`, limit: 5, windowMs: FIFTEEN_MINUTES }] : []),
+  ];
+}
+
+/**
+ * A ceiling for the whole shop, counted only for orders that passed orderRules (so one sender who is
+ * already stopped can't use it up): 120 per 15 minutes, far above the shop's real rate, and below what
+ * would flood the shop's Telegram chat.
+ */
+export function orderShopRule(scope = "order"): LimitRule[] {
+  return [{ key: `${scope}:shop`, limit: 120, windowMs: FIFTEEN_MINUTES }];
 }

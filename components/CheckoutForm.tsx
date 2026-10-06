@@ -12,6 +12,43 @@ import type { CartItem, FormState } from "@/types";
 
 const initial: FormState = { status: "idle" };
 
+/**
+ * The checkout attempt's key (lib/orders.ts: one key, at most one order). It lives in sessionStorage
+ * with the cart it was made for, so a resend of the same cart (a double click, a retry, a reload after
+ * the answer got lost) carries the same key and can't place the order twice; a different cart, a placed
+ * order, or an answer from the server (nothing was created) starts a new one. Without storage, a key
+ * for this page only.
+ */
+const ATTEMPT = "iv-order-attempt";
+let pageKey: { cart: string; key: string } | null = null;
+
+function newKey(): string {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function attemptKey(cart: string): string {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(ATTEMPT) ?? "null") as { cart?: unknown; key?: unknown } | null;
+    if (saved && saved.cart === cart && typeof saved.key === "string") return saved.key;
+    const key = newKey();
+    sessionStorage.setItem(ATTEMPT, JSON.stringify({ cart, key }));
+    return key;
+  } catch {
+    if (pageKey?.cart !== cart) pageKey = { cart, key: newKey() };
+    return pageKey.key;
+  }
+}
+
+function endAttempt() {
+  pageKey = null;
+  try {
+    sessionStorage.removeItem(ATTEMPT);
+  } catch {
+    // Storage unavailable: the page key above is all there was.
+  }
+}
+
 function SubmitButton() {
   const { t } = useI18n();
   const { pending } = useFormStatus();
@@ -41,9 +78,19 @@ export function CheckoutForm({
 }) {
   const { t } = useI18n();
   const o = t.cart.order;
+  // Once the order is placed this form sends nothing more: a second submission queued behind the first
+  // (React runs form actions one after another) would otherwise go out as a new attempt.
+  const placed = useRef(false);
   const [state, action] = useActionState(async (prev: FormState, formData: FormData) => {
+    if (placed.current) return prev;
+    formData.set("idempotencyKey", attemptKey(String(formData.get("items") ?? "")));
     const result = await placeOrder(prev, formData);
-    if (result.status === "success") onPlaced(result.message ?? "");
+    // An answer means the server decided: placed (done), or refused (nothing saved, the next try is new).
+    endAttempt();
+    if (result.status === "success") {
+      placed.current = true;
+      onPlaced(result.message ?? "");
+    }
     else if (result.code === "cart-changed") onCartChanged();
     return result;
   }, initial);

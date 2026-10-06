@@ -1,0 +1,12 @@
+{
+  // Only for running server code outside Next (npm run orders:notify, npm test) with tsx. Next and tsc use
+  // tsconfig.json; inside Next, "server-only" stays the real guard against importing server code into the
+  // browser. Out here there is no browser, so it resolves to Next's empty module.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "server-only": ["./node_modules/next/dist/compiled/server-only/empty.js"]
+    }
+  }
+}
