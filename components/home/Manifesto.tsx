@@ -26,12 +26,13 @@ export async function Manifesto() {
     <section aria-label={t.home.manifestoAria} className="bg-[#0b0907]" style={{ backgroundImage: GRAIN }}>
       <Divider double subtle />
       {/*
-        The logo shares a row with the slogan only, so its centre lines up with the two-line block;
-        the divider and signature sit beneath the text column and never cross the logo.
-        Optical centring: the narrow logo weighs less than the dense slogan, so the group is nudged right,
+        The logo shares a row with the slogan only, so its centre lines up with the two-line block.
+        Optical centring: the narrow logo weighs less than the dense slogan, so that group is nudged right,
         and the light signature row reads as empty space, so the group sits slightly below the midline.
+        The signature (rule and name) is outside the nudge: on the panel's exact centre, in line with the
+        diamonds on the frame above and below.
       */}
-      <div className="flex justify-center px-6 pt-16 pb-9 sm:pt-[4.5rem] sm:pb-11">
+      <div className="flex flex-col items-center px-6 pt-16 pb-9 sm:pt-[4.5rem] sm:pb-11">
         <div className="grid md:translate-x-5 lg:translate-x-8 items-center justify-items-center gap-y-6 text-center md:grid-cols-[auto_auto] md:justify-items-start md:gap-x-9 md:gap-y-0 md:text-left lg:gap-x-[2.9rem]">
           {/* The store's logo, the same file as in the header (served as-is, transparent), identical in every
               language. Decorative here: the store's name is written under the slogan. At most 160px tall, half its
@@ -44,14 +45,15 @@ export async function Manifesto() {
               {second}
             </p>
           </blockquote>
-          <div className="flex w-full flex-col items-center md:col-start-2 md:mt-3">
-            <div aria-hidden className="flex w-[55%] max-w-[22rem] items-center gap-2.5">
-              <span className="h-px flex-1 bg-gold-dark/70" />
-              <Diamond className="size-1 border border-gold-light bg-[#0b0907]" />
-              <span className="h-px flex-1 bg-gold-dark/70" />
-            </div>
-            <p className="mt-1.5 font-display-ui text-[1rem] font-semibold tracking-[0.3em] text-gold-light">{SITE_NAME}</p>
+        </div>
+        <div className="mt-6 flex w-full flex-col items-center md:mt-3">
+          <div aria-hidden className="flex w-[55%] max-w-[22rem] items-center gap-2.5">
+            <span className="h-px flex-1 bg-gold-dark/70" />
+            <Diamond className="size-1 border border-gold-light bg-[#0b0907]" />
+            <span className="h-px flex-1 bg-gold-dark/70" />
           </div>
+          {/* Letter spacing also follows the last letter; the same space before the first keeps the name centred. */}
+          <p className="mt-1.5 pl-[0.3em] font-display-ui text-[1rem] font-semibold tracking-[0.3em] text-gold-light">{SITE_NAME}</p>
         </div>
       </div>
       <Divider double subtle />
