@@ -8,6 +8,7 @@ import { ProfileDetails } from "@/components/auth/ProfileDetails";
 import { ButtonLink } from "@/components/ui/Button";
 import { Diamond } from "@/components/ui/Ornaments";
 import { isAdmin } from "@/lib/admin/auth";
+import { googleConfigured, googleMessage } from "@/lib/auth/google";
 import { requireUser } from "@/lib/auth/user";
 import { formatAmount } from "@/lib/currency";
 import { formatDate } from "@/lib/format";
@@ -35,12 +36,13 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
  * The signed-in visitor's account. Orders are only those placed from this account (Order.userId);
  * never matched by email. Administration appears for an active admin only, rendered on the server.
  */
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: PageProps<"/account">) {
   const session = await requireUser("/account");
-  const { locale, t } = await getI18n();
+  const [{ locale, t }, sp] = await Promise.all([getI18n(), searchParams]);
   const a = t.account;
   const [account, avatar, orders] = await Promise.all([
-    prisma.user.findUnique({ where: { id: session.id }, select: { createdAt: true } }),
+    // How the account signs in (only whether there is a password; the hash never leaves this line).
+    prisma.user.findUnique({ where: { id: session.id }, select: { createdAt: true, googleId: true, passwordHash: true } }),
     // Only whether there is a picture and when it changed: the image itself is served by app/account/avatar.
     prisma.avatar.findUnique({ where: { id: session.id }, select: { updatedAt: true } }),
     prisma.order.findMany({
@@ -50,6 +52,13 @@ export default async function AccountPage() {
     }),
   ]);
   const admin = isAdmin(session);
+  const googleLinked = Boolean(account?.googleId);
+  const google = {
+    available: googleConfigured(),
+    linked: googleLinked,
+    canUnlink: googleLinked && Boolean(account?.passwordHash),
+    admin: session.role === "admin",
+  };
 
   return (
     <AuthFrame title={a.title} subtitle={a.subtitle} wide>
@@ -60,6 +69,8 @@ export default async function AccountPage() {
           statusText={a.statusActive}
           memberSince={account ? formatDate(account.createdAt, locale) : null}
           avatarVersion={avatar ? avatar.updatedAt.getTime() : null}
+          google={google}
+          initialNotice={googleMessage(t, sp.google)}
         />
       </Section>
 

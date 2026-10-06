@@ -176,8 +176,11 @@ export async function updateUser(input: unknown): Promise<ActionResult> {
     const parsed = updateUserSchema(t.validation).safeParse(input);
     if (!parsed.success) return { ok: false, error: a.checkFields, fieldErrors: issuesByPath(parsed.error) };
     const { id, password, ...u } = parsed.data;
-    const current = await prisma.user.findUnique({ where: { id }, select: { role: true, status: true } });
+    const current = await prisma.user.findUnique({ where: { id }, select: { role: true, status: true, passwordHash: true } });
     if (!current) return { ok: false, error: a.userGone };
+    // Administrators sign in with a password only (never with Google), so an account created with Google
+    // gets one before it can become an administrator.
+    if (u.role === "admin" && !current.passwordHash && !password) return { ok: false, error: a.adminNeedsPassword, fieldErrors: { password: a.adminNeedsPassword } };
     const losesAdmin = current.role === "admin" && current.status === "active" && (u.role !== "admin" || u.status !== "active");
     if (losesAdmin && id === me.id) return { ok: false, error: a.ownAdmin };
     if (losesAdmin && !(await anotherAdmin(id))) return { ok: false, error: a.lastAdmin };

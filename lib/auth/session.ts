@@ -68,6 +68,36 @@ export function createSessionToken(userId: string, version: number, now = Date.n
   return `${payload}.${sign(payload, s.key)}`;
 }
 
+/**
+ * Other short-lived data the server hands to the browser and must get back unchanged (the Google sign-in
+ * transaction, lib/auth/google.ts): JSON signed with the same key under its own label ("iv-<purpose>."),
+ * so it can never pass for a session token or the other way round. Null when signing in is closed.
+ */
+export function signValue(purpose: string, data: object): string | null {
+  if (purpose === "session") throw new Error("the session label is reserved");
+  const s = secret();
+  if (!s) return null;
+  const payload = Buffer.from(JSON.stringify(data)).toString("base64url");
+  return `${payload}.${createHmac("sha256", s.key).update(`iv-${purpose}.${payload}`).digest("base64url")}`;
+}
+
+/** The data of a value signed by signValue for this purpose; null for anything else. */
+export function readSignedValue(purpose: string, token: string | undefined): unknown {
+  if (purpose === "session") throw new Error("the session label is reserved");
+  const s = secret();
+  if (!s || !token || token.length > 2048) return null;
+  const [payload, signature, extra] = token.split(".");
+  if (!payload || !signature || extra !== undefined) return null;
+  const expected = Buffer.from(createHmac("sha256", s.key).update(`iv-${purpose}.${payload}`).digest("base64url"));
+  const given = Buffer.from(signature);
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
+  try {
+    return JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+}
+
 /** The claims of a validly signed, unexpired token; null for anything else (including a token from the future). */
 export function readSessionToken(token: string | undefined, now = Date.now()): SessionClaims | null {
   const s = secret();

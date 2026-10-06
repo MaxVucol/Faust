@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { Camera, PenLine } from "lucide-react";
-import { removeAvatarAction, updateAvatarAction, updateProfileAction, type ProfileState } from "@/app/account/actions";
+import { removeAvatarAction, unlinkGoogleAction, updateAvatarAction, updateProfileAction, type ProfileState } from "@/app/account/actions";
 import { AvatarPicture } from "@/components/auth/AvatarPicture";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
@@ -18,11 +18,17 @@ type Props = {
   memberSince: string | null;
   /** When the picture last changed (ms), or null without one; part of its URL so a new one shows at once. */
   avatarVersion: number | null;
+  /** Google sign-in for this account: offered here, connected, can be disconnected (a password remains), an admin (password only). */
+  google: { available: boolean; linked: boolean; canUnlink: boolean; admin: boolean };
+  /** A message brought back from connecting Google (app/auth/google/callback). */
+  initialNotice: { tone: "ok" | "error"; text: string } | null;
 };
 
 /** The account page's existing details list (the same markup and classes as before) with profile editing and a picture. */
 const row = "grid grid-cols-[9rem_1fr] items-baseline gap-4 border-b border-iron/60 py-3 last:border-b-0 sm:grid-cols-[12rem_1fr]";
 const quiet = "min-h-10 px-1 text-left font-display-ui text-[0.66rem] underline-offset-4 transition-colors hover:underline disabled:cursor-wait disabled:opacity-60";
+/** A text action inside a details row (no minimum height of its own, so the row keeps its rhythm). */
+const inline = "py-1 text-left font-display-ui text-[0.66rem] underline-offset-4 transition-colors hover:underline disabled:cursor-wait disabled:opacity-60";
 const framed = "inline-flex min-h-11 items-center gap-2 border border-iron px-5 font-display-ui text-[0.7rem] text-parchment transition-colors hover:border-aged-gold hover:text-gold-light disabled:cursor-wait disabled:opacity-60";
 
 /** Crops the chosen image to a centred square and re-encodes it at AVATAR_SIZE (WebP, else JPEG). */
@@ -50,7 +56,7 @@ async function toAvatar(file: File): Promise<{ blob: Blob } | { error: "type" | 
   return blob ? { blob } : { error: "invalid" };
 }
 
-export function ProfileDetails({ name, email, statusText, memberSince, avatarVersion }: Props) {
+export function ProfileDetails({ name, email, statusText, memberSince, avatarVersion, google, initialNotice }: Props) {
   const { t } = useI18n();
   const a = t.account;
   const p = a.profile;
@@ -58,7 +64,7 @@ export function ProfileDetails({ name, email, statusText, memberSince, avatarVer
   const [editing, setEditing] = useState(false);
   const [state, action, saving] = useActionState<ProfileState, FormData>(updateProfileAction, {});
   const [draft, setDraft] = useState(name);
-  const [notice, setNotice] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [notice, setNotice] = useState<{ tone: "ok" | "error"; text: string } | null>(initialNotice);
   const [uploading, startUpload] = useTransition();
   const file = useRef<HTMLInputElement>(null);
   const editButton = useRef<HTMLButtonElement>(null);
@@ -76,6 +82,10 @@ export function ProfileDetails({ name, email, statusText, memberSince, avatarVer
   useEffect(() => {
     if (editing) nameInput.current?.focus();
   }, [editing]);
+  // The message stays on screen; the address loses its ?google=… so a refresh doesn't repeat it.
+  useEffect(() => {
+    if (initialNotice) router.replace("/account", { scroll: false });
+  }, [initialNotice, router]);
 
   const open = () => {
     setDraft(name);
@@ -100,6 +110,14 @@ export function ProfileDetails({ name, email, statusText, memberSince, avatarVer
       const data = new FormData();
       data.append("avatar", result.blob, result.blob.type === "image/webp" ? "avatar.webp" : "avatar.jpg");
       const r = await updateAvatarAction(data);
+      setNotice(r.ok ? { tone: "ok", text: r.message } : { tone: "error", text: r.error });
+      if (r.ok) router.refresh();
+    });
+
+  const unlink = () =>
+    startUpload(async () => {
+      setNotice(null);
+      const r = await unlinkGoogleAction();
       setNotice(r.ok ? { tone: "ok", text: r.message } : { tone: "error", text: r.error });
       if (r.ok) router.refresh();
     });
@@ -222,6 +240,32 @@ export function ProfileDetails({ name, email, statusText, memberSince, avatarVer
               <div className={row}>
                 <dt className="text-parchment-muted">{a.memberSince}</dt>
                 <dd className="tabular-nums">{memberSince}</dd>
+              </div>
+            )}
+            {(google.linked || google.available) && (
+              <div className={row}>
+                <dt className="text-parchment-muted">{p.google.label}</dt>
+                <dd className="min-w-0">
+                  {google.linked ? (
+                    <span className="flex flex-wrap items-baseline gap-x-5">
+                      <span className="text-stock-in">{p.google.connected}</span>
+                      {google.canUnlink ? (
+                        <button type="button" onClick={unlink} disabled={uploading} className={cn(inline, "text-parchment-muted hover:text-blood-text")}>
+                          {uploading ? p.google.disconnecting : p.google.disconnect}
+                        </button>
+                      ) : (
+                        <span className="text-sm text-parchment-muted">{p.google.onlyMethod}</span>
+                      )}
+                    </span>
+                  ) : google.admin ? (
+                    <span className="text-sm text-parchment-muted">{p.google.adminNote}</span>
+                  ) : (
+                    // A plain link: /auth/google is a server route that sends the browser to Google.
+                    <a href="/auth/google?intent=link" className={cn(inline, "inline-block text-gold-light hover:text-[#e0c487]")}>
+                      {p.google.connect}
+                    </a>
+                  )}
+                </dd>
               </div>
             )}
           </dl>

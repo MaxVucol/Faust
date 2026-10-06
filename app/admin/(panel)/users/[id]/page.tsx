@@ -20,7 +20,7 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
   const [me, data, { t, locale }] = await Promise.all([requireAdmin(), getUser(id), getAdminI18n()]);
   const T = t.user;
   if (!data) notFound();
-  const { user, orders, spent } = data;
+  const { user, signIn, orders, spent } = data;
   return (
     <>
       <BackLink href="/admin/users">{t.common.allUsers}</BackLink>
@@ -39,6 +39,10 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
       <div className="grid gap-6 xl:grid-cols-2">
         <Panel title={T.account} className="px-5 pb-6 sm:px-6">
           <div className="pt-5">
+            <p className="mb-5 text-sm text-parchment-muted">
+              {T.signIn}:{" "}
+              <span className="text-parchment">{[signIn.password && T.methodPassword, signIn.google && T.methodGoogle].filter(Boolean).join(" · ") || "—"}</span>
+            </p>
             <UserForm id={user.id} initial={{ name: user.name, email: user.email, role: user.role, status: user.status, password: "" }} />
           </div>
         </Panel>

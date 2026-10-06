@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthFrame } from "@/components/auth/AuthFrame";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+import { googleConfigured } from "@/lib/auth/google";
 import { safeNext } from "@/lib/auth/redirect";
 import { sessionsConfigured } from "@/lib/auth/session";
 import { getSessionUser } from "@/lib/auth/user";
@@ -20,7 +21,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   return (
     <AuthFrame title={t.auth.registerTitle} subtitle={t.auth.registerSubtitle}>
       <div className="border-t border-iron/80 px-5 py-8 sm:px-10">
-        <RegisterForm next={next} configured={sessionsConfigured()} />
+        <RegisterForm next={next} configured={sessionsConfigured()} google={!next.startsWith("/admin") && googleConfigured()} />
       </div>
     </AuthFrame>
   );

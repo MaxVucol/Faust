@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { registerAction, type AuthFormState } from "@/app/auth/actions";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
 import { Honeypot } from "@/components/ui/Honeypot";
 import { FieldError, Input, Label } from "@/components/ui/Input";
 
-/** Registration: name, email, password twice. There is no role field; every account is an ordinary user. */
-export function RegisterForm({ next, configured }: { next: string; configured: boolean }) {
+/**
+ * Registration: name, email, password twice. There is no role field; every account is an ordinary user.
+ * `google`: also offer "Continue with Google" (which creates an ordinary account too, lib/auth/google.ts).
+ */
+export function RegisterForm({ next, configured, google }: { next: string; configured: boolean; google: boolean }) {
   const { t } = useI18n();
   const a = t.auth;
   const [state, action, pending] = useActionState<AuthFormState, FormData>(registerAction, {});
@@ -63,6 +67,7 @@ export function RegisterForm({ next, configured }: { next: string; configured: b
       <Button type="submit" variant="gold" disabled={pending || !configured} className="min-h-12 w-full">
         {pending ? a.submittingRegister : a.submitRegister}
       </Button>
+      {google && <GoogleButton next={next} or={a.or} label={a.continueWithGoogle} />}
       <p className="text-center text-parchment-muted">
         {a.haveAccount}{" "}
         <Link href={next && next !== "/account" ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="text-gold-light underline-offset-4 hover:underline">

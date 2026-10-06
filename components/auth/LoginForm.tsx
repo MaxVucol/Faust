@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signInAction, type AuthFormState } from "@/app/auth/actions";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
 import { FieldError, Input, Label } from "@/components/ui/Input";
 
 /**
  * Sign-in: email and password, returning to `next` (checked on the server). `reauthEmail`: an admin
- * whose sign-in is too old for the admin panel, asked for the password again.
+ * whose sign-in is too old for the admin panel, asked for the password again. `google`: offer "Continue
+ * with Google" (never for the admin panel); `notice`: why a Google sign-in came back (app/auth/google).
  */
-export function LoginForm({ next, configured, reauthEmail }: { next: string; configured: boolean; reauthEmail: string | null }) {
+export function LoginForm({ next, configured, reauthEmail, google, notice }: { next: string; configured: boolean; reauthEmail: string | null; google: boolean; notice: string | null }) {
   const { t } = useI18n();
   const a = t.auth;
   const [state, action, pending] = useActionState<AuthFormState, FormData>(signInAction, {});
@@ -26,6 +28,11 @@ export function LoginForm({ next, configured, reauthEmail }: { next: string; con
         </p>
       )}
       {reauthEmail && !state.error && <p className="border-l-2 border-aged-gold pl-3 text-parchment">{a.reauthText}</p>}
+      {notice && configured && !state.error && (
+        <p role="alert" className="border-l-2 border-blood-text pl-3 text-blood-text">
+          {notice}
+        </p>
+      )}
       <input type="hidden" name="next" value={next} />
       <div>
         <Label htmlFor="login-email">{a.email}</Label>
@@ -63,6 +70,7 @@ export function LoginForm({ next, configured, reauthEmail }: { next: string; con
       <Button type="submit" variant="gold" disabled={pending || !configured} className="min-h-12 w-full">
         {pending ? a.submittingLogin : a.submitLogin}
       </Button>
+      {google && <GoogleButton next={next} or={a.or} label={a.continueWithGoogle} />}
       {!reauthEmail && (
         <p className="text-center text-parchment-muted">
           {a.noAccount}{" "}

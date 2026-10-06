@@ -74,8 +74,9 @@ export async function signIn(email: string, password: string, ip: string): Promi
   const allowed = await limit(signInRules(ip, email), "sign-in");
   if (allowed !== "ok") return { ok: false, reason: allowed };
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, role: true, status: true, passwordHash: true, sessionVersion: true } });
+  // An account without a password (created with Google) never signs in here; the comparison still runs.
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
-  if (!user || !valid) return { ok: false, reason: "invalid" };
+  if (!user || !user.passwordHash || !valid) return { ok: false, reason: "invalid" };
   if (user.status !== "active") return { ok: false, reason: "blocked" };
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await startSession(user.id, user.sessionVersion ?? 0);

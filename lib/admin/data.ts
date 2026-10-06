@@ -191,14 +191,17 @@ export async function listUsers(sp: SP) {
 export async function getUser(id: string) {
   await requireAdmin();
   if (!/^[a-f0-9]{24}$/.test(id)) return null;
-  const user = await prisma.user.findUnique({ where: { id }, select: userSelect });
+  const user = await prisma.user.findUnique({ where: { id }, select: { ...userSelect, googleId: true, passwordHash: true } });
   if (!user) return null;
+  // How the account signs in, as two flags: the hash and the Google id stay here.
+  const { googleId, passwordHash, ...shown } = user;
+  const signIn = { password: Boolean(passwordHash), google: Boolean(googleId) };
   const orders = await prisma.order.findMany({
     where: { email: { equals: user.email, mode: "insensitive" } },
     orderBy: { createdAt: "desc" },
     select: { id: true, number: true, createdAt: true, totalMdl: true, status: true, paymentStatus: true },
   });
-  return { user, orders, spent: orders.filter(counts).reduce((s, o) => s + o.totalMdl, 0) };
+  return { user: shown, signIn, orders, spent: orders.filter(counts).reduce((s, o) => s + o.totalMdl, 0) };
 }
 
 // ---------- Dashboard ----------

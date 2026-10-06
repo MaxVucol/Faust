@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { checkAvatar } from "@/lib/auth/avatar";
+import { unlinkGoogle } from "@/lib/auth/google";
 import { profileSchema } from "@/lib/auth/schemas";
 import { getSessionUser } from "@/lib/auth/user";
 import { getDictionary } from "@/lib/i18n/server";
@@ -69,4 +70,21 @@ export async function removeAvatarAction(): Promise<AvatarResult> {
   }
   revalidatePath("/account");
   return { ok: true, message: p.avatarRemoved };
+}
+
+/** Disconnects Google from the signed-in account, only while it can still sign in with its password. */
+export async function unlinkGoogleAction(): Promise<AvatarResult> {
+  const p = (await getDictionary()).account.profile;
+  const user = await getSessionUser();
+  if (!user) return { ok: false, error: p.errors.session };
+  try {
+    const result = await unlinkGoogle(user.id);
+    if (result === "onlyMethod") return { ok: false, error: p.google.onlyMethod };
+    if (result === "failed") return { ok: false, error: p.errors.failed };
+  } catch (error) {
+    console.error("google unlink failed", error instanceof Error ? error.message : error);
+    return { ok: false, error: p.errors.failed };
+  }
+  revalidatePath("/account");
+  return { ok: true, message: p.google.unlinked };
 }

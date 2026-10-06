@@ -103,8 +103,12 @@ model User {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
   email        String    @unique
   name         String
-  /// scrypt hash (lib/admin/password.ts); the password itself is never stored.
-  passwordHash String
+  /// scrypt hash (lib/auth/password.ts); the password itself is never stored. Missing for an account
+  /// created with Google (it has no password, so the password sign-in never accepts it).
+  passwordHash String?
+  /// The linked Google account's permanent id (OpenID Connect `sub`, lib/auth/google.ts). Missing = not linked.
+  /// One Google account belongs to one user; kept unique by the code (there is no index).
+  googleId     String?
   /// "admin" or "user".
   role         String    @default("user")
   /// "active" or "blocked".

@@ -83,3 +83,11 @@ export function signInRules(ip: string, email: string): LimitRule[] {
     { key: `login:email:${emailKey(email)}`, limit: 5, windowMs: FIFTEEN_MINUTES },
   ];
 }
+
+/**
+ * Google sign-in, counted when Google sends the visitor back (before the code is exchanged): 20 per IP
+ * per 15 minutes. The same rule covers connecting Google from the account page.
+ */
+export function googleRules(ip: string): LimitRule[] {
+  return [{ key: `google:ip:${ip}`, limit: 20, windowMs: FIFTEEN_MINUTES }];
+}
