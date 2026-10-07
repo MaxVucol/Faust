@@ -47,11 +47,11 @@ export default async function HomePage() {
 
         {first.games.length > 0 && (
           <FadeIn>
-            <section aria-labelledby={first.ranked ? "tendinte" : "alegerea-noastra"}>
+            <section aria-labelledby={first.ranked ? "tendinte" : "recomandate"}>
               {first.ranked ? (
                 <SectionHeading id="tendinte" eyebrow={h.trendingEyebrow} title={h.trending} subtitle={h.trendingSubtitle} href="/produse" linkLabel={t.common.seeAll} />
               ) : (
-                <SectionHeading id="alegerea-noastra" eyebrow={h.picksEyebrow} title={h.picks} subtitle={h.picksSubtitle} href="/produse?sort=rating" linkLabel={t.common.seeAll} />
+                <SectionHeading id="recomandate" title={h.featured} href="/produse" linkLabel={t.common.seeAll} />
               )}
               <FirstList className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
                 {first.games.map((game, i) => (
@@ -92,6 +92,13 @@ export default async function HomePage() {
 
         <OrnateDivider />
 
+        <FadeIn>
+          <section aria-labelledby="genuri">
+            <SectionHeading id="genuri" title={h.genres} />
+            <GenreTiles />
+          </section>
+        </FadeIn>
+
         {newest.length > 0 && (
           <FadeIn>
             <section aria-labelledby="noutati">
@@ -104,13 +111,6 @@ export default async function HomePage() {
             </section>
           </FadeIn>
         )}
-
-        <FadeIn>
-          <section aria-labelledby="genuri">
-            <SectionHeading id="genuri" title={h.genres} />
-            <GenreTiles />
-          </section>
-        </FadeIn>
 
         <FadeIn>
           <NewsletterPanel />
