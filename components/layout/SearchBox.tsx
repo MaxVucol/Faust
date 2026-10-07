@@ -6,7 +6,7 @@ import { ArrowRight, Search, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import type { SearchSuggestion } from "@/app/api/search/route";
 import { useI18n } from "@/components/i18n/I18nProvider";
-import { genreLabel, platformShort } from "@/lib/catalog";
+import { platformShort } from "@/lib/catalog";
 import { formatMoney } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,8 @@ type Status = "idle" | "loading" | "done" | "error";
 
 /**
  * Header search with live suggestions (an ARIA combobox). Typing two or more characters asks
- * /api/search for up to six games — by title, genre or platform. Arrow keys move through the
+ * /api/search for up to six games — by title, developer, publisher, genre or platform; each shows its
+ * developer and platforms, so a match on the studio's name is plain to see. Arrow keys move through the
  * suggestions, Enter opens the highlighted game or the full results page, Escape closes the list
  * and then the search bar. `onClose(returnFocus)`: true when closed from the keyboard, so the caller can
  * put focus back on the button that opened it; false when a result is opened (the page changes).
@@ -156,7 +157,7 @@ export function SearchBox({ onClose }: { onClose: (returnFocus: boolean) => void
                     {r.title}
                   </span>
                   <span className="block truncate text-sm text-parchment-muted">
-                    {r.genres.map((g) => genreLabel(t.genres, g)).join(" · ")}
+                    {r.developer}
                     <span aria-hidden className="px-2">
                       |
                     </span>

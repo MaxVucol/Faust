@@ -1,12 +1,14 @@
 import type { NextRequest } from "next/server";
 import { effectivePrice, isOnSale } from "@/lib/format";
 import { suggestGames } from "@/lib/games";
+import { bestOffer, gameOffers } from "@/lib/offers";
 
 export type SearchSuggestion = {
   slug: string;
   title: string;
+  /** Shown under the title: the search also matches developers, so a result says whose game it is. */
+  developer: string;
   coverImage: string;
-  genres: string[];
   platforms: string[];
   /** Prices in MDL; the client formats them in the visitor's currency. */
   price: number;
@@ -18,14 +20,18 @@ export async function GET(request: NextRequest) {
   const q = (request.nextUrl.searchParams.get("q") ?? "").slice(0, 80);
   const now = new Date();
   const games = await suggestGames(q);
-  const results: SearchSuggestion[] = games.map((g) => ({
-    slug: g.slug,
-    title: g.title,
-    coverImage: g.coverImage,
-    genres: g.genres,
-    platforms: g.platforms,
-    price: effectivePrice(g, now),
-    oldPrice: isOnSale(g, now) ? g.price : null,
-  }));
+  const results: SearchSuggestion[] = games.map((g) => {
+    // The same version a card shows (its cheapest right now), so the price matches the catalogue's.
+    const best = bestOffer(gameOffers(g), now) ?? g;
+    return {
+      slug: g.slug,
+      title: g.title,
+      developer: g.developer,
+      coverImage: g.coverImage,
+      platforms: g.platforms,
+      price: effectivePrice(best, now),
+      oldPrice: isOnSale(best, now) ? best.price : null,
+    };
+  });
   return Response.json({ results }, { headers: { "Cache-Control": "public, max-age=60" } });
 }

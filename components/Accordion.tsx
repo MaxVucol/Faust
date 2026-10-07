@@ -20,7 +20,7 @@ export function Accordion({ items }: { items: { question: string; answer: string
                 aria-expanded={expanded}
                 aria-controls={`${id}-a-${i}`}
                 onClick={() => setOpen(expanded ? null : i)}
-                className="flex w-full items-center justify-between gap-6 py-5 text-left font-display text-sm font-semibold tracking-[0.12em] uppercase transition-colors duration-300 hover:text-aged-gold"
+                className="flex min-h-11 w-full items-center justify-between gap-6 py-5 text-left font-display text-lg leading-snug font-semibold tracking-[0.02em] transition-colors duration-300 hover:text-aged-gold sm:text-xl"
               >
                 {item.question}
                 <span aria-hidden className="font-display text-xl text-aged-gold">

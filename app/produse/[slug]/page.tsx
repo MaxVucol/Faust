@@ -114,8 +114,10 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
         />
         <div aria-hidden className="absolute inset-0 -z-10 bg-black/75" />
         {/* Phones: title, then the cover beside rating and availability, then the purchase card, so the
-            price and button sit near the top. From md: cover on the left, everything else beside it. */}
-        <div className="mx-auto grid max-w-page grid-cols-[8rem_1fr] items-start gap-x-5 gap-y-6 px-4 py-8 sm:grid-cols-[10rem_1fr] sm:px-6 sm:py-10 md:grid-cols-[260px_1fr] md:gap-x-10 lg:px-8 lg:py-14">
+            price and button sit near the top. From md: cover on the left, everything else beside it. From
+            lg: three columns, the purchase card on the right the full height of the cover (the page's main
+            object), the game's identity and its facts between them. */}
+        <div className="mx-auto grid max-w-page grid-cols-[8rem_1fr] items-start gap-x-5 gap-y-6 px-4 py-8 sm:grid-cols-[10rem_1fr] sm:px-6 sm:py-10 md:grid-cols-[260px_1fr] md:gap-x-10 lg:grid-cols-[260px_minmax(0,1fr)_minmax(22rem,26rem)] lg:grid-rows-[auto_auto_1fr] lg:px-8 lg:py-14">
           <header className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-1">
             <Breadcrumbs
               label={t.common.breadcrumbs}
@@ -148,7 +150,21 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
               <dd className={inStock ? "text-xl text-stock-in" : "text-xl text-stock-out"}>{inStock ? g.inStock : g.outOfStock}</dd>
             </div>
           </dl>
-          <div className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-3 md:max-w-xl">
+          {/* From lg, under the rating: who made it, when, and for what (the same facts as the Details tab). */}
+          <dl className="hidden self-start border-t border-iron/70 pt-5 text-sm lg:col-start-2 lg:row-start-3 lg:grid lg:grid-cols-2 lg:gap-x-8 lg:gap-y-4">
+            {[
+              [g.developer, game.developer],
+              [g.publisher, game.publisher],
+              [g.releaseDate, formatDate(game.releaseDate, locale)],
+              [g.platforms, [...new Set(offers.map((o) => o.platform))].join(", ")],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="font-display-ui text-[0.65rem] text-parchment-muted">{label}</dt>
+                <dd className="mt-1 text-base text-parchment">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-3 md:max-w-xl lg:col-start-3 lg:row-span-3 lg:row-start-1 lg:max-w-none">
             <PurchasePanel game={{ slug: game.slug, title: game.title, coverImage: game.coverImage }} offers={panelOffers} />
           </div>
         </div>

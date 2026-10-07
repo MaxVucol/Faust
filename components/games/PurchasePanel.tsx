@@ -69,7 +69,9 @@ export function PurchasePanel({ game, offers: rendered }: PurchasePanelProps) {
         {currency !== "MDL" && <p className="mt-1 text-sm text-parchment-muted">{g.currencyNote}</p>}
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      {/* Side by side while the card is wide; in the product page's right column (lg) one above the other,
+          "Add to cart" first, so neither label wraps. */}
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
         <AddToCartButton size="md" className="w-full" inStock={offer.inStock} item={cartItemFor(game, offer)} />
         {offer.inStock && <AddToCartButton size="md" variant="outline" buyNow className="w-full" inStock item={cartItemFor(game, offer)} />}
       </div>

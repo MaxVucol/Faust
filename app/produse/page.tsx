@@ -57,11 +57,12 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produse
           {games.length > 0 ? (
             <GameGrid games={games} pages={pages} query={catalogQuery(sp)} />
           ) : (
+            // Says what was asked for: a search names its words (and how else to search), filters just say so.
             <div className="border border-iron bg-surface px-6 py-16 text-center">
-              <p className="font-display text-xl text-parchment">{noOffers ? c.noOffersTitle : c.emptyTitle}</p>
-              <p className="mt-2 text-parchment-muted">{noOffers ? c.noOffersText : c.emptyText}</p>
+              <p className="font-display text-xl text-balance text-parchment">{noOffers ? c.noOffersTitle : filters.q ? c.emptySearchTitle(filters.q) : c.emptyTitle}</p>
+              <p className="mx-auto mt-2 max-w-md text-parchment-muted">{noOffers ? c.noOffersText : filters.q ? c.emptySearchText : c.emptyText}</p>
               <ButtonLink href={clearFiltersHref(sp)} variant="ghost" className="mt-6">
-                {c.clearFilters}
+                {filters.q ? c.allGames : c.clearFilters}
               </ButtonLink>
             </div>
           )}

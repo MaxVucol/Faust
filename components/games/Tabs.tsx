@@ -16,11 +16,12 @@ export function Tabs({ tabs, label }: { tabs: { label: string; content: ReactNod
 
   return (
     <div>
-      {/* Still scrolls sideways on narrow screens, but never shows the native scrollbar or its arrows. */}
+      {/* Phones: the tabs share the width in equal columns and a long label wraps, so none is cut off at
+          the edge. From sm: one row, still scrolling sideways if ever needed, without a native scrollbar. */}
       <div
         role="tablist"
         aria-label={label}
-        className="flex gap-10 overflow-x-auto overflow-y-hidden border-b border-iron [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="grid auto-cols-fr grid-flow-col border-b border-iron sm:flex sm:gap-10 sm:overflow-x-auto sm:overflow-y-hidden sm:[scrollbar-width:none] sm:[&::-webkit-scrollbar]:hidden"
       >
         {tabs.map((tab, i) => (
           <button
@@ -40,7 +41,7 @@ export function Tabs({ tabs, label }: { tabs: { label: string; content: ReactNod
               if (e.key === "ArrowLeft") focus(i - 1);
             }}
             className={cn(
-              "-mb-px border-b py-4 font-display-ui text-sm whitespace-nowrap transition-colors duration-300 sm:text-[0.95rem]",
+              "-mb-px min-h-11 border-b px-1 py-3 text-center font-display-ui text-[0.7rem] leading-snug transition-colors duration-300 sm:px-0 sm:py-4 sm:text-left sm:text-[0.95rem] sm:whitespace-nowrap",
               i === active ? "border-aged-gold text-aged-gold" : "border-transparent text-parchment-muted hover:text-parchment",
             )}
           >
