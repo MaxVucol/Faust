@@ -18,6 +18,7 @@ export type GameCardData = Pick<
   | "rating"
   | "releaseDate"
   | "stock"
+  | "developer"
 >;
 
 /**

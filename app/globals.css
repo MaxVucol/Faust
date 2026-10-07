@@ -49,6 +49,19 @@
   --font-editorial: var(--font-cormorant), Georgia, serif;
 
   --animate-slow-pulse: slow-pulse 2.4s ease-in-out infinite;
+  --animate-heart-pop: heart-pop 0.32s ease-out;
+
+  @keyframes heart-pop {
+    0% {
+      scale: 1;
+    }
+    45% {
+      scale: 1.28;
+    }
+    100% {
+      scale: 1;
+    }
+  }
 
   /* Page entrances (app/template.tsx): a short glide with a soft fade (transform + opacity only, so images stay crisp). */
   --animate-page-from-right: page-from-right 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;

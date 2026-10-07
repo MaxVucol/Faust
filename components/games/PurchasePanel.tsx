@@ -1,12 +1,14 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Globe } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { cartItemFor, type PanelOffer } from "@/lib/purchase";
+import { cn } from "@/lib/utils";
 import { AddToCartButton } from "./AddToCartButton";
 import { PlatformPicker } from "./PlatformPicker";
 import { PriceBlock } from "./PriceBlock";
+import { useLiveOffers } from "./SaleSwitch";
 
 export type { PanelOffer };
 
@@ -16,38 +18,44 @@ type PurchasePanelProps = {
 };
 
 /**
- * Purchase card: pick the version (platform), see exactly what it is — edition, activation and region
- * when the catalogue has them, and how it is delivered — then its price and the button. Details the
- * data doesn't have are left out rather than guessed.
+ * Purchase card: pick the version (platform); its activation region, plainly (or, when the catalogue
+ * doesn't know it, saying so); its price; "Add to cart" and "Buy now" (the same cart line, then the cart);
+ * then what to know before buying: a digital key, how it is delivered, how it is activated (or that this
+ * isn't known), the edition. Nothing the data doesn't have is guessed.
  */
-export function PurchasePanel({ game, offers }: PurchasePanelProps) {
+export function PurchasePanel({ game, offers: rendered }: PurchasePanelProps) {
   const { t, currency } = useI18n();
+  const offers = useLiveOffers(rendered);
   const g = t.game;
   const [index, setIndex] = useState(() => Math.max(0, offers.findIndex((o) => o.inStock)));
   const offer = offers[index];
   if (!offer) return null;
 
-  const details: [string, string][] = [
-    ...(offer.edition ? [[g.edition, offer.edition] as [string, string]] : []),
-    ...(offer.activation ? [[g.activation, offer.activation] as [string, string]] : []),
-    ...(offer.region ? [[g.region, offer.region] as [string, string]] : []),
-    [g.delivery, g.deliveryValue],
+  const facts: { label: string; value?: string; known: boolean }[] = [
+    { label: g.goodDigital, known: true },
+    { label: g.goodDelivery, value: g.deliveryValue, known: true },
+    offer.activation ? { label: g.activation, value: offer.activation, known: true } : { label: g.activationUnknown, known: false },
+    ...(offer.edition ? [{ label: g.edition, value: offer.edition, known: true }] : []),
   ];
 
   return (
     <div id="cumpara" className="scroll-mt-28 border border-gold-dark/60 bg-[#0a0907]/80 p-5 sm:p-6">
       <PlatformPicker offers={offers} index={index} onChange={setIndex} />
 
-      <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 border-t border-iron pt-5 text-base">
-        {details.map(([k, v]) => (
-          <div key={k} className="contents">
-            <dt className="text-parchment-muted">{k}</dt>
-            <dd>{v}</dd>
-          </div>
-        ))}
-      </dl>
+      {/* The region, where the decision is made. */}
+      <p className={cn("mt-5 flex items-center gap-2.5 border-t border-iron pt-4 text-base", offer.region ? "text-parchment" : "text-parchment-muted")}>
+        <Globe aria-hidden strokeWidth={1.6} className="size-[1.1rem] shrink-0 text-gold-light" />
+        {offer.region ? (
+          <span>
+            <span className="font-display-ui text-[0.68rem] text-parchment-muted">{g.region}: </span>
+            <span className="font-display tracking-[0.08em] uppercase">{offer.region}</span>
+          </span>
+        ) : (
+          g.regionUnknown
+        )}
+      </p>
 
-      <div className="mt-5 border-t border-iron pt-5" aria-live="polite">
+      <div className="mt-4 border-t border-iron pt-5" aria-live="polite">
         <PriceBlock
           price={offer.price}
           oldPrice={offer.oldPrice}
@@ -61,22 +69,24 @@ export function PurchasePanel({ game, offers }: PurchasePanelProps) {
         {currency !== "MDL" && <p className="mt-1 text-sm text-parchment-muted">{g.currencyNote}</p>}
       </div>
 
-      <AddToCartButton
-        size="md"
-        className="mt-5 w-full"
-        inStock={offer.inStock}
-        item={cartItemFor(game, offer)}
-      />
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <AddToCartButton size="md" className="w-full" inStock={offer.inStock} item={cartItemFor(game, offer)} />
+        {offer.inStock && <AddToCartButton size="md" variant="outline" buyNow className="w-full" inStock item={cartItemFor(game, offer)} />}
+      </div>
 
-      <ul className="mt-5 space-y-1.5 text-sm text-parchment-muted">
-        {g.purchaseFacts.map((fact) => (
-          <li key={fact} className="flex gap-2">
-            <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-aged-gold" />
-            {fact}
+      <h3 className="mt-6 font-display-ui text-[0.66rem] text-gold-light">{g.goodToKnow}</h3>
+      <ul className="mt-2.5 space-y-1.5 text-sm">
+        {facts.map((f) => (
+          <li key={f.label} className={cn("flex gap-2", f.known ? "text-parchment" : "text-parchment-muted")}>
+            <Check aria-hidden className={cn("mt-0.5 size-4 shrink-0", f.known ? "text-aged-gold" : "text-iron")} />
+            <span>
+              {f.label}
+              {f.value && <span className="text-parchment-muted">: {f.value}</span>}
+            </span>
           </li>
         ))}
       </ul>
-      <p className="mt-3 border-t border-iron pt-3 text-sm text-parchment-muted">{g.paymentNote}</p>
+      <p className="mt-4 border-t border-iron pt-3 text-sm text-parchment-muted">{g.paymentNote}</p>
     </div>
   );
 }

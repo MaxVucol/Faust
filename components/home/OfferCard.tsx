@@ -6,9 +6,11 @@ import { GameImage } from "@/components/games/GameImage";
 import { GamePrice } from "@/components/games/Price";
 import { genreLabel } from "@/lib/catalog";
 import { getI18n } from "@/lib/i18n/server";
-import { formatDate } from "@/lib/format";
+import { formatSaleEnd } from "@/lib/format";
 import { biggestSale, gameOffers } from "@/lib/offers";
 import { QuickAdd } from "@/components/games/QuickAdd";
+import { SaleCountdown } from "@/components/games/SaleCountdown";
+import { SaleSwitch } from "@/components/games/SaleSwitch";
 import { purchaseOptions } from "@/lib/purchase";
 import type { GameCardData } from "@/types";
 import { CAROUSEL_CARD_SIZES, CardArrow, MetaList } from "./CardParts";
@@ -34,7 +36,12 @@ export async function OfferCard({ game }: { game: GameCardData }) {
             <GamePrice game={game} className="text-lg" />
             <CardArrow />
           </div>
-          {sale?.discountEndsAt && <p className="mt-1 text-sm text-parchment-muted">{t.game.expires(formatDate(sale.discountEndsAt, locale))}</p>}
+          {sale?.discountEndsAt && (
+            // Gone at the end itself, with the badge and the old price (the countdown ticks in 15 s steps).
+            <SaleSwitch until={sale.discountEndsAt.toISOString()} after={null}>
+              <SaleCountdown endsAt={sale.discountEndsAt.toISOString()} fallback={t.game.expires(formatSaleEnd(sale.discountEndsAt, locale))} className="mt-1 text-sm text-parchment-muted" />
+            </SaleSwitch>
+          )}
         </div>
       </Link>
       {/* Outside the link: adding to the cart never opens the game page. */}

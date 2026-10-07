@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, ShoppingCart, X } from "lucide-react";
+import { Check, Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { getCartPrices } from "@/app/actions";
 import { CheckoutForm } from "@/components/CheckoutForm";
@@ -148,7 +148,7 @@ export function CartView() {
   if (items.length === 0) {
     return (
       <LedgerMessage
-        title={c.empty}
+        title={c.emptyTitle}
         text={c.emptyText}
         action={
           <ButtonLink href="/produse" variant="gold">
@@ -265,6 +265,15 @@ export function CartView() {
           </div>
         </dl>
         {currency !== "MDL" && <p className="mt-2 text-sm text-parchment-muted">{t.game.currencyNote}</p>}
+        {/* How buying here actually works, before the order is sent (the same facts as on the home page). */}
+        <ul className="mt-5 space-y-1.5 border-t border-iron/70 pt-4 text-sm text-parchment">
+          {t.home.why.slice(0, 3).map((fact) => (
+            <li key={fact.title} className="flex gap-2">
+              <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-aged-gold" />
+              {fact.title}
+            </li>
+          ))}
+        </ul>
         {updated && (
           <p role="status" className="mt-2 text-sm text-parchment-muted">
             {c.pricesUpdated}

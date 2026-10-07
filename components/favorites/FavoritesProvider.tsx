@@ -1,12 +1,17 @@
 "use client";
 
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { favoritesStore } from "@/lib/favorites-store";
 
 // The server's reading of the cookie, used while hydrating so stars render the same on both sides.
 const InitialFavorites = createContext<string[]>([]);
 
-export function FavoritesProvider({ initial, children }: { initial: string[]; children: ReactNode }) {
+/** `initial`: the list the server rendered; `account`: the signed-in user's list (the same), or null for a guest. */
+export function FavoritesProvider({ initial, account, children }: { initial: string[]; account: string[] | null; children: ReactNode }) {
+  const accountKey = account === null ? null : account.join(".");
+  useEffect(() => {
+    favoritesStore.connect(accountKey === null ? null : accountKey ? accountKey.split(".") : []);
+  }, [accountKey]);
   return <InitialFavorites.Provider value={initial}>{children}</InitialFavorites.Provider>;
 }
 

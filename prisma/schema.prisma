@@ -175,3 +175,11 @@ model Avatar {
   type      String
   updatedAt DateTime @updatedAt
 }
+
+/// A signed-in user's wishlist (lib/favorites-server.ts): the game slugs, newest first. The id is the
+/// user's id, so each account has at most one; guests keep theirs in the "favorites" cookie only.
+model Wishlist {
+  id        String   @id @map("_id") @db.ObjectId
+  slugs     String[]
+  updatedAt DateTime @updatedAt
+}

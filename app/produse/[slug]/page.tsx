@@ -7,6 +7,7 @@ import { Gallery } from "@/components/games/Gallery";
 import { Carousel } from "@/components/games/Carousel";
 import { GameCard, SIMILAR_CARD_SIZES } from "@/components/games/GameCard";
 import { PurchasePanel } from "@/components/games/PurchasePanel";
+import { StickyPurchaseBar } from "@/components/games/StickyPurchaseBar";
 import { SystemRequirements } from "@/components/games/SystemRequirements";
 import { Tabs } from "@/components/games/Tabs";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
@@ -216,6 +217,7 @@ export default async function GamePage({ params }: PageProps<"/produse/[slug]">)
           </section>
         )}
       </div>
+      <StickyPurchaseBar game={{ slug: game.slug, title: game.title, coverImage: game.coverImage }} offers={panelOffers} />
     </article>
   );
 }

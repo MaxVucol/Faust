@@ -5,6 +5,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "./password";
 import { consume, RateLimitUnavailable, registerRules, signInRules, type LimitRule } from "./rate-limit";
+import { FAVORITES_COOKIE, MAX_FAVORITES, parseFavorites } from "../favorites";
 import { createSessionToken, LEGACY_SESSION_COOKIE, readSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from "./session";
 
 /**
@@ -108,9 +109,28 @@ export async function registerUser(input: { name: string; email: string; passwor
   return { ok: true };
 }
 
+/**
+ * A guest's wishlist (the cookie) joins the account's on signing in: newest first, only games in the
+ * catalogue, at most MAX_FAVORITES. A failure only leaves the lists as they were; signing in goes on.
+ */
+async function mergeWishlist(userId: string, cookieValue: string | undefined): Promise<void> {
+  const local = parseFavorites(cookieValue);
+  if (local.length === 0) return;
+  try {
+    const saved = await prisma.wishlist.findUnique({ where: { id: userId }, select: { slugs: true } });
+    const wanted = [...new Set([...local, ...(saved?.slugs ?? [])])];
+    const known = new Set((await prisma.game.findMany({ where: { slug: { in: wanted } }, select: { slug: true } })).map((g) => g.slug));
+    const slugs = wanted.filter((s) => known.has(s)).slice(0, MAX_FAVORITES);
+    await prisma.wishlist.upsert({ where: { id: userId }, create: { id: userId, slugs }, update: { slugs } });
+  } catch (error) {
+    console.error("[wishlist] merge on sign-in failed", error instanceof Error ? error.message : "unknown error");
+  }
+}
+
 /** Issues a fresh session cookie (a new token every time, so a session is never carried over). */
 export async function startSession(userId: string, version: number): Promise<void> {
   const jar = await cookies();
+  await mergeWishlist(userId, jar.get(FAVORITES_COOKIE)?.value);
   jar.set(SESSION_COOKIE, createSessionToken(userId, version), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -121,11 +141,12 @@ export async function startSession(userId: string, version: number): Promise<voi
   jar.delete(LEGACY_SESSION_COOKIE);
 }
 
-/** Signs out this browser. */
+/** Signs out this browser. The wishlist stays in the account and leaves this browser with the session. */
 export async function endSession(): Promise<void> {
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);
   jar.delete(LEGACY_SESSION_COOKIE);
+  jar.delete(FAVORITES_COOKIE);
 }
 
 /**

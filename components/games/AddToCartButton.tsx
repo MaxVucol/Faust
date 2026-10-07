@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/Button";
@@ -16,11 +17,14 @@ type AddToCartButtonProps = {
   variant?: "primary" | "outline";
   /** Runs after the item is in the cart (e.g. to close the platform dialog). */
   onAdded?: () => void;
+  /** "Buy now": the same line goes into the cart, then the cart opens (it prices the order from the catalogue). */
+  buyNow?: boolean;
 };
 
-export function AddToCartButton({ item, inStock, label, size = "sm", className, variant = "primary", onAdded }: AddToCartButtonProps) {
+export function AddToCartButton({ item, inStock, label, size = "sm", className, variant = "primary", onAdded, buyNow = false }: AddToCartButtonProps) {
   const { t } = useI18n();
   const { add } = useCart();
+  const router = useRouter();
   const [added, setAdded] = useState(false);
 
   if (!inStock) {
@@ -39,9 +43,10 @@ export function AddToCartButton({ item, inStock, label, size = "sm", className, 
         add(item);
         setAdded(true);
         onAdded?.();
+        if (buyNow) router.push("/cos");
       }}
     >
-      <span aria-live="polite">{added ? t.game.addedToCart : (label ?? t.game.addToCart)}</span>
+      <span aria-live="polite">{added && !buyNow ? t.game.addedToCart : (label ?? (buyNow ? t.game.buyNow : t.game.addToCart))}</span>
     </Button>
   );
 }

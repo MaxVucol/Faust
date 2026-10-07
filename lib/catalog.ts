@@ -33,7 +33,7 @@ export function platformShort(name: string): string {
 /** "Released" filter choices: within the last N years. */
 export const RELEASED_OPTIONS = [1, 3] as const;
 
-export const SORT_OPTIONS = ["popular", "rating", "newest", "price-asc", "price-desc", "discount"] as const;
+export const SORT_OPTIONS = ["popular", "rating", "newest", "price-asc", "price-desc", "discount", "name"] as const;
 
 export type SortValue = (typeof SORT_OPTIONS)[number];
 

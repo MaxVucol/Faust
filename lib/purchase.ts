@@ -1,4 +1,4 @@
-import { discountPercent, effectivePrice, formatDate, isOnSale } from "./format";
+import { discountPercent, effectivePrice, formatSaleEnd, isOnSale } from "./format";
 import type { Locale } from "./i18n/config";
 import { gameOffers, type Offer } from "./offers";
 import type { GameVariant } from "@prisma/client";
@@ -17,6 +17,8 @@ export type PanelOffer = {
   percent: number;
   /** Pre-formatted end date of the running sale (only when a locale is given). */
   saleEnds: string | null;
+  /** When the running sale ends (ISO), so the page can drop it at that moment (useLiveOffers). */
+  saleEndsAt: string | null;
 };
 
 type Purchasable = Parameters<typeof gameOffers>[0] & { variants: GameVariant[] };
@@ -37,7 +39,8 @@ export function purchaseOptions(game: Purchasable, locale?: Locale, now: Date = 
       price: effectivePrice(o, now),
       oldPrice: sale ? o.price : null,
       percent: sale ? discountPercent(o) : 0,
-      saleEnds: sale && o.discountEndsAt && locale ? formatDate(o.discountEndsAt, locale) : null,
+      saleEnds: sale && o.discountEndsAt && locale ? formatSaleEnd(o.discountEndsAt, locale) : null,
+      saleEndsAt: sale && o.discountEndsAt ? o.discountEndsAt.toISOString() : null,
     };
   });
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FavoritesGrid } from "@/components/favorites/FavoritesGrid";
 import { GameCard } from "@/components/games/GameCard";
+import { Heart } from "lucide-react";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { ButtonLink } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
@@ -31,10 +32,13 @@ export default async function FavoritesPage() {
       <FavoritesGrid
         items={games.map((game, i) => ({ slug: game.slug, card: <GameCard game={game} priority={i < 3} /> }))}
         empty={
-          <div className="border border-iron bg-surface px-6 py-16 text-center">
-            <p className="font-display text-xl text-parchment">{f.emptyTitle}</p>
+          <div className="flex flex-col items-center border border-iron bg-[#0d0b09] px-6 py-16 text-center">
+            <span aria-hidden className="flex size-16 items-center justify-center border border-gold-dark/70 bg-[#100d0a]">
+              <Heart className="size-7 text-gold-light" strokeWidth={1.5} />
+            </span>
+            <p className="mt-6 font-display text-xl tracking-[0.12em] text-parchment uppercase">{f.emptyTitle}</p>
             <p className="mt-2 text-parchment-muted">{f.emptyText}</p>
-            <ButtonLink href="/produse" className="mt-6">
+            <ButtonLink href="/produse" variant="gold" className="mt-8">
               {f.browse}
             </ButtonLink>
           </div>

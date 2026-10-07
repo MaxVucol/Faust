@@ -7,7 +7,7 @@ import { HideOnAdmin } from "@/components/layout/HideOnAdmin";
 import { Navbar } from "@/components/layout/Navbar";
 import { SITE_NAME } from "@/lib/catalog";
 import { getSessionUser } from "@/lib/auth/user";
-import { getFavorites } from "@/lib/favorites-server";
+import { getAccountFavorites, getFavorites } from "@/lib/favorites-server";
 import { INTL_LOCALES, OG_LOCALES } from "@/lib/i18n/config";
 import { getCurrency, getI18n } from "@/lib/i18n/server";
 import { SITE_URL } from "@/lib/site";
@@ -50,7 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = { themeColor: "#0E0D0B", colorScheme: "dark" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [{ locale, t }, currency, favorites, user] = await Promise.all([getI18n(), getCurrency(), getFavorites(), getSessionUser().catch(() => null)]);
+  const [{ locale, t }, currency, favorites, accountFavorites, user] = await Promise.all([getI18n(), getCurrency(), getFavorites(), getAccountFavorites(), getSessionUser().catch(() => null)]);
   // Only what the header needs; no database read without a valid session cookie, and a failed read only
   // shows the guest menu instead of breaking the page.
   const account = user && user.status === "active" ? { name: user.name, admin: user.role === "admin" } : null;
@@ -59,7 +59,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang={INTL_LOCALES[locale]} className={fonts}>
       <body className="flex min-h-screen flex-col">
         <I18nProvider locale={locale} currency={currency}>
-          <FavoritesProvider initial={favorites}>
+          <FavoritesProvider initial={favorites} account={accountFavorites}>
             <a
               href="#continut"
               className="sr-only z-50 bg-blood px-4 py-2 font-display-ui text-xs focus:not-sr-only focus:fixed focus:top-2 focus:left-2"

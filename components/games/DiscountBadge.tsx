@@ -2,6 +2,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import { gameOffers, maxDiscountPercent } from "@/lib/offers";
 import { cn } from "@/lib/utils";
 import type { GameCardData } from "@/types";
+import { untilSalesEnd } from "./UntilSalesEnd";
 
 /**
  * Sale pennant for the top-left corner of a cover (the top-right belongs to the favourite star): a plain
@@ -14,10 +15,15 @@ import type { GameCardData } from "@/types";
  * the card it sits on (Card is a size container): below 320px the badge keeps the phone size, below 240px
  * it steps down to 16px with tighter padding. Narrow home cards (197-306px wide at 1024-1440) would
  * otherwise carry a desktop-size badge over a third of their artwork. Outside a card nothing changes.
- * Renders nothing when no version of the game is on sale right now.
+ * Renders nothing when no version of the game is on sale right now, and leaves by itself when the sale
+ * ends while the page is open (untilSalesEnd).
  */
-export async function DiscountBadge({ game, inline = false }: { game: GameCardData; /** Inside a positioned stack instead of the cover corner. */ inline?: boolean }) {
-  const percent = maxDiscountPercent(gameOffers(game));
+export function DiscountBadge({ game, inline = false }: { game: GameCardData; /** Inside a positioned stack instead of the cover corner. */ inline?: boolean }) {
+  const offers = gameOffers(game);
+  return untilSalesEnd(offers, new Date(), (now) => <Pennant percent={maxDiscountPercent(offers, now)} inline={inline} />);
+}
+
+async function Pennant({ percent, inline }: { percent: number; inline: boolean }) {
   if (percent <= 0) return null;
   const t = await getDictionary();
   return (

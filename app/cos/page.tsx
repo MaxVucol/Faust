@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CartSuggestions } from "@/components/CartSuggestions";
 import { CartView } from "@/components/CartView";
 import { Corners, OrnateDivider } from "@/components/ui/Ornaments";
 import { getDictionary } from "@/lib/i18n/server";
@@ -27,6 +28,7 @@ export default async function CartPage() {
           <CartView />
         </div>
       </div>
+      <CartSuggestions />
     </div>
   );
 }

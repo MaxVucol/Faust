@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { Star } from "lucide-react";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { genreLabel, platformShort } from "@/lib/catalog";
+import { platformShort } from "@/lib/catalog";
 import { formatRating, isNewRelease } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
 import { gameOffers } from "@/lib/offers";
@@ -26,9 +27,10 @@ export const SIMILAR_CARD_SIZES = "(min-width: 1024px) 20vw, (min-width: 640px) 
 const DEFAULT_CARD_SIZES = "(min-width: 1536px) 340px, (min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw";
 
 /**
- * Catalogue card: cover (discount top-left, favourite star top-right), title, genres, rating and
- * stock, platforms, price, then "Add to cart" (QuickAdd): a game sold on one platform goes straight to
- * the cart; with several, the purchase dialog asks which one, so nothing ambiguous is bought.
+ * Catalogue card: cover (rank and discount top-left, wishlist heart top-right), title, developer, rating
+ * and stock, platforms, price, then "Add to cart" (QuickAdd): a game sold on one platform goes straight to
+ * the cart; with several, the purchase dialog asks which one, so nothing ambiguous is bought. `rank`: its
+ * place in a ranked list ("Trending now"). The cover eases in by 2% on hover (not with reduced motion).
  *
  * `compact`: below the sm breakpoint (two cards per row) the card keeps only the cover, favourite,
  * discount, title and price (plus "out of stock" when it applies); the whole card leads to the game.
@@ -38,11 +40,13 @@ export async function GameCard({
   priority,
   compact = false,
   sizes = DEFAULT_CARD_SIZES,
+  rank,
 }: {
   game: GameCardData;
   priority?: boolean;
   compact?: boolean;
   sizes?: string;
+  rank?: number;
 }) {
   const t = await getDictionary();
   const offers = gameOffers(game);
@@ -56,7 +60,13 @@ export async function GameCard({
         {/* No prefetch: cards come into view by the dozen while scrolling the catalogue or swiping the
             similar games, and prefetching each game page costs a request mid-scroll. A tap still navigates. */}
         <Link prefetch={false} href={href} className="relative block aspect-[3/4] overflow-hidden">
-          <GameImage src={game.coverImage} alt={t.game.coverAlt(game.title)} sizes={sizes} priority={priority} />
+          <GameImage
+            src={game.coverImage}
+            alt={t.game.coverAlt(game.title)}
+            sizes={sizes}
+            priority={priority}
+            className="transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          />
         </Link>
         {/* Below md the cover is 170-350px wide and official covers put the title at the top, so the star
             shrinks (28px disc, 18px star) into the very corner, 2px in. Unlike on the game page the 44px hit
@@ -68,6 +78,12 @@ export async function GameCard({
           className="max-md:top-0 max-md:right-0 max-md:items-start max-md:justify-end max-md:p-0.5 max-md:before:size-7 max-md:[&>svg]:mt-[5px] max-md:[&>svg]:mr-[5px] max-md:[&>svg]:size-[18px]"
         />
         <div className="pointer-events-none absolute top-3 left-3 flex flex-col items-start gap-1.5">
+          {rank !== undefined && (
+            <span className="border border-gold-light bg-[#0a0907]/90 px-2 py-0.5 font-display text-base leading-6 font-semibold text-gold-light tabular-nums">
+              <span className="sr-only">{t.home.rank(rank)}</span>
+              <span aria-hidden>#{rank}</span>
+            </span>
+          )}
           <DiscountBadge game={game} inline />
           {isNewRelease(game) && <Badge variant="gold">{t.game.newBadge}</Badge>}
         </div>
@@ -78,16 +94,18 @@ export async function GameCard({
             {game.title}
           </Link>
         </h3>
-        <p className={cn("mt-1 text-sm text-parchment-muted", wide.block)}>{game.genres.map((g) => genreLabel(t.genres, g)).join(" / ")}</p>
+        <p className={cn("mt-1 truncate text-sm text-parchment-muted", wide.block)}>{t.game.by(game.developer)}</p>
         {compact && !inStock && <p className="mt-1 text-sm text-blood-text sm:hidden">{t.game.outOfStock}</p>}
         <div className={cn("mt-3 items-center justify-between gap-3 text-sm", wide.flex)}>
           {game.rating !== null && (
-            <span className="text-parchment-muted">
+            <span className="flex items-center gap-1.5 text-parchment">
+              <Star aria-hidden className="size-3.5 fill-gold-light text-gold-light" />
               <span className="sr-only">{t.game.ratingPrefix}</span>
               {formatRating(game.rating)}
             </span>
           )}
-          {inStock ? <span className="ml-auto text-stock-in">{t.game.inStock}</span> : <span className="ml-auto text-blood-text">{t.game.outOfStock}</span>}
+          {/* Beside a rating the stock sits at the far end; without one it starts the row, so nothing floats alone on the right. */}
+          <span className={cn(game.rating !== null && "ml-auto", inStock ? "text-stock-in" : "text-blood-text")}>{inStock ? t.game.inStock : t.game.outOfStock}</span>
         </div>
         <ul className={cn("mt-3 flex-wrap gap-1.5", wide.flex)} aria-label={t.game.platforms}>
           {offers.map((o) => (

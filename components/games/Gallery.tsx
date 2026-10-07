@@ -7,7 +7,7 @@ import { useI18n } from "@/components/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 
 /**
- * Thumbnails that open a full-screen viewer (arrow keys, Escape). Works with any number of images:
+ * Thumbnails that open a full-screen viewer (arrow keys, a swipe, Escape). Works with any number of images:
  * one is shown wide, two side by side, and from three on the first (the key art) is featured
  * with the rest beside it. An image that fails to load is dropped instead of showing a broken frame.
  */
@@ -16,6 +16,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
   const [failed, setFailed] = useState<string[]>([]);
   const [index, setIndex] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const touch = useRef<{ x: number; y: number } | null>(null);
   const shown = images.filter((src) => !failed.includes(src));
 
   useEffect(() => {
@@ -77,7 +78,19 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
                 <X className="size-7" />
               </button>
             </div>
-            <div className="relative flex-1">
+            {/* A horizontal swipe on the image moves to the next or previous one (phones and tablets). */}
+            <div
+              className="relative flex-1 touch-pan-y"
+              onTouchStart={(e) => (touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
+              onTouchEnd={(e) => {
+                const start = touch.current;
+                touch.current = null;
+                if (!start || count < 2) return;
+                const dx = e.changedTouches[0].clientX - start.x;
+                const dy = e.changedTouches[0].clientY - start.y;
+                if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+              }}
+            >
               <Image src={shown[current]} alt={t.game.shotAlt(title, current + 1)} fill sizes="100vw" className="object-contain" />
             </div>
             {count > 1 && (

@@ -26,6 +26,7 @@ export const cardSelect = {
   rating: true,
   releaseDate: true,
   stock: true,
+  developer: true,
 } satisfies Prisma.GameSelect;
 
 export type SearchParams = Record<string, string | string[] | undefined>;
@@ -72,7 +73,7 @@ export function parseFilters(sp: SearchParams): GameFilters {
 }
 
 /**
- * Free-text match used by the catalogue and the header suggestions: the title, plus any genre whose
+ * Free-text match used by the catalogue and the header suggestions: the title, developer or publisher, plus any genre whose
  * key or localized name contains the query (so "strategie" or "хоррор" work), plus any platform
  * whose name or short code contains it ("ps5", "switch"). Diacritics are ignored on both sides
  * (searchKey), so "yotei" finds "Ghost of Yōtei" and "actiune" finds the "Acțiune" genre. The
@@ -85,8 +86,8 @@ async function textSearchWhere(q: string): Promise<Prisma.GameWhereInput> {
     return names.some((n) => searchKey(n).includes(needle));
   }).map((g) => g.name);
   const platforms = PLATFORMS.filter((p) => searchKey(p.name).includes(needle) || searchKey(p.short).includes(needle)).map((p) => p.name);
-  const titles = await prisma.game.findMany({ select: { slug: true, title: true } });
-  const slugs = titles.filter((g) => searchKey(g.title).includes(needle)).map((g) => g.slug);
+  const titles = await prisma.game.findMany({ select: { slug: true, title: true, developer: true, publisher: true } });
+  const slugs = titles.filter((g) => [g.title, g.developer, g.publisher].some((s) => searchKey(s).includes(needle))).map((g) => g.slug);
   const or: Prisma.GameWhereInput[] = [{ slug: { in: slugs } }];
   if (genres.length) or.push({ genres: { hasSome: genres } });
   if (platforms.length) or.push({ platforms: { hasSome: platforms } });
@@ -104,7 +105,7 @@ export async function suggestGames(q: string, take = 6): Promise<GameCardData[]>
     if (t.startsWith(needle)) return 1;
     if (t.split(/[\s:]+/).some((w) => w.startsWith(needle))) return 2;
     if (t.includes(needle)) return 3;
-    return 4; // matched by genre or platform
+    return 4; // matched by developer, publisher, genre or platform
   };
   return found.sort((a, b) => rank(a.title) - rank(b.title) || score(b.rating) - score(a.rating)).slice(0, take);
 }
@@ -181,6 +182,7 @@ export async function searchGames(f: GameFilters): Promise<{ games: GameCardData
     "price-asc": (a, b) => a.price - b.price || byTitle(a, b),
     "price-desc": (a, b) => b.price - a.price || byTitle(a, b),
     discount: (a, b) => maxDiscountPercent(b.offers, now) - maxDiscountPercent(a.offers, now) || score(b.game.rating) - score(a.game.rating) || byTitle(a, b),
+    name: byTitle,
   };
   filtered.sort(sorters[f.sort]);
 
@@ -213,6 +215,92 @@ export function catalogQuery(sp: SearchParams): string {
 
 export function getFeaturedGames(take = 3) {
   return prisma.game.findMany({ where: { featured: true }, select: cardSelect, orderBy: { rating: "desc" }, take });
+}
+
+/**
+ * The home hero's games: the ones the store marked as featured (admin, "Featured"), best rated first.
+ * With fewer than `min`, the store's best-rated games fill the rest, so the hero always has something to
+ * show and is never empty. Each comes with its description for the hero's short text.
+ */
+export async function getHeroGames(take = 5, min = 3) {
+  const select = { ...cardSelect, description: true, publisher: true } satisfies Prisma.GameSelect;
+  const featured = await prisma.game.findMany({ where: { featured: true }, select, orderBy: { rating: "desc" }, take });
+  if (featured.length >= min) return featured;
+  const more = await prisma.game.findMany({
+    where: { slug: { notIn: featured.map((g) => g.slug) }, rating: { not: null } },
+    select,
+    orderBy: { rating: "desc" },
+    take: min - featured.length,
+  });
+  return [...featured, ...more];
+}
+
+/**
+ * Copies a game must have sold in the window (paid orders, see getTrendingGames) to hold a numbered
+ * "Trending now" place. Sales rank the list only when every place can be held that way; with fewer, a
+ * numbered list would be the store's opinion dressed up as statistics.
+ */
+export const TRENDING_MIN_COPIES = 3;
+
+/**
+ * The home page's first row of games. Ranked by sales (`ranked`: "Trending now", #1–#4) only when, in
+ * the last `days` days, at least `take` games in stock each sold TRENDING_MIN_COPIES copies in paid,
+ * not cancelled orders (unpaid or spam orders never move it). Otherwise the store's selection: its
+ * best-rated games in stock, unnumbered ("The Iron Vault's picks"). `exclude`: games already shown (the hero).
+ */
+export async function getTrendingGames(take = 4, exclude: string[] = [], days = 60): Promise<{ ranked: boolean; games: GameCardData[] }> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const orders = await prisma.order.findMany({
+    where: { createdAt: { gte: since }, paymentStatus: "paid", status: { not: "cancelled" } },
+    select: { items: true },
+  });
+  const demand = new Map<string, number>();
+  for (const o of orders) for (const i of o.items) demand.set(i.slug, (demand.get(i.slug) ?? 0) + i.quantity);
+  const games = (await prisma.game.findMany({ where: { slug: { notIn: exclude } }, select: cardSelect })).filter((g) => gameOffers(g).some((o) => o.stock > 0));
+  const byQuality = (a: GameCardData, b: GameCardData) => score(b.rating) - score(a.rating) || b.releaseDate.getTime() - a.releaseDate.getTime();
+  const sold = (g: GameCardData) => demand.get(g.slug) ?? 0;
+  const selling = games.filter((g) => sold(g) >= TRENDING_MIN_COPIES);
+  if (selling.length >= take) {
+    return { ranked: true, games: selling.sort((a, b) => sold(b) - sold(a) || byQuality(a, b)).slice(0, take) };
+  }
+  return { ranked: false, games: games.sort(byQuality).slice(0, take) };
+}
+
+/** The home page's curated collections: a stable key (labels in t.home.collections) and the genre it gathers. */
+export const COLLECTIONS = [
+  { key: "soulslike", genre: "Souls-like" },
+  { key: "rpg", genre: "RPG" },
+  { key: "horror", genre: "Horror" },
+  { key: "strategy", genre: "Strategy" },
+] as const;
+
+/**
+ * The collections' games, each game on one shelf only. A shelf takes only games of its genre; among those
+ * it prefers games not shown elsewhere on the page (`elsewhere`, a soft preference), then the best rated
+ * (newest first among unrated ones). Shelves choose in turns, one game per round, and the shelf with the
+ * fewest unused candidates chooses first, so a broad genre can't empty a narrow one. A shelf without
+ * enough distinct games stays shorter rather than repeating one; an empty shelf is left out.
+ */
+export async function getCollections(perCollection = 4, elsewhere: string[] = []) {
+  const games = await prisma.game.findMany({ where: { genres: { hasSome: COLLECTIONS.map((c) => c.genre) } }, select: cardSelect });
+  const seen = new Set(elsewhere);
+  const byQuality = (a: GameCardData, b: GameCardData) => score(b.rating) - score(a.rating) || b.releaseDate.getTime() - a.releaseDate.getTime();
+  const shelves = COLLECTIONS.map((c) => ({
+    ...c,
+    candidates: games.filter((g) => g.genres.includes(c.genre)).sort((a, b) => Number(seen.has(a.slug)) - Number(seen.has(b.slug)) || byQuality(a, b)),
+    games: [] as GameCardData[],
+  }));
+  const used = new Set<string>();
+  const left = (s: (typeof shelves)[number]) => s.candidates.filter((g) => !used.has(g.slug)).length;
+  for (let round = 0; round < perCollection; round++) {
+    for (const shelf of [...shelves].sort((a, b) => left(a) - left(b))) {
+      const next = shelf.candidates.find((g) => !used.has(g.slug));
+      if (!next) continue;
+      shelf.games.push(next);
+      used.add(next.slug);
+    }
+  }
+  return shelves.filter((s) => s.games.length > 0).map((s) => ({ key: s.key, genre: s.genre, games: s.games.sort(byQuality) }));
 }
 
 /** Games with a sale running right now, soonest-ending first. `exclude`: slugs already shown elsewhere. */

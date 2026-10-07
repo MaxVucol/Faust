@@ -70,6 +70,12 @@ export function anyOnSale(offers: Offer[], now: Date = new Date()): boolean {
   return offers.some((o) => isOnSale(o, now));
 }
 
+/** When the first of the running sales ends, i.e. the next moment the prices change by themselves; null without one. */
+export function nextSaleEnd(offers: Offer[], now: Date = new Date()): Date | null {
+  const ends = offers.filter((o) => isOnSale(o, now) && o.discountEndsAt).map((o) => (o.discountEndsAt as Date).getTime());
+  return ends.length ? new Date(Math.min(...ends)) : null;
+}
+
 /** The running sale with the largest discount, if any (for "−40% · ends on …"). */
 export function biggestSale(offers: Offer[], now: Date = new Date()): Offer | undefined {
   return offers.filter((o) => isOnSale(o, now)).sort((a, b) => discountPercent(b) - discountPercent(a))[0];

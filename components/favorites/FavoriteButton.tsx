@@ -1,12 +1,13 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Heart } from "lucide-react";
+import { useState } from "react";
 import { useI18n } from "@/components/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { useFavorites } from "./FavoritesProvider";
 
 /**
- * Wishlist star for the top-right corner of a game cover. Place it as a sibling of the card's link
+ * Wishlist heart for the top-right corner of a game cover. Place it as a sibling of the card's link
  * (never inside it), in a `relative` box, so a tap only toggles the star.
  *
  * Off: near-white outline; a solid, half-transparent dark disc behind it (no gradient, no glow) and a
@@ -17,6 +18,8 @@ export function FavoriteButton({ slug, title, className }: { slug: string; title
   const { t } = useI18n();
   const { has, toggle } = useFavorites();
   const active = has(slug);
+  // A short pop when it is switched on by a click (never on page load, never with reduced motion).
+  const [pop, setPop] = useState(false);
   return (
     <button
       type="button"
@@ -25,6 +28,7 @@ export function FavoriteButton({ slug, title, className }: { slug: string; title
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        setPop(!active);
         toggle(slug);
       }}
       className={cn(
@@ -36,11 +40,13 @@ export function FavoriteButton({ slug, title, className }: { slug: string; title
         className,
       )}
     >
-      <Star
+      <Heart
         aria-hidden
         strokeWidth={1.9}
+        onAnimationEnd={() => setPop(false)}
         className={cn(
-          "relative size-[26px] drop-shadow-[0_1px_2px_rgb(0_0_0/0.9)] transition-[color,fill,opacity,scale] duration-200 ease-out group-hover/fav:scale-[1.07] group-active/fav:scale-95 motion-reduce:transition-none",
+          "relative size-[24px] drop-shadow-[0_1px_2px_rgb(0_0_0/0.9)] transition-[color,fill,opacity,scale] duration-200 ease-out group-hover/fav:scale-[1.07] group-active/fav:scale-95 motion-reduce:transition-none",
+          pop && "motion-safe:animate-heart-pop",
           active ? "fill-gold-light text-gold-light opacity-100" : "fill-transparent text-[#f6f0e3] opacity-95 group-hover/fav:opacity-100",
         )}
       />

@@ -28,7 +28,8 @@ export async function NewsCard({ game }: { game: GameCardData }) {
           </div>
         </div>
         <div className="p-4">
-          <h3 className="text-lg text-parchment transition-colors duration-300 group-hover:text-gold-light">{game.title}</h3>
+          {/* Set like every other game title on the site: display face, capitals, open tracking. */}
+          <h3 className="font-display text-sm tracking-[0.12em] text-parchment uppercase transition-colors duration-300 group-hover:text-gold-light">{game.title}</h3>
           <MetaList items={game.platforms.map(platformShort)} />
           <p className="mt-1 text-sm text-parchment-muted">
             <span className="sr-only">{t.game.releasedOn}</span>

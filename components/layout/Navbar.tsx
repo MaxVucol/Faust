@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, Star, X } from "lucide-react";
+import { Heart, Search, ShoppingCart, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { AccountMenu, type HeaderAccount } from "@/components/auth/AccountMenu";
 import { useCart } from "@/lib/use-cart";
@@ -94,7 +94,7 @@ export function Navbar({ account }: { account: HeaderAccount }) {
             aria-label={t.favorites.nav(favorites.count)}
             className={cn(HIT_AREA, "hidden gap-1.5 text-sm text-white transition-[color,filter] duration-300 hover:text-gold-light hover:drop-shadow-[0_0_6px_rgb(192_154_85/0.6)] focus-visible:text-gold-light sm:flex")}
           >
-            <Star aria-hidden strokeWidth={1.75} className={favorites.count > 0 ? "size-5 fill-aged-gold text-aged-gold" : "size-5"} />
+            <Heart aria-hidden strokeWidth={1.75} className={favorites.count > 0 ? "size-5 fill-aged-gold text-aged-gold" : "size-5"} />
             {favorites.count > 0 && (
               <span aria-hidden className="tabular-nums">
                 {favorites.count}

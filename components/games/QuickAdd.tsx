@@ -11,12 +11,18 @@ import { cn } from "@/lib/utils";
 import { AddToCartButton } from "./AddToCartButton";
 import { GameImage } from "./GameImage";
 import { PlatformPicker } from "./PlatformPicker";
+import { useLiveOffers } from "./SaleSwitch";
 
 type QuickAddProps = {
   game: { slug: string; title: string; coverImage: string };
   /** The game's versions from purchaseOptions(), as on the product page. */
   offers: PanelOffer[];
   className?: string;
+  /** "Buy now" instead of "Add to cart": after adding, the cart opens. */
+  buyNow?: boolean;
+  /** The trigger's look; the cards keep the quiet outline. */
+  variant?: "outline" | "primary";
+  size?: "sm" | "md";
 };
 
 /**
@@ -25,8 +31,9 @@ type QuickAddProps = {
  * the platform choice, the price and the button. The cart line is built by cartItemFor(), exactly as
  * on the product page.
  */
-export function QuickAdd({ game, offers, className }: QuickAddProps) {
+export function QuickAdd({ game, offers: rendered, className, buyNow = false, variant = "outline", size = "sm" }: QuickAddProps) {
   const { t, currency } = useI18n();
+  const offers = useLiveOffers(rendered);
   const g = t.game;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -44,7 +51,7 @@ export function QuickAdd({ game, offers, className }: QuickAddProps) {
 
   if (offers.length === 0) return null;
   if (offers.length === 1) {
-    return <AddToCartButton variant="outline" className={cn("w-full", className)} inStock={offers[0].inStock} item={cartItemFor(game, offers[0])} />;
+    return <AddToCartButton variant={variant} size={size} buyNow={buyNow} className={cn("w-full", className)} inStock={offers[0].inStock} item={cartItemFor(game, offers[0])} />;
   }
 
   const offer = offers[index];
@@ -55,8 +62,8 @@ export function QuickAdd({ game, offers, className }: QuickAddProps) {
 
   return (
     <>
-      <Button size="sm" variant={inStock ? "outline" : "ghost"} className={cn("w-full", className)} disabled={!inStock} aria-haspopup="dialog" onClick={() => setOpen(true)}>
-        <span aria-live="polite">{!inStock ? g.outOfStock : added ? g.addedToCart : g.addToCart}</span>
+      <Button size={size} variant={inStock ? variant : "ghost"} className={cn("w-full", className)} disabled={!inStock} aria-haspopup="dialog" onClick={() => setOpen(true)}>
+        <span aria-live="polite">{!inStock ? g.outOfStock : buyNow ? g.buyNow : added ? g.addedToCart : g.addToCart}</span>
       </Button>
       <dialog
         ref={dialogRef}
@@ -131,6 +138,7 @@ export function QuickAdd({ game, offers, className }: QuickAddProps) {
                 className="mt-6 w-full md:mt-7"
                 inStock={offer.inStock}
                 item={cartItemFor(game, offer)}
+                buyNow={buyNow}
                 onAdded={() => {
                   setAdded(true);
                   close();

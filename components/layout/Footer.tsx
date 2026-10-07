@@ -32,12 +32,13 @@ function FooterColumn({ title, links }: { title: string; links: { href: string; 
 export async function Footer() {
   const [t, offers] = await Promise.all([getDictionary(), hasActiveOffers()]);
   const l = t.footer.links;
+  const a = t.footer.accountLinks;
   return (
     <footer className="relative z-10 mt-24 border-t border-gold-dark bg-[#0a0907]">
       {/* Small gold diamond set into the boundary line, centred. */}
       <Diamond className="absolute -top-[5px] left-1/2 size-2.5 -translate-x-1/2 border border-gold-light bg-[#0a0907]" />
 
-      <div className="mx-auto grid max-w-page gap-12 px-4 pt-16 pb-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.6fr_1fr_1fr_1fr] lg:gap-16 lg:px-8">
+      <div className="mx-auto grid max-w-page gap-12 px-4 pt-16 pb-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] lg:gap-12 lg:px-8">
         <div>
           <Link
             href="/"
@@ -77,22 +78,35 @@ export async function Footer() {
           ]}
         />
         <FooterColumn
-          title={t.footer.information}
+          title={t.footer.help}
           links={[
-            { href: "/despre-noi", label: l.about },
-            { href: INFO_PAGE_ROUTES.delivery, label: l.delivery },
             { href: "/intrebari-frecvente", label: l.faq },
-            { href: INFO_PAGE_ROUTES.privacy, label: l.privacy },
-            { href: INFO_PAGE_ROUTES.terms, label: l.terms },
+            { href: INFO_PAGE_ROUTES.delivery, label: l.delivery },
+            { href: "/contact", label: l.contact },
+            { href: "/despre-noi", label: l.about },
           ]}
         />
         <FooterColumn
-          title={t.footer.support}
+          title={t.footer.accountTitle}
           links={[
-            { href: "/contact", label: l.contact },
-            { href: `mailto:${BUSINESS.email}`, label: BUSINESS.email },
+            { href: "/login", label: a.login },
+            { href: "/account", label: a.vault },
+            { href: "/favorite", label: a.wishlist },
+            { href: "/account#comenzi", label: a.orders },
           ]}
         />
+        <div>
+          <FooterColumn
+            title={t.footer.legal}
+            links={[
+              { href: INFO_PAGE_ROUTES.terms, label: l.terms },
+              { href: INFO_PAGE_ROUTES.privacy, label: l.privacy },
+            ]}
+          />
+          <a href={`mailto:${BUSINESS.email}`} className="mt-8 block text-base break-all text-parchment/80 transition-colors duration-300 hover:text-gold-light">
+            {BUSINESS.email}
+          </a>
+        </div>
       </div>
 
       <div className="mx-auto max-w-page px-4 sm:px-6 lg:px-8">
